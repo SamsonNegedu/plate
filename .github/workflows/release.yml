@@ -1,6 +1,6 @@
 name: release
-# Tag vX.Y.Z to publish ghcr.io/<owner>/plate:X.Y.Z, :X.Y and :latest after the smoke test passes.
-# A pre-release tag (vX.Y.Z-rc1) publishes only its own version, never :X.Y or :latest.
+# Tag vX.Y.Z to publish ghcr.io/<owner>/plate:X.Y.Z (and :X.Y for a stable tag) after the smoke test passes, so a
+# version can be pinned for a rollback. `latest` is published by ci.yml on every green push to main, not here.
 on:
   push:
     tags: ["v*.*.*"]
@@ -36,7 +36,6 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
       - uses: docker/build-push-action@v6
         with:
           context: .

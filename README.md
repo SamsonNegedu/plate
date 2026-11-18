@@ -28,7 +28,7 @@ cp .env.example .env     # set PLATE_BASE_URL (https) and the first-boot admin
 docker compose up -d     # pulls ghcr.io/samsonnegedu/plate; add --build to build from source
 ```
 
-Tag `vX.Y.Z` to publish a release image; CI smoke-tests it first (`make docker-smoke` runs the same check locally). Upgrade, rollback and backups are in `docs/runbook.md`.
+Every green push to `main` publishes `latest` after the full CI (including a smoke test of the image; `make docker-smoke` runs the same check locally). Tag `vX.Y.Z` to also publish a pinnable version for rollbacks. Upgrade, rollback and backups are in `docs/runbook.md`.
 
 ## Notes
 

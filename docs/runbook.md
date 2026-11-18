@@ -149,7 +149,7 @@ docker compose up -d           # migrations run before the listener
 curl -fsS https://<host>/readyz
 ```
 
-Compose always runs `latest`. Releases are tagged `vX.Y.Z`; CI smoke-tests the image and publishes it to ghcr.io. Check login, Today, scan, and sync.
+Compose always runs `latest`. Every green push to `main` publishes `latest` (and a `sha-<commit>` tag) to ghcr.io after the full CI passes. Tagging `vX.Y.Z` publishes a pinnable version for rollbacks. Check login, Today, scan, and sync.
 
 ## Rollback
 
