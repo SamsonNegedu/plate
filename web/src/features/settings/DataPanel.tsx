@@ -15,9 +15,14 @@ import {
   summarizeBackup,
   wipeLocal,
 } from "./dataTools";
-import styles from "./Settings.module.css";
+import { cls, panel } from "./ui";
 
 const stamp = () => new Date().toISOString().slice(0, 10);
+
+function failureMessage(e: unknown, offline: string, fallback: string): string {
+  if (e instanceof NetworkError) return offline;
+  return e instanceof Error ? e.message : fallback;
+}
 
 export function DataPanel() {
   const db = useDb();
@@ -70,11 +75,7 @@ export function DataPanel() {
       window.location.reload();
     } catch (e) {
       setProblem(
-        e instanceof NetworkError
-          ? "You are offline. Importing needs the server."
-          : e instanceof Error
-            ? e.message
-            : "Import failed.",
+        failureMessage(e, "You are offline. Importing needs the server.", "Import failed."),
       );
     } finally {
       setBusy(false);
@@ -91,30 +92,30 @@ export function DataPanel() {
       window.location.assign("/login");
     } catch (e) {
       setProblem(
-        e instanceof NetworkError
-          ? "You are offline. Deleting needs the server so every device is cleared."
-          : e instanceof Error
-            ? e.message
-            : "Delete failed.",
+        failureMessage(
+          e,
+          "You are offline. Deleting needs the server so every device is cleared.",
+          "Delete failed.",
+        ),
       );
       setBusy(false);
     }
   };
 
   return (
-    <section className={styles.section} aria-labelledby="data-h">
+    <section className={cls.section} aria-labelledby="data-h">
       <h2 id="data-h">Your data</h2>
-      <p className={styles.muted}>
+      <p className={cls.muted}>
         Keep a copy now and then. The backup holds your entries, foods, saved meals and goals. It is
         separate from sync, so it survives a bad edit or a lost server database.
       </p>
-      <div className={styles.actions}>
+      <div className={cls.actions}>
         <Button onClick={() => void exportServer()}>Export a backup</Button>
         <Button onClick={() => fileRef.current?.click()}>Import a backup</Button>
       </div>
-      <details className={styles.advanced}>
+      <details className={cls.advanced}>
         <summary>Advanced</summary>
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           Export the offline copy when the server is unreachable. It may be incomplete.
         </p>
         <Button variant="ghost" onClick={() => void exportLocal()}>
@@ -125,7 +126,7 @@ export function DataPanel() {
         ref={fileRef}
         type="file"
         accept="application/json,.json"
-        className="srOnly"
+        className="sr-only"
         tabIndex={-1}
         aria-label="Choose a backup file"
         onChange={(e) => {
@@ -135,15 +136,15 @@ export function DataPanel() {
         }}
       />
       {problem ? (
-        <p className={styles.error} role="alert">
+        <p className={cls.error} role="alert">
           {problem}
         </p>
       ) : null}
 
       {pending ? (
-        <div className={`${styles.panel} ${styles.warn}`}>
+        <div className={panel(true)}>
           <h3>Replace all data with this backup?</h3>
-          <dl className={styles.facts}>
+          <dl className={cls.facts}>
             <div>
               <dt>Entries</dt>
               <dd>{pending.summary.entries}</dd>
@@ -163,11 +164,11 @@ export function DataPanel() {
               </dd>
             </div>
           </dl>
-          <p className={styles.muted}>
+          <p className={cls.muted}>
             Everything on the server that is not in this file is removed. The server keeps a
             snapshot first.
           </p>
-          <div className={styles.actions}>
+          <div className={cls.actions}>
             <Button variant="danger" onClick={() => void confirmImport()} busy={busy}>
               Replace all data
             </Button>
@@ -178,9 +179,9 @@ export function DataPanel() {
         </div>
       ) : null}
 
-      <div className={styles.panel}>
+      <div className={panel()}>
         <h3>Delete all data</h3>
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           Removes your log from the server and from this device, then signs you out. Export a backup
           first.
         </p>
@@ -193,7 +194,7 @@ export function DataPanel() {
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
             />
-            <div className={styles.actions}>
+            <div className={cls.actions}>
               <Button
                 variant="danger"
                 disabled={typed !== "DELETE"}
@@ -214,7 +215,7 @@ export function DataPanel() {
             </div>
           </>
         ) : (
-          <div className={styles.actions}>
+          <div className={cls.actions}>
             <Button variant="danger" onClick={() => setDeleting(true)}>
               Delete all data
             </Button>

@@ -44,7 +44,7 @@ plate/
 - Go: current stable at kickoff. Use `go tool` directives in `go.mod` to pin sqlc and goose. No global installs in CI.
 - Node: current LTS. pnpm with a committed lockfile.
 - Frontend: Vite, React, TypeScript strict, React Router 7, Dexie, Zustand, RHF + Zod, Radix, Recharts, MiniSearch, `barcode-detector`, `zxing-wasm`, `vite-plugin-pwa`, `openapi-typescript`, `openapi-fetch`.
-- Lint/format: `golangci-lint` for Go; Biome for the web. One command each.
+- Lint/format: `golangci-lint` for Go; oxlint + oxfmt for the web (ADR-017). One command each.
 - Tests: `go test`, Vitest, React Testing Library, Playwright. Playwright is wired but scans are mocked until Phase 8.
 - Security: `govulncheck`, `gosec` (via golangci), `pnpm audit`, lockfiles, SBOM generation.
 - Container: multi-stage, `CGO_ENABLED=0`, distroless/static, non-root, data dir mounted.
@@ -112,8 +112,8 @@ make dev-web      # Vite only
 make build        # web build + static Go binary
 make test         # go test + vitest
 make test-e2e     # playwright
-make lint         # golangci-lint + biome
-make fmt          # gofmt + biome format
+make lint         # golangci-lint + oxlint + oxfmt
+make fmt          # gofmt + oxfmt
 make generate     # sqlc + openapi TS types
 make sqlc-diff    # fails if generated code is stale
 make coverage     # German barcode corpus, fixture mode
@@ -129,7 +129,7 @@ make verify       # lint + test + build + sqlc-diff + generated diff
 ## CI
 
 - Go job: `go test ./...`, `golangci-lint`, `govulncheck`, `sqlc diff`, build.
-- Web job: install with lockfile, `biome ci`, `vitest run`, `vite build`.
+- Web job: install with lockfile, `oxlint` + `oxfmt --check`, `vitest run`, `vite build`.
 - Integration job: Playwright against the built binary with a temp data dir.
 - Artifact: the linux/amd64 binary and the web build.
 - Cache Go modules, pnpm store, Playwright browsers.
@@ -171,7 +171,7 @@ All web and Go dependencies come from the locked stack table in `CLAUDE.md`, exc
 
 ## Note
 
-Verified: `make verify` exits 0 (golangci-lint 0 issues, Go and Vitest tests, build, typecheck, Biome); the built binary serves `/healthz`, `/readyz`, security headers, SPA fallback, JSON 404 for unknown API routes, and the OpenAPI document; Playwright passes on 400 px and desktop; `CGO_ENABLED=0` builds for darwin/arm64 and linux/amd64.
+Verified: `make verify` exits 0 (golangci-lint 0 issues, Go and Vitest tests, build, typecheck, oxlint); the built binary serves `/healthz`, `/readyz`, security headers, SPA fallback, JSON 404 for unknown API routes, and the OpenAPI document; Playwright passes on 400 px and desktop; `CGO_ENABLED=0` builds for darwin/arm64 and linux/amd64.
 
 Not verified: `make dev` end to end (Vite proxy), `docker build` and `docker compose up`, the CI workflow on a real runner, and `make audit` (govulncheck and pnpm audit not run).
 

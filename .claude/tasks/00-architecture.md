@@ -324,3 +324,18 @@ CSP baseline: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-s
 ## Non-goals for v1
 
 Recipes and ingredient math, weight tracking, photo OCR, restaurant menus, social features, multi-user households, native apps, push notifications, a German UI, full-text search of the entire OFF corpus, and offline access to uncached products.
+
+### ADR-016 — Tailwind CSS v4 replaces CSS Modules
+Decision (2026-11-18, user): style the client with Tailwind CSS v4 instead of CSS Modules.
+- `web/src/styles/tokens.css` stays the single token source. Tailwind's `@theme inline` maps each token to a utility (`bg-surface`, `text-ink-2`, `rounded-card`), so light, dark and `data-theme` still switch through the CSS variables and no `dark:` variants are used.
+- Dependencies: `tailwindcss` and `@tailwindcss/vite` (build-time only; nothing ships at runtime beyond the generated CSS).
+- No arbitrary colors; no new spacing system. Repeated or stateful patterns are components, not copied class strings.
+- The design floor is unchanged: the Playwright pixel baselines (`web/e2e/visual.spec.ts`) must pass untouched through the migration.
+- Typography is named, not inline: `text-micro/caption/meta/label/body/input/section/glyph/stat/heading/title/wordmark/display`, plus `leading-*` and `tracking-display`, all defined in `@theme`. Off-scale sizes were folded into the nearest step (13.5 px to 13, 14.5 px to 14); the Settings baselines were refreshed for that one change.
+
+### ADR-017 — oxlint and oxfmt replace Biome for the web
+Decision (2026-11-18, user): lint with oxlint and format with oxfmt. Biome could not parse Tailwind v4 CSS directives, and oxfmt sorts Tailwind classes and imports.
+- `web/.oxlintrc.json`: correctness errors plus explicit React rules (hooks, purity, refs, no nested ternaries, no unstable components, no index keys) and `no-explicit-any` / `no-non-null-assertion`.
+- `web/.oxfmtrc.json`: Biome's formatting options, `sortTailwindcss` (via the `cn` helper and `className`), and `sortImports`.
+- `pnpm lint` runs `oxlint && oxfmt --check`; `pnpm fmt` writes.
+

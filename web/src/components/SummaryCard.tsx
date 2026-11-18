@@ -1,9 +1,9 @@
+import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
 import { formatKcal } from "@/lib/numbers";
 import { type DayTotals, meterFill } from "@/lib/nutrition";
 import { MacroBar } from "./MacroBar";
 import { Meter } from "./Meter";
-import styles from "./SummaryCard.module.css";
 
 interface Props {
   totals: DayTotals;
@@ -15,25 +15,36 @@ export function SummaryCard({ totals, goalKcal, targets }: Props) {
   const eaten = Math.round(totals.kcal);
   const { fill, over, left } = meterFill(eaten, goalKcal);
   return (
-    <section className={styles.card} aria-label="Day summary">
-      <div className={styles.top}>
+    <section className="rounded-card border border-line bg-surface p-4" aria-label="Day summary">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className={`${styles.big} ${over ? styles.overText : ""}`}>{formatKcal(left)}</p>
-          <p className={styles.cap}>
+          <p
+            className={cn(
+              "font-display text-display leading-display font-semibold tracking-display",
+              over && "text-red",
+            )}
+          >
+            {formatKcal(left)}
+          </p>
+          <p className="mt-2 text-meta text-ink-2">
             kcal {over ? copy.today.over : copy.today.left}
             {over ? (
-              <span className="srOnly">{` of your ${formatKcal(goalKcal)} goal`}</span>
+              <span className="sr-only">{` of your ${formatKcal(goalKcal)} goal`}</span>
             ) : null}
           </p>
         </div>
-        <dl className={styles.side}>
-          <div>
-            <dt>{copy.today.eaten}</dt>
-            <dd>{formatKcal(eaten)}</dd>
+        <dl className="mt-1 flex gap-4">
+          <div className="text-right">
+            <dt className="text-micro text-ink-2">{copy.today.eaten}</dt>
+            <dd className="font-display text-stat leading-stat font-semibold">
+              {formatKcal(eaten)}
+            </dd>
           </div>
-          <div>
-            <dt>{copy.today.goal}</dt>
-            <dd>{formatKcal(goalKcal)}</dd>
+          <div className="text-right">
+            <dt className="text-micro text-ink-2">{copy.today.goal}</dt>
+            <dd className="font-display text-stat leading-stat font-semibold">
+              {formatKcal(goalKcal)}
+            </dd>
           </div>
         </dl>
       </div>
@@ -47,16 +58,16 @@ export function SummaryCard({ totals, goalKcal, targets }: Props) {
         }
       />
       {totals.count > 0 ? (
-        <>
-          <div className={styles.macros}>
-            <MacroBar label="Protein" value={totals.protein} target={targets.protein} />
-            <MacroBar label="Carbs" value={totals.carbs} target={targets.carbs} />
-            <MacroBar label="Fat" value={totals.fat} target={targets.fat} />
-            <MacroBar label="Fibre" value={totals.fiber} target={0} />
-          </div>
-        </>
+        <div className="mt-3.5 grid grid-cols-2 gap-3 min-[421px]:grid-cols-4">
+          <MacroBar label="Protein" value={totals.protein} target={targets.protein} />
+          <MacroBar label="Carbs" value={totals.carbs} target={targets.carbs} />
+          <MacroBar label="Fat" value={totals.fat} target={targets.fat} />
+          <MacroBar label="Fibre" value={totals.fiber} target={0} />
+        </div>
       ) : null}
-      {totals.missing.length > 0 ? <p className={styles.note}>{copy.today.missingMacros}</p> : null}
+      {totals.missing.length > 0 ? (
+        <p className="mt-2.5 text-caption text-ink-2">{copy.today.missingMacros}</p>
+      ) : null}
     </section>
   );
 }

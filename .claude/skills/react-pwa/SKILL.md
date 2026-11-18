@@ -35,8 +35,8 @@ description: Use when writing or reviewing React, TypeScript, Dexie, routing, fo
 
 ## Styling
 
-- CSS Modules + the token file. No Tailwind, no styled-components, no inline color literals.
-- Every color, radius, spacing, and font comes from a token.
+- Tailwind v4 utilities, themed from `web/src/styles/tokens.css` via `@theme`. No CSS Modules, no styled-components, no inline color literals.
+- Every color, radius, and font comes from a token utility (`bg-surface`, `text-ink-2`, `rounded-card`). No arbitrary hex values. Type uses the named scale (`text-body`, `text-meta`, `text-title`, `font-display`), never `text-[15px]`; spacing uses the Tailwind scale. Repeated or stateful patterns become a component, not a copied class string.
 - Light and dark are designed together. A component that only works in one theme is incomplete.
 - No layout that requires horizontal scrolling at 400 px.
 - Respect `prefers-reduced-motion`. No scan-line or sheet animation when reduced.

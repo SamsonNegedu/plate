@@ -2,7 +2,6 @@ import { Component, type ReactNode } from "react";
 import { appDb } from "@/db/context";
 import { copy } from "@/lib/copy";
 import { download, localDump } from "@/lib/diagnostics";
-import styles from "./ErrorBoundary.module.css";
 
 interface State {
   failed: boolean;
@@ -26,14 +25,24 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
   override render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <main className={styles.screen}>
-        <h1>{copy.errors.generic}</h1>
-        <p>Your log is stored on this device. Reload to continue, or export a copy first.</p>
-        <div className={styles.actions}>
-          <button type="button" className={styles.primary} onClick={() => window.location.reload()}>
+      <main className="mx-auto max-w-[560px] px-4 py-16">
+        <h1 className="mb-2 text-title font-semibold">{copy.errors.generic}</h1>
+        <p className="text-ink-2">
+          Your log is stored on this device. Reload to continue, or export a copy first.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="min-h-11 rounded-ctl bg-accent px-4 text-body font-medium text-on-accent"
+            onClick={() => window.location.reload()}
+          >
             {copy.errors.reload}
           </button>
-          <button type="button" className={styles.secondary} onClick={() => void this.exportData()}>
+          <button
+            type="button"
+            className="min-h-11 rounded-ctl border border-line bg-surface px-4 text-body font-medium text-ink"
+            onClick={() => void this.exportData()}
+          >
             {copy.errors.exportData}
           </button>
         </div>

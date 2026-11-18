@@ -55,7 +55,9 @@ export function summarize(days: DayPoint[], goal: number): Stats {
 
 /** Which x labels to draw: every day for 7, every other for 14, every fourth for 30, always the last. */
 export function labelEvery(range: number): number {
-  return range <= 7 ? 1 : range <= 14 ? 2 : 4;
+  if (range <= 7) return 1;
+  if (range <= 14) return 2;
+  return 4;
 }
 
 export function niceMax(value: number): number {

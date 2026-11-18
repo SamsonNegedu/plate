@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, type ReactNode, use, useEffect, useMemo, useState } from "react";
 import { useStore } from "zustand";
 import { useDb } from "@/db/context";
 import { onLocalWrite } from "@/db/events";
@@ -50,15 +50,15 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [state, auth]);
 
   const value = useMemo(() => ({ store, engine }), [store, engine]);
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return <Ctx value={value}>{children}</Ctx>;
 }
 
 export function useSyncStore(): SyncStore {
-  const v = useContext(Ctx);
+  const v = use(Ctx);
   if (!v) throw new Error("useSyncStore needs a SyncProvider");
   return v.store;
 }
 
 export function useSyncEngine(): SyncEngine | null {
-  return useContext(Ctx)?.engine ?? null;
+  return use(Ctx)?.engine ?? null;
 }

@@ -7,7 +7,6 @@ import { TabBar } from "@/components/TabBar";
 import { useDb } from "@/db/context";
 import { download, localDump } from "@/lib/diagnostics";
 import { useUi } from "@/lib/ui";
-import styles from "./AppShell.module.css";
 import { useAuth } from "./auth";
 import { useOnline } from "./online";
 import { useStorageGuards } from "./storage";
@@ -31,14 +30,18 @@ export function AppShell() {
   const quota = useUi((s) => s.quotaExceeded);
   useStorageGuards(auth.status === "authed");
   return (
-    <div className={styles.shell}>
+    <div className="mx-auto max-w-[560px] pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+24px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
       <AppBar />
-      <main className={styles.main} id="main">
+      <main className="pt-1" id="main">
         {quota ? (
-          <p className={styles.quota} role="alert">
+          <p
+            className="mb-3 rounded-ctl border border-red bg-surface px-3 py-2.5 text-meta"
+            role="alert"
+          >
             This device is out of storage, so new entries may not be saved.{" "}
             <button
               type="button"
+              className="min-h-11 bg-transparent p-0 font-semibold text-ink underline"
               onClick={() =>
                 void localDump(db).then((t) =>
                   download(`plate-device-${new Date().toISOString().slice(0, 10)}.json`, t),

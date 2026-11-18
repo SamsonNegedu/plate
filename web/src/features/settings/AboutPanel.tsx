@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 import { useUi } from "@/lib/ui";
 import { buildDiagnostics, copyText } from "./diagnostics";
 import { useInstall } from "./install";
-import styles from "./Settings.module.css";
+import { cls } from "./ui";
 
 interface About {
   version: string;
@@ -54,12 +54,12 @@ export function AboutPanel() {
 
   return (
     <>
-      <section className={styles.section} aria-labelledby="storage-h">
+      <section className={cls.section} aria-labelledby="storage-h">
         <h2 id="storage-h">Storage</h2>
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           Your log syncs to your other devices and stays available offline.
         </p>
-        <div className={styles.actions}>
+        <div className={cls.actions}>
           {install.canPrompt ? (
             <Button onClick={() => void install.prompt()}>Install the app</Button>
           ) : null}
@@ -68,13 +68,13 @@ export function AboutPanel() {
           ) : null}
         </div>
         {iosHelp ? (
-          <p className={styles.muted}>In Safari, tap Share, then Add to Home Screen.</p>
+          <p className={cls.muted}>In Safari, tap Share, then Add to Home Screen.</p>
         ) : null}
       </section>
 
-      <section className={styles.section} aria-labelledby="about-h">
+      <section className={cls.section} aria-labelledby="about-h">
         <h2 id="about-h">About</h2>
-        <dl className={styles.facts}>
+        <dl className={cls.facts}>
           <div>
             <dt>Version</dt>
             <dd>{version}</dd>
@@ -87,20 +87,20 @@ export function AboutPanel() {
           ) : null}
         </dl>
         {(about?.attributions ?? []).map((a) => (
-          <p key={a} className={styles.attr}>
+          <p key={a} className={cls.attr}>
             {a}
           </p>
         ))}
         {!about ? (
-          <p className={styles.attr}>
+          <p className={cls.attr}>
             Food data from Open Food Facts (ODbL) and the Bundeslebensmittelschlüssel (CC BY 4.0).
             Connect to see the full credits.
           </p>
         ) : null}
-        <p className={styles.attr}>
+        <p className={cls.attr}>
           Plate has no analytics and no trackers. Your log stays on your own server and this device.
         </p>
-        <div className={styles.actions}>
+        <div className={cls.actions}>
           <Button onClick={() => void diagnostics()}>Copy diagnostics</Button>
         </div>
       </section>

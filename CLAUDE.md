@@ -28,7 +28,7 @@ Start with `.claude/tasks/README.md`, then the current phase file. Locked decisi
 | Local data | Dexie 4 + `dexie-react-hooks` |
 | UI state | Zustand (ephemeral only) |
 | Forms | React Hook Form + Zod |
-| Components | Radix UI + CSS Modules |
+| Components | Radix UI + Tailwind CSS v4 |
 | Charts | Recharts |
 | Local search | MiniSearch |
 | Barcode | native `BarcodeDetector` + `barcode-detector`/`zxing-wasm` |
@@ -109,7 +109,7 @@ web/src            React app
 
 - ORM (GORM, ent), Gin/Echo/Fiber, a second database, Redis, a queue.
 - TanStack Query, Redux, MobX, or persisted app data in `localStorage`.
-- Tailwind or any utility CSS framework; CSS Modules and tokens only.
+- CSS Modules, styled-components, or a second styling system. Tailwind v4 with the token theme is the only one.
 - Runtime CDN scripts, fonts, or WASM. Everything is self-hosted.
 - SSR, a native wrapper, multi-user accounts, sharing, or social features.
 - Hand-written OpenAPI or hand-written row scanning.

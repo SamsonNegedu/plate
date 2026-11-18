@@ -13,8 +13,8 @@ import { digitsOnly, resolveBarcode } from "@/food/lookup";
 import { copy } from "@/lib/copy";
 import { defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { useUi } from "@/lib/ui";
+import { useNow } from "@/lib/useNow";
 import { beep, haptic } from "./feedback";
-import styles from "./ScanPage.module.css";
 
 const ERRORS: Partial<Record<CameraState, string>> = {
   denied: copy.scan.denied,
@@ -42,15 +42,14 @@ export default function ScanPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const accept = useRef(makeDeduper());
 
+  const now = useNow();
   const requested = params.get("date");
   const date =
-    requested && isValidDate(requested)
-      ? requested
-      : logicalDate(new Date(), settings?.dayStartHour ?? 0);
-  const meal = defaultMeal(new Date());
+    requested && isValidDate(requested) ? requested : logicalDate(now, settings?.dayStartHour ?? 0);
+  const meal = defaultMeal(now);
 
   const active = !sheetOpen && !typing && !busy;
-  const camera = useCamera(active);
+  const { videoRef, state: cameraState, torchAvailable, torchOn, toggleTorch } = useCamera(active);
 
   useEffect(() => {
     let alive = true;
@@ -100,8 +99,8 @@ export default function ScanPage() {
 
   // Read frames from the video: requestVideoFrameCallback when available, otherwise a throttled animation frame loop.
   useEffect(() => {
-    const video = camera.videoRef.current;
-    if (camera.state !== "active" || !detector || !video) return;
+    const video = videoRef.current;
+    if (cameraState !== "active" || !detector || !video) return;
     let stopped = false;
     let last = 0;
     let handleId = 0;
@@ -138,7 +137,7 @@ export default function ScanPage() {
       if ("cancelVideoFrameCallback" in video) video.cancelVideoFrameCallback(handleId);
       else cancelAnimationFrame(handleId);
     };
-  }, [camera.state, camera.videoRef, detector, feedback.haptics, feedback.sound, handle]);
+  }, [cameraState, videoRef, detector, feedback.haptics, feedback.sound, handle]);
 
   const readPhoto = async (file: File) => {
     if (!detector) {
@@ -169,52 +168,56 @@ export default function ScanPage() {
     void handle(code);
   };
 
-  const error = ERRORS[camera.state] ?? (detectorFailed ? copy.scan.unsupported : undefined);
-  const status = busy
-    ? copy.scan.lookingUp
-    : camera.state === "starting"
-      ? copy.scan.start
-      : copy.scan.point;
+  const error = ERRORS[cameraState] ?? (detectorFailed ? copy.scan.unsupported : undefined);
+  let status: string = copy.scan.point;
+  if (busy) status = copy.scan.lookingUp;
+  else if (cameraState === "starting") status = copy.scan.start;
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>{copy.scan.title}</h1>
-      <div className={styles.frame}>
+    <div className="grid gap-3 pb-2">
+      <h1 className="mt-1 text-title font-semibold">{copy.scan.title}</h1>
+      <div className="relative grid aspect-[4/5] max-h-[62dvh] place-items-center overflow-hidden rounded-card border border-frame-line bg-frame">
         {error ? (
-          <div className={styles.error} role="alert">
-            <p>{error}</p>
+          <div
+            className="absolute inset-0 grid place-items-center bg-surface p-6 text-center"
+            role="alert"
+          >
+            <p className="max-w-[32ch] text-body text-ink">{error}</p>
           </div>
         ) : (
           <>
             <video
-              ref={camera.videoRef}
-              className={styles.video}
+              ref={videoRef}
+              className="absolute inset-0 size-full object-cover"
               playsInline
               muted
               aria-label="Camera preview"
             />
-            <div className={styles.reticle} aria-hidden="true">
-              <i className={styles.line} />
+            <div
+              className="relative aspect-[2/1] w-[72%] rounded-ctl border-2 border-dashed border-on-accent opacity-85"
+              aria-hidden="true"
+            >
+              <i className="absolute inset-x-1.5 top-[8%] h-0.5 animate-sweep bg-accent-2 motion-reduce:top-1/2 motion-reduce:animate-none" />
             </div>
-            {camera.torchAvailable ? (
+            {torchAvailable ? (
               <button
                 type="button"
-                className={styles.torch}
-                onClick={() => void camera.toggleTorch()}
-                aria-pressed={camera.torchOn}
-                aria-label={camera.torchOn ? copy.scan.torchOff : copy.scan.torchOn}
+                className="absolute right-3 bottom-3 grid size-12 place-items-center rounded-pill border border-frame-line bg-frame text-on-accent aria-pressed:bg-accent"
+                onClick={() => void toggleTorch()}
+                aria-pressed={torchOn}
+                aria-label={torchOn ? copy.scan.torchOff : copy.scan.torchOn}
               >
-                <Icon name={camera.torchOn ? "torchOff" : "torch"} />
+                <Icon name={torchOn ? "torchOff" : "torch"} />
               </button>
             ) : null}
           </>
         )}
       </div>
-      <p className={styles.status} role="status" aria-live="polite">
+      <p className="min-h-5.5 text-center text-label text-ink-2" role="status" aria-live="polite">
         {announce || status}
       </p>
 
-      <div className={styles.actions}>
+      <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
         <Button onClick={() => setTyping(true)}>
           <Icon name="barcode" />
           {copy.scan.typeBarcode}
@@ -232,7 +235,7 @@ export default function ScanPage() {
         ref={fileRef}
         type="file"
         accept="image/*"
-        className="srOnly"
+        className="sr-only"
         tabIndex={-1}
         aria-label={copy.scan.upload}
         onChange={(e) => {

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { shortLabel } from "@/lib/dates";
 import { formatKcal } from "@/lib/numbers";
-import styles from "./BarChart.module.css";
 import { type DayPoint, labelEvery, niceMax, yFor } from "./stats";
 
 interface Props {
@@ -34,13 +33,12 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
   const activeDay = days.find((d) => d.date === active);
 
   return (
-    <figure className={styles.figure}>
-      {/* biome-ignore lint/a11y/useSemanticElements: an SVG chart is a labelled group, not a fieldset */}
+    <figure>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="group"
         aria-label={`Calories per day for the last ${days.length} days. Goal ${formatKcal(goal)}.`}
-        className={styles.svg}
+        className="block h-auto w-full overflow-visible"
       >
         {ticks.map((t) => (
           <g key={t}>
@@ -49,13 +47,13 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
               x2={W - RIGHT}
               y1={yFor(t, max, TOP, BOTTOM)}
               y2={yFor(t, max, TOP, BOTTOM)}
-              className={t === 0 ? styles.base : styles.grid}
+              className={t === 0 ? "stroke-ink-3 stroke-1" : "stroke-line stroke-1"}
             />
             <text
               x={LEFT - 6}
               y={yFor(t, max, TOP, BOTTOM) + 4}
               textAnchor="end"
-              className={styles.axis}
+              className="fill-ink-3 font-sans text-axis"
             >
               {formatKcal(t)}
             </text>
@@ -69,7 +67,6 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
           const h = BOTTOM - y;
           const label = `${shortLabel(d.date)}, ${formatKcal(d.kcal)} kcal, ${d.count} ${d.count === 1 ? "entry" : "entries"}${over ? ", over goal" : ""}`;
           return (
-            // biome-ignore lint/a11y/useSemanticElements: an SVG bar cannot be a button element
             <g
               key={d.date}
               role="button"
@@ -86,19 +83,23 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
                   onOpen(d.date);
                 }
               }}
-              className={styles.slot}
+              className="group cursor-pointer outline-none"
             >
               <rect
                 x={LEFT + i * slot}
                 y={TOP}
                 width={slot}
                 height={BOTTOM - TOP}
-                className={d.date === active ? styles.wash : styles.none}
+                className={
+                  d.date === active
+                    ? "fill-accent opacity-10"
+                    : "fill-transparent group-focus-visible:fill-accent group-focus-visible:stroke-accent group-focus-visible:stroke-[1.5px] group-focus-visible:opacity-[0.22]"
+                }
               />
               {d.kcal > 0 ? (
                 <path
                   d={roundedTop(x, y, barW, h, 4)}
-                  className={over ? styles.over : styles.bar}
+                  className={over ? "fill-red" : "fill-accent"}
                 />
               ) : null}
               {d.date === today ? (
@@ -106,7 +107,7 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
                   x={x + barW / 2}
                   y={Math.max(y - 4, TOP - 2)}
                   textAnchor="middle"
-                  className={styles.value}
+                  className="fill-ink font-sans text-chart font-semibold"
                 >
                   {formatKcal(d.kcal)}
                 </text>
@@ -115,8 +116,19 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
           );
         })}
 
-        <line x1={LEFT} x2={W - RIGHT} y1={goalY} y2={goalY} className={styles.goal} />
-        <text x={W - RIGHT - 2} y={goalY - 5} textAnchor="end" className={styles.goalLabel}>
+        <line
+          x1={LEFT}
+          x2={W - RIGHT}
+          y1={goalY}
+          y2={goalY}
+          className="stroke-ink-2 stroke-1 [stroke-dasharray:4_3]"
+        />
+        <text
+          x={W - RIGHT - 2}
+          y={goalY - 5}
+          textAnchor="end"
+          className="fill-ink-2 stroke-surface stroke-[4px] font-sans text-axis [paint-order:stroke] [stroke-linejoin:round]"
+        >
           {`goal ${formatKcal(goal)}`}
         </text>
 
@@ -127,14 +139,14 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
               x={LEFT + i * slot + slot / 2}
               y={H - 10}
               textAnchor="middle"
-              className={styles.axis}
+              className="fill-ink-3 font-sans text-axis"
             >
               {d.date === today ? "today" : String(Number(d.date.slice(8)))}
             </text>
           ) : null,
         )}
       </svg>
-      <figcaption className={styles.tip} aria-live="polite">
+      <figcaption className="mt-1.5 min-h-5.5 text-meta text-ink-2" aria-live="polite">
         {activeDay
           ? `${shortLabel(activeDay.date)}: ${formatKcal(activeDay.kcal)} kcal, ${activeDay.count} ${activeDay.count === 1 ? "entry" : "entries"}${activeDay.kcal > goal ? ", over goal" : ""}`
           : "Tap or focus a bar for details."}

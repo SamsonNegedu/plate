@@ -9,11 +9,11 @@ import { getPref } from "@/db/foods";
 import { useFavoriteIds } from "@/db/hooks";
 import type { Food, Meal, Unit } from "@/db/types";
 import { MEALS } from "@/db/types";
+import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
 import { formatKcal, formatOptional, parseDecimal } from "@/lib/numbers";
 import { amountLabel, gramsFor, MAX_GRAMS, portionOf } from "@/lib/nutrition";
 import { useUi } from "@/lib/ui";
-import styles from "./ProductSheet.module.css";
 import { isLiquid, packSize, startingPortion, stepFor } from "./portion";
 import { useLog } from "./useLog";
 
@@ -23,6 +23,26 @@ interface Props {
   date: string;
   notice?: string | undefined;
 }
+
+const sourceNotes: Partial<Record<Food["source"], string>> = {
+  off: copy.sheet.fromOff,
+  catalog: copy.sheet.fromCatalog,
+  user: copy.sheet.custom,
+};
+
+function amountError(amount: number | null, grams: number | null): string | undefined {
+  if (amount === null) return "Enter an amount, like 100 or 1,5.";
+  if (grams === null) return "Enter an amount above zero.";
+  return grams > MAX_GRAMS ? `That is more than ${MAX_GRAMS} g.` : undefined;
+}
+
+const scoreBorder: Record<string, string> = {
+  a: "[&_b]:border-accent",
+  b: "[&_b]:border-accent",
+  c: "[&_b]:border-amber",
+  d: "[&_b]:border-red",
+  e: "[&_b]:border-red",
+};
 
 export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
   const db = useDb();
@@ -59,14 +79,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
   ];
   const amount = parseDecimal(text);
   const grams = amount === null ? null : gramsFor(amount, unit, food.servingGrams);
-  const error =
-    amount === null
-      ? "Enter an amount, like 100 or 1,5."
-      : grams === null
-        ? "Enter an amount above zero."
-        : grams > MAX_GRAMS
-          ? `That is more than ${MAX_GRAMS} g.`
-          : undefined;
+  const error = amountError(amount, grams);
   const portion = grams !== null && !error ? portionOf(food, grams) : null;
   const pack = packSize(food);
   const isFav = favorites.has(food.id);
@@ -96,14 +109,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
   };
 
   const mealLabel = copy.meals[meal].toLowerCase();
-  const sourceNote =
-    food.source === "off"
-      ? copy.sheet.fromOff
-      : food.source === "catalog"
-        ? copy.sheet.fromCatalog
-        : food.source === "user"
-          ? copy.sheet.custom
-          : null;
+  const sourceNote = sourceNotes[food.source] ?? null;
 
   return (
     <Sheet
@@ -122,25 +128,30 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </Button>
       }
     >
-      <div className={styles.top}>
-        <span className={styles.img}>
+      <div className="flex items-center gap-3">
+        <span className="grid size-16 flex-none place-items-center overflow-hidden rounded-ctl bg-surface-2 text-ink-3 [&_img]:size-full [&_img]:object-contain">
           {food.imagePath ? (
             <img src={food.imagePath} alt="" loading="lazy" />
           ) : (
             <Icon name="bottle" size={26} />
           )}
         </span>
-        <div className={styles.facts}>
-          {food.barcode ? <span className={styles.meta}>{food.barcode}</span> : null}
+        <div className="grid min-w-0 flex-1 gap-1">
+          {food.barcode ? <span className="text-meta text-ink-2">{food.barcode}</span> : null}
           {food.nutriscore ? (
-            <span className={`${styles.score} ${styles[`s${food.nutriscore}`]}`}>
+            <span
+              className={cn(
+                "text-meta text-ink-2 [&_b]:ml-1 [&_b]:inline-grid [&_b]:h-5.5 [&_b]:min-w-5.5 [&_b]:place-items-center [&_b]:rounded-md [&_b]:border-[1.5px] [&_b]:font-semibold [&_b]:text-ink",
+                scoreBorder[food.nutriscore],
+              )}
+            >
               Nutri-Score <b>{food.nutriscore.toUpperCase()}</b>
             </span>
           ) : null}
         </div>
         <button
           type="button"
-          className={styles.star}
+          className="grid size-11 place-items-center bg-transparent text-ink-3 aria-pressed:text-amber aria-pressed:[&_svg]:fill-current"
           aria-pressed={isFav}
           aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
           onClick={() => void setFavorite(db, food.id, !isFav)}
@@ -150,7 +161,10 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
       </div>
 
       {notice ? (
-        <p className={styles.notice} role="status">
+        <p
+          className="mt-3 rounded-ctl border border-line bg-surface-2 px-3 py-2.5 text-meta text-ink-2 [&_a]:font-medium [&_a]:text-ink"
+          role="status"
+        >
           {notice}
           {food.barcode ? (
             <>
@@ -167,19 +181,19 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </p>
       ) : null}
 
-      <section aria-label="Portion" className={styles.portion}>
+      <section aria-label="Portion" className="mt-4 grid gap-2.5">
         <Segmented
           label="Unit"
           value={unit}
           options={units.map((u) => ({ value: u, label: u === "serving" ? "Portion" : u }))}
           onChange={(u) => set(u, u === "serving" ? 1 : 100)}
         />
-        <div className={styles.stepper}>
+        <div className="flex items-center gap-2 [&>button]:grid [&>button]:size-12 [&>button]:flex-none [&>button]:place-items-center [&>button]:rounded-ctl [&>button]:border [&>button]:border-line [&>button]:bg-surface [&>button]:text-ink">
           <button type="button" onClick={() => step(-1)} aria-label="Decrease amount">
             <Icon name="minus" />
           </button>
-          <label className={styles.amount}>
-            <span className="srOnly">{copy.sheet.amount}</span>
+          <label className="flex-1 [&_input]:min-h-12 [&_input]:w-full [&_input]:rounded-ctl [&_input]:border [&_input]:border-line [&_input]:bg-surface [&_input]:text-center [&_input]:font-display [&_input]:text-wordmark [&_input]:font-semibold [&_input[aria-invalid=true]]:border-red">
+            <span className="sr-only">{copy.sheet.amount}</span>
             <input
               inputMode="decimal"
               value={text}
@@ -197,7 +211,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </div>
         <p
           id="amount-help"
-          className={error ? styles.error : styles.help}
+          className={cn("-mt-0.5 min-h-5 text-center text-meta", error ? "text-red" : "text-ink-2")}
           role={error ? "alert" : undefined}
         >
           {error ??
@@ -205,7 +219,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
               ? `${amountLabel(amount ?? 0, unit)} · ${Math.round(grams * 10) / 10} g`
               : " ")}
         </p>
-        <div className={styles.presets}>
+        <div className="flex flex-wrap gap-1.5 [&>button]:min-h-9.5 [&>button]:rounded-pill [&>button]:border [&>button]:border-line [&>button]:bg-surface [&>button]:px-3 [&>button]:text-meta [&>button]:text-ink">
           {food.servingGrams ? (
             <>
               <button type="button" onClick={() => set("serving", 1)}>
@@ -227,7 +241,10 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </div>
       </section>
 
-      <p className={styles.total} aria-live="polite">
+      <p
+        className="mt-3.5 text-body text-ink-2 [&_b]:font-display [&_b]:text-total [&_b]:font-semibold [&_b]:text-ink"
+        aria-live="polite"
+      >
         <b>{portion ? formatKcal(portion.kcal) : "—"}</b> kcal
         {portion ? (
           <span>
@@ -237,7 +254,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         ) : null}
       </p>
 
-      <div className={styles.meal}>
+      <div className="mt-3.5">
         <Segmented
           label={copy.sheet.meal}
           value={meal}
@@ -246,7 +263,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         />
       </div>
 
-      <table className={styles.label}>
+      <table className="mt-4.5 w-full border-collapse text-label [&_caption]:border-b-[1.5px] [&_caption]:border-ink [&_caption]:pb-1.5 [&_caption]:text-left [&_caption]:font-semibold [&_td]:border-b [&_td]:border-line [&_td]:py-1.75 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-1.75 [&_th]:text-left [&_th]:font-normal">
         <caption>{copy.sheet.nutrition}</caption>
         <tbody>
           <tr>
@@ -257,7 +274,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
             <th scope="row">Fat</th>
             <td>{formatOptional(food.fat, " g")}</td>
           </tr>
-          <tr className={styles.sub}>
+          <tr className="[&_th]:pl-3.5 [&_th]:text-ink-2">
             <th scope="row">of which saturates</th>
             <td>{formatOptional(food.satfat, " g")}</td>
           </tr>
@@ -265,7 +282,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
             <th scope="row">Carbohydrate</th>
             <td>{formatOptional(food.carbs, " g")}</td>
           </tr>
-          <tr className={styles.sub}>
+          <tr className="[&_th]:pl-3.5 [&_th]:text-ink-2">
             <th scope="row">of which sugars</th>
             <td>{formatOptional(food.sugar, " g")}</td>
           </tr>
@@ -284,9 +301,9 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </tbody>
       </table>
 
-      <div className={styles.links}>
+      <div className="mt-3 grid gap-1">
         {sourceNote ? (
-          <p className={styles.source}>
+          <p className="text-meta text-ink-2">
             {sourceNote}
             {food.sourceCheckedAt
               ? ` ${copy.sheet.checked} ${new Date(food.sourceCheckedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}.`
@@ -302,7 +319,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         </Button>
         {food.barcode && food.source !== "user" ? (
           <a
-            className={styles.ext}
+            className="inline-flex min-h-11 items-center text-label text-ink-2"
             href={`https://world.openfoodfacts.org/product/${encodeURIComponent(food.barcode)}`}
             target="_blank"
             rel="noopener noreferrer"

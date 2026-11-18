@@ -1,10 +1,15 @@
 import { copy } from "@/lib/copy";
-import styles from "./OfflineBanner.module.css";
 
 export function OfflineBanner({ notVerified }: { notVerified?: boolean }) {
   return (
-    <p className={styles.banner} role="status">
-      <strong>{notVerified ? copy.offline.notVerified : "Offline"}</strong> {copy.offline.banner}
+    <p
+      className="mb-3 rounded-ctl border border-amber bg-surface px-3 py-2.5 text-meta text-ink-2"
+      role="status"
+    >
+      <strong className="font-semibold text-ink">
+        {notVerified ? copy.offline.notVerified : "Offline"}
+      </strong>{" "}
+      {copy.offline.banner}
     </p>
   );
 }

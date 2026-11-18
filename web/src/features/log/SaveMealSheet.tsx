@@ -7,7 +7,7 @@ import { saveMeal } from "@/db/savedMeals";
 import type { Entry } from "@/db/types";
 import { copy } from "@/lib/copy";
 import { useUi } from "@/lib/ui";
-import styles from "./forms.module.css";
+import { cls } from "./forms";
 
 /** Snapshot the entries of one meal into a named saved meal. */
 export function SaveMealSheet({ entries }: { entries: Entry[] }) {
@@ -56,7 +56,7 @@ export function SaveMealSheet({ entries }: { entries: Entry[] }) {
         </Button>
       }
     >
-      <div className={styles.form}>
+      <div className={cls.form}>
         <Field
           label="Name"
           placeholder="Usual breakfast"
@@ -68,7 +68,7 @@ export function SaveMealSheet({ entries }: { entries: Entry[] }) {
             setError(undefined);
           }}
         />
-        <ul className={styles.muted}>
+        <ul className={cls.muted}>
           {entries.map((e) => (
             <li key={e.id}>{e.name}</li>
           ))}

@@ -10,8 +10,13 @@ import { AboutPanel } from "./AboutPanel";
 import { DataPanel } from "./DataPanel";
 import { FoodsPanel } from "./FoodsPanel";
 import { GoalsForm } from "./GoalsForm";
-import styles from "./Settings.module.css";
 import { SyncPanel } from "./SyncPanel";
+import { cls } from "./ui";
+
+function feedbackMode(feedback: { sound: boolean; haptics: boolean }): "on" | "off" | "some" {
+  if (feedback.sound && feedback.haptics) return "on";
+  return feedback.sound || feedback.haptics ? "some" : "off";
+}
 
 export function SettingsPage() {
   const db = useDb();
@@ -31,16 +36,16 @@ export function SettingsPage() {
     });
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>Settings</h1>
-      {auth.email ? <p className={styles.muted}>{`Signed in as ${auth.email}`}</p> : null}
+    <div className={cls.page}>
+      <h1 className={cls.title}>Settings</h1>
+      {auth.email ? <p className={cls.muted}>{`Signed in as ${auth.email}`}</p> : null}
 
-      <section className={styles.section} aria-labelledby="goals-h">
+      <section className={cls.section} aria-labelledby="goals-h">
         <h2 id="goals-h">Goals</h2>
         <GoalsForm settings={settings} />
       </section>
 
-      <section className={styles.section} aria-labelledby="look-h">
+      <section className={cls.section} aria-labelledby="look-h">
         <h2 id="look-h">Appearance</h2>
         <Segmented
           label="Theme"
@@ -54,13 +59,7 @@ export function SettingsPage() {
         />
         <Segmented
           label="Scan feedback"
-          value={
-            feedback.sound && feedback.haptics
-              ? "on"
-              : !feedback.sound && !feedback.haptics
-                ? "off"
-                : "some"
-          }
+          value={feedbackMode(feedback)}
           options={[
             { value: "on", label: "Sound and vibration" },
             { value: "off", label: "Silent" },
@@ -74,7 +73,7 @@ export function SettingsPage() {
       <DataPanel />
       <AboutPanel />
 
-      <div className={styles.actions}>
+      <div className={cls.actions}>
         <Button variant="ghost" onClick={() => void auth.logout()}>
           Sign out on this device
         </Button>

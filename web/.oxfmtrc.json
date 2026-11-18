@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "singleQuote": false,
+  "jsxSingleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "all",
+  "semi": true,
+  "arrowParens": "always",
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "ignorePatterns": [
+    "src/api/schema.d.ts",
+    "public/wasm",
+    "node_modules",
+    "dist",
+    ".auth",
+    "test-results",
+    "playwright-report",
+    "e2e/**/*-snapshots"
+  ],
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles/global.css",
+    "functions": ["cn"],
+    "attributes": ["className"]
+  },
+  "sortImports": {
+    "internalPattern": ["@/"],
+    "newlinesBetween": false
+  }
+}

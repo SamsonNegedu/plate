@@ -10,7 +10,6 @@ import type {
 } from "@/db/types";
 
 /** What the app sends to the server. No validation library here: this file is part of the first paint. */
-
 function nutrientBody(n: Nutrients) {
   return {
     kcal: n.kcal,

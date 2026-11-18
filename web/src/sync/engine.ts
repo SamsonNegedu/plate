@@ -49,6 +49,10 @@ export interface SyncOutcome {
   reason?: "backoff" | "not-leader" | "paused";
 }
 
+function browserLocks(): LockManager | null {
+  return typeof navigator !== "undefined" && "locks" in navigator ? navigator.locks : null;
+}
+
 export class SyncEngine {
   private readonly now: () => number;
   private readonly random: () => number;
@@ -68,12 +72,7 @@ export class SyncEngine {
     this.now = opts.now ?? Date.now;
     this.random = opts.random ?? Math.random;
     this.tabId = opts.tabId ?? uuidv7();
-    this.locks =
-      opts.locks === undefined
-        ? typeof navigator !== "undefined" && "locks" in navigator
-          ? navigator.locks
-          : null
-        : opts.locks;
+    this.locks = opts.locks === undefined ? browserLocks() : opts.locks;
   }
 
   // ---- lifecycle and triggers ----

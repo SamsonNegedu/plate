@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { z } from "zod";
 import { Button } from "@/components/Button";
@@ -23,7 +23,6 @@ import { formatKcal } from "@/lib/numbers";
 import { useUi } from "@/lib/ui";
 import { AccessExpired, NetworkError } from "@/sync/errors";
 import { startingPortion } from "./portion";
-import styles from "./SearchSheet.module.css";
 import { useLog } from "./useLog";
 
 const hitSchema = z.object({
@@ -68,33 +67,43 @@ const fromFood = (f: Food): Hit => ({
   source: f.source,
 });
 
+const rowText =
+  "grid min-w-0 flex-1 gap-px [&_strong]:truncate [&_strong]:text-body [&_strong]:font-medium [&_span]:truncate [&_span]:text-meta [&_span]:text-ink-2";
+const rowKcal =
+  "text-body font-semibold whitespace-nowrap [&_small]:text-micro [&_small]:font-normal [&_small]:text-ink-2";
+const rowPlus = "grid size-11 flex-none place-items-center bg-transparent text-ink";
+const row =
+  "flex min-h-14 w-full items-center gap-2 border-b border-line bg-transparent py-1 text-left text-ink";
+
 export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
   const db = useDb();
   const ui = useUi();
   const navigate = useNavigate();
   const { logFood, logSavedMeal } = useLog();
   const [query, setQuery] = useState("");
-  const [server, setServer] = useState<{ q: string; hits: Hit[] } | null>(null);
-  const [note, setNote] = useState<string | null>(null);
+  const [remote, setRemote] = useState<{ q: string; hits: Hit[]; note: string | null } | null>(
+    null,
+  );
   const [opening, setOpening] = useState(false);
   const foods = useAllFoods();
   const recents = useRecentFoods(5);
   const favorites = useFavoriteFoods();
   const meals = useSavedMeals();
-  const index = useRef(new LocalSearch());
-  useMemo(() => {
-    if (foods) index.current.rebuild(foods);
+  const index = useMemo(() => {
+    if (!foods) return null;
+    const search = new LocalSearch();
+    search.rebuild(foods);
+    return search;
   }, [foods]);
 
   const q = query.trim();
-  const local = useMemo(() => (foods ? index.current.search(q).map(fromFood) : []), [foods, q]);
+  const local = useMemo(() => (index ? index.search(q).map(fromFood) : []), [index, q]);
+  // The server answer is keyed by the query it was for, so a new query shows nothing stale and needs no reset effect.
+  const server = q.length >= 2 && remote?.q === q ? remote : null;
+  const note = server?.note ?? null;
 
   useEffect(() => {
-    setNote(null);
-    if (q.length < 2) {
-      setServer(null);
-      return;
-    }
+    if (q.length < 2) return;
     const ctrl = new AbortController();
     const timer = setTimeout(() => {
       void (async () => {
@@ -107,27 +116,27 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
             const hits = z
               .array(hitSchema)
               .parse(res.data.results)
-              .map(
-                (h): Hit => ({
-                  key: h.barcode ?? h.id ?? h.name,
-                  id: h.id,
-                  barcode: h.barcode,
-                  name: h.name,
-                  brand: h.brand,
-                  kcal: h.kcal,
-                  source: h.source,
-                }),
-              );
-            setServer({ q, hits });
-          } else if (res.response.status === 429 || res.response.status >= 500)
-            setNote(copy.sheet.searchUnavailable);
+              .map((h): Hit => ({
+                key: h.barcode ?? h.id ?? h.name,
+                id: h.id,
+                barcode: h.barcode,
+                name: h.name,
+                brand: h.brand,
+                kcal: h.kcal,
+                source: h.source,
+              }));
+            setRemote({ q, hits, note: null });
+          } else if (res.response.status === 429 || res.response.status >= 500) {
+            setRemote({ q, hits: [], note: copy.sheet.searchUnavailable });
+          }
         } catch (e) {
           if (e instanceof DOMException && e.name === "AbortError") return;
-          setNote(
-            e instanceof NetworkError || e instanceof AccessExpired
-              ? copy.sheet.offlineSearch
-              : copy.sheet.searchUnavailable,
-          );
+          const offline = e instanceof NetworkError || e instanceof AccessExpired;
+          setRemote({
+            q,
+            hits: [],
+            note: offline ? copy.sheet.offlineSearch : copy.sheet.searchUnavailable,
+          });
         }
       })();
     }, 250);
@@ -140,7 +149,7 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
   // server results replace local duplicates; local-only rows (not yet synced) stay below them
   const results = useMemo(() => {
     if (q.length < 2) return [];
-    if (!server || server.q !== q) return local;
+    if (!server) return local;
     const seen = new Set(server.hits.map((h) => h.key));
     return [...server.hits, ...local.filter((l) => !seen.has(l.key))];
   }, [q, server, local]);
@@ -172,7 +181,7 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
   };
 
   const showEmpty = q.length < 2;
-  const noMatch = !showEmpty && results.length === 0 && (server?.q === q || note !== null);
+  const noMatch = !showEmpty && results.length === 0 && (server !== null || note !== null);
 
   return (
     <Sheet
@@ -184,9 +193,9 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
         </Button>
       }
     >
-      <div className={styles.search}>
+      <div className="flex items-center gap-2.5 rounded-ctl border border-line bg-surface px-3 text-ink-3 focus-within:outline-2 focus-within:outline-offset-0 focus-within:outline-accent [&_input]:min-h-11.5 [&_input]:min-w-0 [&_input]:flex-1 [&_input]:bg-transparent [&_input]:px-0.5 [&_input]:py-px [&_input]:text-input [&_input]:text-ink [&_input]:outline-none">
         <Icon name="search" size={19} />
-        <label className="srOnly" htmlFor="food-search">
+        <label className="sr-only" htmlFor="food-search">
           {copy.sheet.search}
         </label>
         <input
@@ -201,7 +210,7 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
         />
       </div>
       {note ? (
-        <p className={styles.note} role="status">
+        <p className="mt-2.5 text-meta text-ink-2" role="status">
           {note}
         </p>
       ) : null}
@@ -230,14 +239,14 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
           </Section>
           <Section title={copy.sheet.savedMeals}>
             {(meals ?? []).map((m) => (
-              <div key={m.meal.id} className={styles.row}>
-                <span className={styles.text}>
+              <div key={m.meal.id} className={row}>
+                <span className={rowText}>
                   <strong>{m.meal.name}</strong>
                   <span>{`${m.count} ${m.count === 1 ? "item" : "items"} · ${formatKcal(m.kcal)} kcal`}</span>
                 </span>
                 <button
                   type="button"
-                  className={styles.plus}
+                  className={rowPlus}
                   aria-label={`Add ${m.meal.name} to ${copy.meals[meal].toLowerCase()}`}
                   onClick={() =>
                     void logSavedMeal(m.meal.id, m.meal.name, date, meal).then(() => {
@@ -252,19 +261,21 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
             ))}
           </Section>
           {(recents ?? []).length + (favorites ?? []).length + (meals ?? []).length === 0 ? (
-            <p className={styles.hint}>Search a food, or add calories without a label.</p>
+            <p className="mt-4 text-label text-ink-2">
+              Search a food, or add calories without a label.
+            </p>
           ) : null}
         </>
       ) : (
-        <ul className={styles.list} aria-label={copy.sheet.results} aria-busy={opening}>
+        <ul className="mt-2" aria-label={copy.sheet.results} aria-busy={opening}>
           {results.map((h) => (
             <li key={h.key}>
-              <button type="button" className={styles.row} onClick={() => void open(h)}>
-                <span className={styles.text}>
+              <button type="button" className={row} onClick={() => void open(h)}>
+                <span className={rowText}>
                   <strong>{h.name}</strong>
                   <span>{h.brand || "No brand"}</span>
                 </span>
-                <span className={styles.kcal}>
+                <span className={rowKcal}>
                   {formatKcal(h.kcal)}
                   <small> kcal / 100 g</small>
                 </span>
@@ -298,7 +309,7 @@ export function SearchSheet({ meal, date }: { meal: Meal; date: string }) {
 function Section({ title, children }: { title: string; children: React.ReactNode[] }) {
   if (children.length === 0) return null;
   return (
-    <section className={styles.section}>
+    <section className="mt-4.5 [&_h3]:border-b-[1.5px] [&_h3]:border-ink [&_h3]:pb-1 [&_h3]:text-body [&_h3]:font-semibold">
       <h3>{title}</h3>
       {children}
     </section>
@@ -307,20 +318,24 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function FoodRow({ food, onOpen, onAdd }: { food: Food; onOpen: () => void; onAdd: () => void }) {
   return (
-    <div className={styles.row}>
-      <button type="button" className={styles.open} onClick={onOpen}>
-        <span className={styles.text}>
+    <div className={row}>
+      <button
+        type="button"
+        className="flex min-h-14 min-w-0 flex-1 items-center gap-2 bg-transparent p-0 text-left text-inherit"
+        onClick={onOpen}
+      >
+        <span className={rowText}>
           <strong>{food.name}</strong>
           <span>{food.brand || "No brand"}</span>
         </span>
-        <span className={styles.kcal}>
+        <span className={rowKcal}>
           {formatKcal(food.kcal)}
           <small> kcal / 100 g</small>
         </span>
       </button>
       <button
         type="button"
-        className={styles.plus}
+        className={rowPlus}
         aria-label={`Add ${food.name} again`}
         onClick={onAdd}
       >

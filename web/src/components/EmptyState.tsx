@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import styles from "./EmptyState.module.css";
 
 /** One sentence and one action, not decoration. */
 export function EmptyState({
@@ -12,10 +11,10 @@ export function EmptyState({
   children?: ReactNode;
 }) {
   return (
-    <div className={styles.empty}>
-      <p className={styles.title}>{title}</p>
-      {body ? <p className={styles.body}>{body}</p> : null}
-      {children ? <div className={styles.actions}>{children}</div> : null}
+    <div className="pt-7 pb-2 text-center">
+      <p className="text-section font-semibold">{title}</p>
+      {body ? <p className="mt-1 text-body text-ink-2">{body}</p> : null}
+      {children ? <div className="mt-4 flex flex-wrap justify-center gap-2">{children}</div> : null}
     </div>
   );
 }

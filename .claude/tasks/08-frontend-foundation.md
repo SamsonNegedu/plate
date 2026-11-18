@@ -27,7 +27,7 @@ The React PWA shell: design tokens ported from the approved mockups, routing, lo
 - `barcode-detector` + `zxing-wasm` (Phase 8).
 - `vite-plugin-pwa` (full offline behavior in Phase 10).
 - `openapi-typescript` + `openapi-fetch` generated from Huma's OpenAPI.
-- CSS Modules with a single global token file. No utility framework.
+- Tailwind v4 themed from the single token file (decision 2026-11-18, ADR-016); this replaced CSS Modules.
 - Self-hosted Barlow and Barlow Condensed WOFF2 files.
 - English only. All user-facing copy lives in `lib/copy.ts`; no i18n framework and no scattered literals. Dates and numbers use en-GB.
 

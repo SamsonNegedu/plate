@@ -38,7 +38,7 @@ export async function copyText(text: string): Promise<void> {
   const area = document.createElement("textarea");
   area.value = text;
   area.setAttribute("readonly", "");
-  area.className = "srOnly";
+  area.className = "sr-only";
   document.body.append(area);
   area.select();
   document.execCommand("copy");

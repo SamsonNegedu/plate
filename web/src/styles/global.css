@@ -1,4 +1,83 @@
+@import "tailwindcss";
 @import "./tokens.css";
+
+/* Tokens are CSS variables that switch with the theme, so utilities read them live and no dark: variant is needed. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-on-accent: var(--on-accent);
+  --color-red: var(--red);
+  --color-amber: var(--amber);
+  --color-frame: var(--frame);
+  --color-frame-line: var(--frame-line);
+  --color-scrim: var(--scrim);
+  --font-sans: var(--font);
+  --font-display: var(--display);
+  --shadow-pop: var(--shadow);
+
+  /* Type scale from the UI skill: 12-13 meta, 15 body, 17/24/26 headings, display numbers and the wordmark in Barlow Condensed. */
+  --text-micro: 12px;
+  --text-caption: 12.5px;
+  --text-meta: 13px;
+  --text-label: 14px;
+  --text-body: 15px;
+  --text-input: 16px;
+  --text-section: 17px;
+  --text-glyph: 18px;
+  --text-axis: 10px;
+  --text-chart: 11px;
+  --text-stat: 22px;
+  --text-total: 34px;
+  --text-heading: 24px;
+  --text-title: 26px;
+  --text-wordmark: 28px;
+  --text-display: clamp(56px, 17vw, 78px);
+  --leading-display: 0.82;
+  --leading-stat: 1.15;
+  --leading-heading: 1.2;
+  --leading-row: 1.3;
+  --leading-figure: 1.1;
+  --tracking-display: -0.015em;
+  --radius-card: 14px;
+  --radius-ctl: 10px;
+  --radius-pill: 999px;
+  --animate-rise: rise 160ms ease-out;
+  --animate-pop: pop 140ms ease-out;
+  --animate-sweep: sweep 2.4s ease-in-out infinite alternate;
+
+  @keyframes rise {
+    from {
+      transform: translateY(24px);
+      opacity: 0.6;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes sweep {
+    to {
+      top: 90%;
+    }
+  }
+  @keyframes pop {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}
 
 @font-face {
   font-family: "Barlow";
@@ -43,36 +122,58 @@
   src: url("/fonts/barlow-condensed-700.woff2") format("woff2");
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  font-variant-numeric: tabular-nums;
-}
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-  color: inherit;
-}
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* Tailwind's reset recolors placeholders; keep the browser's. */
+  ::placeholder {
+    color: revert;
+    opacity: revert;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -84,36 +185,21 @@ textarea {
   }
 }
 
+/* Height of the bottom tab bar; the shell, toasts and the bar itself all offset by it. */
 :root {
-  --radius-card: 14px;
-  --radius-ctl: 10px;
-  --radius-pill: 999px;
-  --gutter: 16px;
   --tabbar-h: 62px;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
-
-body {
-  overscroll-behavior-y: none;
-}
-
-button {
-  cursor: pointer;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+/* 10% tick marks over a meter. */
+@utility meter-ticks {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to right,
+      transparent 0 calc(10% - 1px),
+      var(--surface) calc(10% - 1px) 10%
+    );
+  }
 }

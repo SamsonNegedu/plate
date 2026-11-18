@@ -8,7 +8,6 @@ import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { copy } from "@/lib/copy";
 import { NetworkError } from "@/sync/errors";
-import styles from "./LoginPage.module.css";
 
 const schema = z.object({
   email: z.string().trim().min(1, "Enter your email.").email("Enter a valid email."),
@@ -52,11 +51,15 @@ export function LoginPage() {
   });
 
   return (
-    <main className={styles.page}>
-      <h1 className={styles.word}>{copy.app.name}</h1>
-      <p className={styles.tag}>{copy.app.tagline}</p>
-      <form className={styles.form} onSubmit={submit} noValidate>
-        <h2>{copy.login.title}</h2>
+    <main className="mx-auto max-w-[420px] px-4 pt-[max(48px,env(safe-area-inset-top,0px))] pb-12">
+      <h1 className="font-display text-display leading-display font-semibold">{copy.app.name}</h1>
+      <p className="mt-3 mb-8 text-body text-ink-2">{copy.app.tagline}</p>
+      <form
+        className="grid gap-3.5 rounded-card border border-line bg-surface p-5"
+        onSubmit={submit}
+        noValidate
+      >
+        <h2 className="text-section font-semibold">{copy.login.title}</h2>
         <Field
           label={copy.login.email}
           type="email"
@@ -73,7 +76,7 @@ export function LoginPage() {
           {...form.register("password")}
         />
         {problem ? (
-          <p className={styles.problem} role="alert">
+          <p className="text-label text-red" role="alert">
             {problem}
           </p>
         ) : null}

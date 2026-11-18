@@ -10,7 +10,7 @@ import { saveCustomFood } from "@/db/foods";
 import type { Food, Meal } from "@/db/types";
 import { copy } from "@/lib/copy";
 import { useUi } from "@/lib/ui";
-import styles from "./forms.module.css";
+import { cls } from "./forms";
 import { optionalNumber, requiredNumber } from "./schemas";
 
 const schema = z.object({
@@ -118,7 +118,7 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
       footer={
         <>
           {server ? (
-            <p role="alert" className={styles.serverError}>
+            <p role="alert" className={cls.serverError}>
               {server}
             </p>
           ) : null}
@@ -128,7 +128,7 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
         </>
       }
     >
-      <form id="manual-food" className={styles.form} onSubmit={submit} noValidate>
+      <form id="manual-food" className={cls.form} onSubmit={submit} noValidate>
         <Field
           label="Name"
           autoFocus={!correcting}
@@ -156,7 +156,7 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
           error={errors.servingGrams?.message}
           {...form.register("servingGrams")}
         />
-        <h3 className={styles.group}>Per 100 g</h3>
+        <h3 className={cls.group}>Per 100 g</h3>
         <Field
           label="Calories"
           inputMode="decimal"
@@ -185,9 +185,9 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
           error={errors.fat?.message}
           {...form.register("fat")}
         />
-        <details className={styles.more}>
+        <details className={cls.more}>
           <summary>More nutrients</summary>
-          <div className={styles.moreBody}>
+          <div className={cls.moreBody}>
             <Field
               label="Sugars"
               inputMode="decimal"

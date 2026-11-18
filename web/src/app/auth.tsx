@@ -2,7 +2,7 @@ import {
   createContext,
   type ReactNode,
   useCallback,
-  useContext,
+  use,
   useEffect,
   useMemo,
   useState,
@@ -67,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [db]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- the session check is an external fetch; state is set after the await
     void recheck();
   }, [recheck]);
 
@@ -92,11 +93,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({ status, email, offline, login, logout, expire: () => setStatus("anon"), recheck }),
     [status, email, offline, login, logout, recheck],
   );
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return <Ctx value={value}>{children}</Ctx>;
 }
 
 export function useAuth(): AuthValue {
-  const v = useContext(Ctx);
+  const v = use(Ctx);
   if (!v) throw new Error("useAuth needs an AuthProvider");
   return v;
 }

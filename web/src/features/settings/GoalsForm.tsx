@@ -9,7 +9,7 @@ import { saveSettings } from "@/db/settings";
 import type { Settings } from "@/db/types";
 import { optionalNumber, requiredNumber } from "@/features/log/schemas";
 import { useUi } from "@/lib/ui";
-import styles from "./Settings.module.css";
+import { cls } from "./ui";
 
 const schema = z.object({
   goalKcal: requiredNumber("a calorie goal", 500, 9000),
@@ -61,7 +61,7 @@ export function GoalsForm({ settings }: { settings: Settings }) {
   });
 
   return (
-    <form ref={formRef} onSubmit={submit} noValidate className={styles.form}>
+    <form ref={formRef} onSubmit={submit} noValidate className={cls.form}>
       <Field
         label="Daily calories"
         inputMode="decimal"
@@ -69,10 +69,10 @@ export function GoalsForm({ settings }: { settings: Settings }) {
         error={errors.goalKcal?.message}
         {...form.register("goalKcal")}
       />
-      <p className={styles.hint}>
+      <p className={cls.hint}>
         Calories are the only required target. Leave a macro blank to leave it untracked.
       </p>
-      <div className={styles.three}>
+      <div className={cls.three}>
         <Field
           label="Protein"
           inputMode="decimal"
@@ -103,11 +103,11 @@ export function GoalsForm({ settings }: { settings: Settings }) {
         error={errors.dayStartHour?.message}
         {...form.register("dayStartHour")}
       />
-      <div className={styles.row}>
+      <div className={cls.row}>
         <Button type="submit" variant="primary" busy={isSubmitting} disabled={!isDirty}>
           Save goals
         </Button>
-        {isDirty ? <span className={styles.dirty}>Unsaved changes</span> : null}
+        {isDirty ? <span className={cls.dirty}>Unsaved changes</span> : null}
       </div>
     </form>
   );

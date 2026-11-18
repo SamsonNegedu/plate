@@ -15,13 +15,17 @@ import { copy } from "@/lib/copy";
 import { addDays, dayLabel, dayTitle, defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { formatKcal } from "@/lib/numbers";
 import { useUi } from "@/lib/ui";
-import styles from "./TodayPage.module.css";
+import { useNow } from "@/lib/useNow";
+
+const chip =
+  "inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-pill border border-line bg-surface px-3.5 text-label text-ink";
 
 export function TodayPage() {
   const params = useParams();
+  const now = useNow();
   const settings = useSettings();
   if (!settings) return null;
-  const today = logicalDate(new Date(), settings.dayStartHour);
+  const today = logicalDate(now, settings.dayStartHour);
   if (params.date !== undefined && !isValidDate(params.date))
     return <Navigate to="/today" replace />;
   return <Day date={params.date ?? today} today={today} />;
@@ -31,6 +35,7 @@ function Day({ date, today }: { date: string; today: string }) {
   const db = useDb();
   const navigate = useNavigate();
   const ui = useUi();
+  const now = useNow();
   const { logFood } = useLog();
   const settings = useSettings();
   const day = useDay(date);
@@ -39,7 +44,7 @@ function Day({ date, today }: { date: string; today: string }) {
 
   if (!settings || !day) return null;
   const go = (d: string) => navigate(d === today ? "/today" : `/today/${d}`);
-  const meal = defaultMeal(new Date());
+  const meal = defaultMeal(now);
 
   const copyYesterday = async () => {
     const ids = await copyDay(db, addDays(date, -1), date);
@@ -59,7 +64,7 @@ function Day({ date, today }: { date: string; today: string }) {
   };
 
   return (
-    <div className={styles.page}>
+    <div className="pb-2">
       <DayNav
         title={dayTitle(date, today)}
         label={dayLabel(date)}
@@ -72,7 +77,7 @@ function Day({ date, today }: { date: string; today: string }) {
         targets={{ protein: settings.proteinG, carbs: settings.carbsG, fat: settings.fatG }}
       />
 
-      <div className={styles.cta}>
+      <div className="mt-3 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
         <Button variant="primary" onClick={() => navigate(`/scan?date=${date}`)}>
           <Icon name="barcode" />
           {copy.today.scan}
@@ -84,27 +89,27 @@ function Day({ date, today }: { date: string; today: string }) {
       </div>
 
       {(recents ?? []).length > 0 || (yesterday?.totals.count ?? 0) > 0 ? (
-        <section className={styles.recent} aria-label={copy.today.recent}>
+        <section className="mt-3 flex flex-wrap gap-2" aria-label={copy.today.recent}>
           {(recents ?? []).map((r) => {
             const p = startingPortion(r.food, r.pref);
             return (
               <button
                 key={r.food.id}
                 type="button"
-                className={styles.chip}
+                className={chip}
                 onClick={() => void logFood(r.food, { ...p, meal, date })}
                 aria-label={`Add ${r.food.name} again to ${copy.meals[meal].toLowerCase()}`}
               >
                 <Icon name="plus" size={16} />
-                <span>{r.food.name}</span>
-                <small>to {copy.meals[meal]}</small>
+                <span className="truncate">{r.food.name}</span>
+                <small className="flex-none text-micro text-ink-2">to {copy.meals[meal]}</small>
               </button>
             );
           })}
           {(yesterday?.totals.count ?? 0) > 0 ? (
-            <button type="button" className={styles.chip} onClick={() => void copyYesterday()}>
+            <button type="button" className={chip} onClick={() => void copyYesterday()}>
               <Icon name="copy" size={16} />
-              <span>{copy.today.copyYesterday}</span>
+              <span className="truncate">{copy.today.copyYesterday}</span>
             </button>
           ) : null}
         </section>
@@ -127,11 +132,11 @@ function Day({ date, today }: { date: string; today: string }) {
               entries.length > 0 ? (
                 <button
                   type="button"
-                  className={styles.saveMeal}
+                  className="inline-flex min-h-11 items-center bg-transparent p-0 text-meta text-ink-2 underline"
                   onClick={() => ui.open({ kind: "saveMeal", entries })}
                 >
                   Save as meal
-                  <span className="srOnly">{` ${formatKcal(entries.reduce((s, e) => s + (e.kcal * e.grams) / 100, 0))} kcal`}</span>
+                  <span className="sr-only">{` ${formatKcal(entries.reduce((s, e) => s + (e.kcal * e.grams) / 100, 0))} kcal`}</span>
                 </button>
               ) : null
             }

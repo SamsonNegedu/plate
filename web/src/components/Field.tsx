@@ -1,5 +1,4 @@
 import { type InputHTMLAttributes, type ReactNode, useId } from "react";
-import styles from "./Field.module.css";
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
   label: string;
@@ -8,32 +7,38 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
   suffix?: ReactNode;
 }
 
+function describedBy(id: string, error?: string, hint?: string): string | undefined {
+  if (error) return `${id}-e`;
+  return hint ? `${id}-h` : undefined;
+}
+
 /** A labelled input. Errors are tied to the input with aria-describedby and announced. */
 export function Field({ label, error, hint, suffix, ...input }: Props) {
   const id = useId();
   const descId = `${id}-d`;
-  const described = error ? `${descId}-e` : hint ? `${descId}-h` : undefined;
+  const described = describedBy(descId, error, hint);
   return (
-    <div className={styles.field}>
-      <label htmlFor={id} className={styles.label}>
+    <div className="grid grid-cols-1 gap-1.5">
+      <label htmlFor={id} className="text-meta font-medium text-ink-2">
         {label}
       </label>
-      <div className={styles.control}>
+      <div className="flex items-center rounded-ctl border border-line bg-surface focus-within:outline-2 focus-within:outline-offset-0 focus-within:outline-accent has-[[aria-invalid=true]]:border-red">
         <input
           id={id}
-          className={styles.input}
+          className="min-h-11 min-w-0 flex-1 rounded-ctl bg-transparent px-3 text-input outline-none focus:outline-none focus-visible:outline-none"
           aria-invalid={error ? true : undefined}
           aria-describedby={described}
           {...input}
         />
-        {suffix ? <span className={styles.suffix}>{suffix}</span> : null}
+        {suffix ? <span className="pr-3 text-label text-ink-2">{suffix}</span> : null}
       </div>
       {error ? (
-        <p id={`${descId}-e`} className={styles.error} role="alert">
+        <p id={`${descId}-e`} className="text-meta text-red" role="alert">
           {error}
         </p>
-      ) : hint ? (
-        <p id={`${descId}-h`} className={styles.hint}>
+      ) : null}
+      {!error && hint ? (
+        <p id={`${descId}-h`} className="text-meta text-ink-2">
           {hint}
         </p>
       ) : null}

@@ -50,11 +50,25 @@ function png(size, pixel) {
   ihdr.writeUInt32BE(size, 4);
   ihdr[8] = 8;
   ihdr[9] = 6;
-  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", deflateSync(raw)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
 }
 
 // Bars as [start, width] in a 0..1 box, widest at the edges like a real code.
-const bars = [[0, 0.1], [0.16, 0.05], [0.26, 0.1], [0.42, 0.05], [0.52, 0.12], [0.7, 0.05], [0.8, 0.05], [0.9, 0.1]];
+const bars = [
+  [0, 0.1],
+  [0.16, 0.05],
+  [0.26, 0.1],
+  [0.42, 0.05],
+  [0.52, 0.12],
+  [0.7, 0.05],
+  [0.8, 0.05],
+  [0.9, 0.1],
+];
 
 function icon(size, { maskable }) {
   const box = maskable ? 0.4 : 0.54; // maskable icons keep their art inside the central safe zone
@@ -66,7 +80,10 @@ function icon(size, { maskable }) {
     const dx = Math.max(Math.abs(u - 0.5) - (0.5 - radius), 0);
     const dy = Math.max(Math.abs(v - 0.5) - (0.5 - radius), 0);
     if (!maskable && Math.hypot(dx, dy) > radius) return [0, 0, 0, 0];
-    const inBars = v >= top && v <= bottom && bars.some(([s, w]) => u >= left + s * box && u <= left + (s + w) * box);
+    const inBars =
+      v >= top &&
+      v <= bottom &&
+      bars.some(([s, w]) => u >= left + s * box && u <= left + (s + w) * box);
     return inBars ? [...PAPER, 255] : [...GREEN, 255];
   });
 }

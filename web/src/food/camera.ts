@@ -26,6 +26,11 @@ export function classifyCameraError(err: unknown): CameraState {
   return "unsupported";
 }
 
+function unsupportedReason(): CameraState | null {
+  if (!window.isSecureContext) return "insecure";
+  return typeof navigator.mediaDevices?.getUserMedia === "function" ? null : "unsupported";
+}
+
 /**
  * Owns the camera stream. It runs only while `active` is true and the page is visible, and always stops its tracks on
  * cleanup, so the camera is never left on behind a sheet or after leaving the route.
@@ -33,7 +38,7 @@ export function classifyCameraError(err: unknown): CameraState {
 export function useCamera(active: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [state, setState] = useState<CameraState>("idle");
+  const [outcome, setOutcome] = useState<CameraState | null>(null);
   const [torchAvailable, setTorchAvailable] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [visible, setVisible] = useState(() => document.visibilityState === "visible");
@@ -48,26 +53,14 @@ export function useCamera(active: boolean) {
     for (const t of streamRef.current?.getTracks() ?? []) t.stop();
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
-    setTorchAvailable(false);
-    setTorchOn(false);
   }, []);
 
+  const running = active && visible;
+  const unsupported = running ? unsupportedReason() : null;
+
   useEffect(() => {
-    if (!active || !visible) {
-      stop();
-      setState((s) => (s === "active" || s === "starting" ? "idle" : s));
-      return;
-    }
-    if (!window.isSecureContext) {
-      setState("insecure");
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setState("unsupported");
-      return;
-    }
+    if (!running || unsupported) return;
     let cancelled = false;
-    setState("starting");
     void navigator.mediaDevices
       .getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
@@ -90,16 +83,22 @@ export function useCamera(active: boolean) {
             ? track.getCapabilities()
             : undefined;
         setTorchAvailable(Boolean(caps?.torch));
-        setState("active");
+        setOutcome("active");
       })
       .catch((err: unknown) => {
-        if (!cancelled) setState(classifyCameraError(err));
+        if (!cancelled) setOutcome(classifyCameraError(err));
       });
     return () => {
       cancelled = true;
       stop();
+      setOutcome(null);
+      setTorchAvailable(false);
+      setTorchOn(false);
     };
-  }, [active, visible, stop]);
+  }, [running, unsupported, stop]);
+
+  // Derived, not stored: idle while paused, the support problem if there is one, else how the last start went.
+  const state: CameraState = running ? (unsupported ?? outcome ?? "starting") : "idle";
 
   const toggleTorch = useCallback(async () => {
     const track = streamRef.current?.getVideoTracks()[0];

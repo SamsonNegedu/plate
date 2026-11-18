@@ -13,10 +13,22 @@ import { copy } from "@/lib/copy";
 import { formatKcal, parseDecimal } from "@/lib/numbers";
 import { MAX_GRAMS } from "@/lib/nutrition";
 import { useUi } from "@/lib/ui";
-import styles from "./forms.module.css";
+import { cls } from "./forms";
 import { useLog } from "./useLog";
 
 /** Edit amount, meal and note. The nutrition snapshot never changes here: a food edit does not rewrite history. */
+function gramsOf(amount: number, unit: Unit, perUnit: number): number {
+  return unit === "g" || unit === "ml" ? amount : amount * perUnit;
+}
+
+const FOOD_SOURCE: Record<string, string> = { user: "Custom food", bls: "BLS" };
+const UNIT_SUFFIX: Record<string, string> = { serving: "portions", piece: "pieces" };
+
+function amountError(amount: number | null, grams: number | null): string | undefined {
+  if (amount === null || amount <= 0) return "Enter an amount above zero.";
+  return grams !== null && grams > MAX_GRAMS ? `That is more than ${MAX_GRAMS} g.` : undefined;
+}
+
 export function EntryEditSheet({ entryId }: { entryId: string }) {
   const db = useDb();
   const ui = useUi();
@@ -26,7 +38,7 @@ export function EntryEditSheet({ entryId }: { entryId: string }) {
   if (!entry || entry.deletedAt) {
     return (
       <Sheet title="Entry" onClose={ui.close}>
-        <p className={styles.muted}>This entry was deleted.</p>
+        <p className={cls.muted}>This entry was deleted.</p>
       </Sheet>
     );
   }
@@ -45,24 +57,15 @@ function Editor({ entry, onDelete }: { entry: Entry; onDelete: () => void }) {
   useEffect(() => {
     if (!entry.foodId) return;
     void getFood(db, entry.foodId).then((f) =>
-      setFoodName(
-        f
-          ? `${f.source === "user" ? "Custom food" : f.source === "bls" ? "BLS" : "Open Food Facts"}`
-          : null,
-      ),
+      setFoodName(f ? (FOOD_SOURCE[f.source] ?? "Open Food Facts") : null),
     );
   }, [db, entry.foodId]);
 
   // grams per unit comes from the entry itself, so a food that has since changed cannot alter this entry
   const perUnit = entry.grams / entry.amount;
   const amount = parseDecimal(text);
-  const grams = amount === null ? null : unit === "g" || unit === "ml" ? amount : amount * perUnit;
-  const error =
-    amount === null || amount <= 0
-      ? "Enter an amount above zero."
-      : grams !== null && grams > MAX_GRAMS
-        ? `That is more than ${MAX_GRAMS} g.`
-        : undefined;
+  const grams = amount === null ? null : gramsOf(amount, unit, perUnit);
+  const error = amountError(amount, grams);
   const units: Unit[] = entry.unit === "g" || entry.unit === "ml" ? ["g", "ml"] : [entry.unit];
 
   const save = async () => {
@@ -89,7 +92,7 @@ function Editor({ entry, onDelete }: { entry: Entry; onDelete: () => void }) {
         </>
       }
     >
-      <div className={styles.form}>
+      <div className={cls.form}>
         {units.length > 1 ? (
           <Segmented
             label="Unit"
@@ -101,7 +104,7 @@ function Editor({ entry, onDelete }: { entry: Entry; onDelete: () => void }) {
         <Field
           label="Amount"
           inputMode="decimal"
-          suffix={unit === "serving" ? "portions" : unit === "piece" ? "pieces" : unit}
+          suffix={UNIT_SUFFIX[unit] ?? unit}
           value={text}
           onChange={(e) => setText(e.target.value)}
           error={error}
@@ -118,7 +121,7 @@ function Editor({ entry, onDelete }: { entry: Entry; onDelete: () => void }) {
           maxLength={500}
           onChange={(e) => setNote(e.target.value)}
         />
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           {foodName ? `Source: ${foodName}. ` : ""}
           Nutrition values are kept as they were when you logged this.
         </p>

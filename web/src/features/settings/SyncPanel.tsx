@@ -9,7 +9,7 @@ import { discardFailed, retryFailed } from "@/db/outbox";
 import { api } from "@/lib/api";
 import { useUi } from "@/lib/ui";
 import { badgeLabel } from "@/sync/status";
-import styles from "./Settings.module.css";
+import { cls, panel, smallBtn } from "./ui";
 
 export function SyncPanel() {
   const db = useDb();
@@ -48,9 +48,9 @@ export function SyncPanel() {
   };
 
   return (
-    <section className={styles.section} aria-labelledby="sync-h">
+    <section className={cls.section} aria-labelledby="sync-h">
       <h2 id="sync-h">Sync</h2>
-      <dl className={styles.facts}>
+      <dl className={cls.facts}>
         <div>
           <dt>Status</dt>
           <dd>{badgeLabel(status)}</dd>
@@ -65,22 +65,22 @@ export function SyncPanel() {
         </div>
       </dl>
       {status.state === "paused" ? (
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           Sync is paused by the server. You can keep logging; everything is kept on this device and
           sent later.
         </p>
       ) : null}
       {status.state === "error" && status.message ? (
-        <p className={styles.error} role="alert">
+        <p className={cls.error} role="alert">
           {status.message}
         </p>
       ) : null}
       {status.resyncedAt ? (
-        <p className={styles.muted}>
+        <p className={cls.muted}>
           Resynced from the server on {new Date(status.resyncedAt).toLocaleString("en-GB")}.
         </p>
       ) : null}
-      <div className={styles.actions}>
+      <div className={cls.actions}>
         <Button onClick={() => void syncNow()} busy={busy}>
           Sync now
         </Button>
@@ -90,20 +90,20 @@ export function SyncPanel() {
       </div>
 
       {failed.length > 0 ? (
-        <div className={`${styles.panel} ${styles.warn}`}>
+        <div className={panel(true)}>
           <h3>
             {failed.length} {failed.length === 1 ? "change needs" : "changes need"} attention
           </h3>
-          <ul className={styles.list}>
+          <ul>
             {failed.map((op) => (
-              <li key={op.id} className={styles.item}>
+              <li key={op.id} className={cls.item}>
                 <span>
                   <strong>{`${op.entity.replace("_", " ")} ${op.type}`}</strong>
                   <small>{op.error?.detail ?? "Rejected by the server."}</small>
                 </span>
                 <button
                   type="button"
-                  className={styles.small}
+                  className={smallBtn()}
                   onClick={() => op.id !== undefined && void discardFailed(db, op.id)}
                 >
                   Discard
@@ -119,13 +119,13 @@ export function SyncPanel() {
 
       {conflicts.length > 0 ? (
         <details>
-          <summary className={styles.hint}>Conflicts ({conflicts.length})</summary>
-          <p className={styles.muted}>
+          <summary className={cls.hint}>Conflicts ({conflicts.length})</summary>
+          <p className={cls.muted}>
             Another device changed these after this one last synced. The latest write won.
           </p>
-          <ul className={styles.list}>
+          <ul>
             {conflicts.map((c) => (
-              <li key={c.id} className={styles.item}>
+              <li key={c.id} className={cls.item}>
                 <span>
                   <strong>{c.entity.replace("_", " ")}</strong>
                   <small>

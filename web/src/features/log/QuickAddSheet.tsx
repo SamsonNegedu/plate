@@ -12,7 +12,7 @@ import { buildEntry, saveEntry, undoAdd } from "@/db/entries";
 import { MEALS, type Meal } from "@/db/types";
 import { copy } from "@/lib/copy";
 import { useUi } from "@/lib/ui";
-import styles from "./forms.module.css";
+import { cls } from "./forms";
 import { optionalNumber, requiredNumber } from "./schemas";
 
 const schema = z.object({
@@ -83,7 +83,7 @@ export function QuickAddSheet({ meal: initialMeal, date }: { meal: Meal; date: s
         </Button>
       }
     >
-      <form id="quick-add" className={styles.form} onSubmit={submit} noValidate>
+      <form id="quick-add" className={cls.form} onSubmit={submit} noValidate>
         <Segmented
           label={copy.sheet.meal}
           value={meal}

@@ -76,7 +76,7 @@ describe("barcode detector", () => {
       getSupportedFormats: () => Promise.resolve(["qr_code"]),
     });
     vi.stubGlobal("BarcodeDetector", Native);
-    const overrides = vi.fn();
+    const overrides = vi.fn<(cfg: { locateFile: (p: string, prefix: string) => string }) => void>();
     vi.doMock("barcode-detector/ponyfill", () => ({
       setZXingModuleOverrides: overrides,
       BarcodeDetector: class {
@@ -90,9 +90,8 @@ describe("barcode detector", () => {
     const d = await create();
     expect(d.kind).toBe("ponyfill");
     expect(await d.detect(new Blob() as unknown as ImageBitmapSource)).toBe("80177173");
-    const cfg = overrides.mock.calls[0]?.[0] as {
-      locateFile: (p: string, prefix: string) => string;
-    };
+    const cfg = overrides.mock.calls[0]?.[0];
+    if (!cfg) throw new Error("the ZXing overrides were never set");
     expect(cfg.locateFile("zxing_reader.wasm", "https://cdn.example/")).toBe(
       "/wasm/zxing_reader.wasm",
     );
@@ -142,7 +141,7 @@ describe("barcode lookup", () => {
   });
 
   test("an invalid code never reaches the network", async () => {
-    const fetchSpy = vi.fn();
+    const fetchSpy = vi.fn<typeof fetch>();
     vi.stubGlobal("fetch", fetchSpy);
     expect(await resolveBarcode(fresh(), "12ab")).toEqual({ kind: "invalid" });
     expect(fetchSpy).not.toHaveBeenCalled();
@@ -154,7 +153,7 @@ describe("barcode lookup", () => {
       db,
       mk("0190a1b2-0000-7000-8000-000000000001", "Joghurt", "Ehrmann", "4000000000011"),
     );
-    const fetchSpy = vi.fn();
+    const fetchSpy = vi.fn<typeof fetch>();
     vi.stubGlobal("fetch", fetchSpy);
     const r = await resolveBarcode(db, "4000000000011");
     expect(r).toMatchObject({ kind: "found", cached: true });
@@ -163,7 +162,7 @@ describe("barcode lookup", () => {
 
   test("an offline miss does not call the network and is logged locally", async () => {
     const db = fresh();
-    const fetchSpy = vi.fn();
+    const fetchSpy = vi.fn<typeof fetch>();
     vi.stubGlobal("fetch", fetchSpy);
     expect(await resolveBarcode(db, "4999999999993", { online: false })).toEqual({
       kind: "offline",
@@ -173,13 +172,16 @@ describe("barcode lookup", () => {
   });
 
   test("a failed request is reported as offline, not as an exception", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockRejectedValue(new TypeError("Failed to fetch")),
+    );
     expect(await resolveBarcode(fresh(), "4999999999993")).toEqual({ kind: "offline" });
   });
 
   test("a 404, a not-loggable product and an outage each get their own result", async () => {
     const reply = (status: number, body: unknown) =>
-      vi.fn().mockResolvedValue(
+      vi.fn<typeof fetch>().mockResolvedValue(
         new Response(JSON.stringify(body), {
           status,
           headers: { "content-type": "application/problem+json" },
@@ -219,7 +221,7 @@ describe("barcode lookup", () => {
       source: "catalog",
       image_path: "/api/v1/images/catalog/80177173",
     };
-    const fetchSpy = vi.fn().mockResolvedValue(
+    const fetchSpy = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify(body), {
         status: 200,
         headers: { "content-type": "application/json" },
@@ -231,11 +233,9 @@ describe("barcode lookup", () => {
     const second = await resolveBarcode(db, "80177173");
     expect(second).toMatchObject({ kind: "found", cached: true });
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    if (first.kind === "found")
-      expect(first.food).toMatchObject({
-        carbs: null,
-        imagePath: "/api/v1/images/catalog/80177173",
-      });
+    expect(first).toMatchObject({
+      food: { carbs: null, imagePath: "/api/v1/images/catalog/80177173" },
+    });
   });
 
   test("a server answer that is not a food is rejected, not stored", () => {
