@@ -150,7 +150,9 @@ jobs:
       # On main, the image that just passed the smoke test is pushed as sha-<commit>. That tag is a candidate only;
       # nothing deploys it. `publish` promotes it to latest once every other job is green.
       - id: short
-        run: echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT" # registry names must be lowercase
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
@@ -162,7 +164,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:sha-${{ steps.short.outputs.sha }}
+          tags: ${{ steps.short.outputs.image }}:sha-${{ steps.short.outputs.sha }}
           cache-from: type=gha
 
   # Only main publishes `latest`, and only after every job above passed, so `latest` is always a tested build.
@@ -183,5 +185,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Promote the tested image
         run: |
-          image=ghcr.io/${{ github.repository }}
+          image="ghcr.io/${GITHUB_REPOSITORY,,}" # registry names must be lowercase
           docker buildx imagetools create --tag "$image:latest" "$image:sha-${GITHUB_SHA::7}"
