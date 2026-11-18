@@ -1,9 +1,9 @@
 # The app publishes no port. Put it behind your own proxy or tunnel.
 services:
   plate:
-    # Pull a released image, or build from source with `docker compose up -d --build`.
+    # Production only pulls. To build from source instead, add compose.build.yaml (see the README).
     image: ghcr.io/samsonnegedu/plate:latest
-    build: .
+    pull_policy: always
     restart: unless-stopped
     environment:
       PLATE_BASE_URL: ${PLATE_BASE_URL:?set the public https URL}

@@ -25,7 +25,9 @@ PLATE_DATA_DIR=./data ./bin/plate
 
 ```
 cp .env.example .env     # set PLATE_BASE_URL (https) and the first-boot admin
-docker compose up -d     # pulls ghcr.io/samsonnegedu/plate; add --build to build from source
+docker compose up -d     # pulls ghcr.io/samsonnegedu/plate:latest
+# or build from this checkout:
+# docker compose -f compose.yaml -f compose.build.yaml up -d --build
 ```
 
 Every green push to `main` publishes `latest` after the full CI (including a smoke test of the image; `make docker-smoke` runs the same check locally). Tag `vX.Y.Z` to also publish a pinnable version for rollbacks. Upgrade, rollback and backups are in `docs/runbook.md`.

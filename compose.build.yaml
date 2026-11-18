@@ -1,0 +1,6 @@
+# Builds the image from this checkout instead of pulling it:
+#   docker compose -f compose.yaml -f compose.build.yaml up -d --build
+services:
+  plate:
+    build: .
+    pull_policy: never
