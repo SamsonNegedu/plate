@@ -136,36 +136,46 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - id: ref
+        run: |
+          echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT" # registry names must be lowercase
+      # Pull requests: one amd64 image, loaded locally for the smoke test.
+      - if: env.PUSH != 'true'
+        uses: docker/build-push-action@v6
         with:
           context: .
           load: true
           tags: plate:smoke
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - run: scripts/docker-smoke.sh plate:smoke
-      # On main, the image that just passed the smoke test is pushed as sha-<commit>. That tag is a candidate only;
-      # nothing deploys it. `publish` promotes it to latest once every other job is green.
-      - id: short
-        run: |
-          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT" # registry names must be lowercase
-      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      # main: build amd64 and arm64 together (the Go stage cross-compiles, so there is no emulation) and push the
+      # result as sha-<commit>. That tag is a candidate only; nothing deploys it. `publish` promotes it to latest once
+      # every other job is green.
+      - if: env.PUSH == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - if: env.PUSH == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.short.outputs.image }}:sha-${{ steps.short.outputs.sha }}
+          tags: ${{ steps.ref.outputs.image }}:${{ steps.ref.outputs.tag }}
           cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke-test the image
+        run: |
+          if [ "$PUSH" = true ]; then image="${{ steps.ref.outputs.image }}:${{ steps.ref.outputs.tag }}"; else image=plate:smoke; fi
+          scripts/docker-smoke.sh "$image"
 
   # Only main publishes `latest`, and only after every job above passed, so `latest` is always a tested build.
   # The image was built and smoke-tested once, in `docker`; this just moves the tag.
