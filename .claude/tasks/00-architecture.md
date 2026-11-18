@@ -229,7 +229,7 @@ All timestamps are UTC RFC 3339 text. All local dates are `YYYY-MM-DD` text. Nut
 
 Every syncable table carries `id`, `user_id`, `created_at`, `updated_at`, `deleted_at`, and `server_seq`. `entries` additionally stores `eaten_on`, `meal`, `amount`, `unit`, `grams`, and the full per-100 g snapshot.
 
-Full column lists and constraints are in `03-data-model.md`.
+Full column lists and constraints are in `db/migrations/` (the schema's single source of truth).
 
 ## Sync policy in one page
 

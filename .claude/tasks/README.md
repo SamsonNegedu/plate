@@ -75,21 +75,15 @@ Project skills live in `.claude/skills/` and are loaded automatically when their
 
 ## Phase map
 
-| Phase | File | Depends on | Size | Exit criterion |
-|---|---|---|---|---|
-| 0 | `01-spikes.md` | none | S | iOS/Android scan, FTS5, and modernc/sqlc/Huma spikes pass |
-| 1 | `02-foundation.md` | 0 | M | `make dev`, `make test`, `make build`, CI green |
-| 2 | `03-data-model.md` | 1 | M | Migrations up/down, sqlc clean, schema tests pass |
-| 3 | `04-auth.md` | 2 | S | Login, session persistence, CSRF, rate limits verified |
-| 4 | `05-core-api.md` | 3 | M | Entries, days, settings, export/import pass API tests |
-| 5 | `06-food-and-search.md` | 4 | L | OFF catalog seed, coverage corpus, FTS5 search, no-match path |
-| 6 | `07-sync.md` | 4, 5 | L | Two clients converge; offline replay and duplicates safe |
-| 7 | `08-frontend-foundation.md` | 1, 4 | M | Auth, shell, routes, Dexie schema, offline shell |
-| 8 | `09-logging-ui.md` | 5, 6, 7 | L | Scan → log in under 10 s; cached flow works offline |
-| 9 | `10-history-settings.md` | 8 | M | Chart, goals, theme, export/import, sync status |
-| 10 | `11-pwa-offline.md` | 8, 9 | M | Airplane-mode logging, reconnect sync, installable PWA |
-| 11 | `12-testing-qa.md` | all | M | Device matrix, a11y, security, perf, restore drill |
-| 12 | `13-deploy-launch.md` | 11 | M | Fresh deploy, backup restore, 14-day dogfood |
+Phases 1 to 10 are built, and their phase files were removed once implemented (the code, `db/migrations`, `docs/` and `00-architecture.md` are the record). What remains:
+
+| Phase | File | Size | Exit criterion |
+|---|---|---|---|
+| 0 | `01-spikes.md` | S | iOS/Android scan runs (spikes A and E), seed build artifact and real corpus, ADR-015 notes |
+| 11 | `12-testing-qa.md` | M | Device matrix, a11y, security, perf, restore drill |
+| 12 | `13-deploy-launch.md` | M | Fresh deploy, backup restore, 14-day dogfood |
+
+Carried over from Phases 8 to 10, still to verify on a real phone: the design-parity walk (`design-parity.md`), airplane-mode logging and reconnect sync, and the installed-PWA checks on iOS and Android.
 
 ## Global definition of done
 
@@ -122,17 +116,9 @@ Project skills live in `.claude/skills/` and are loaded automatically when their
 
 Update in place. This is the single source of truth for phase state.
 
-- [ ] Phase 0 — Spikes and decisions
-- [x] Phase 1 — Foundation and tooling
-- [x] Phase 2 — Data model, migrations, FTS5
-- [x] Phase 3 — Auth and security
-- [x] Phase 4 — Core API
-- [x] Phase 5 — Food data and search
-- [x] Phase 6 — Sync engine
-- [x] Phase 7 — Frontend foundation
-- [ ] Phase 8 — Logging UI (implemented; verification pending)
-- [ ] Phase 9 — History, goals, settings (implemented; verification pending)
-- [ ] Phase 10 — PWA and offline hardening (implemented; verification pending)
+- [ ] Phase 0 — Spikes and decisions (B, C, D, F done; A and E need a phone)
+- [x] Phases 1 to 7 — foundation, data model, auth, core API, food and search, sync, frontend foundation
+- [x] Phases 8 to 10 — logging UI, history and settings, PWA and offline (built; device verification carried over to Phase 11)
 - [ ] Phase 11 — Testing and QA
 - [ ] Phase 12 — Deploy and launch
 - [ ] Design parity sign-off after Phases 8, 9, and 10
