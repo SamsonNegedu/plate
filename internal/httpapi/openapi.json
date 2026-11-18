@@ -1,0 +1,3727 @@
+{
+  "components": {
+    "schemas": {
+      "AboutOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "attributions": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "catalog": {
+            "$ref": "#/components/schemas/CatalogStruct"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "attributions",
+          "catalog"
+        ],
+        "type": "object"
+      },
+      "CatalogStruct": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset_version": {
+            "type": "string"
+          },
+          "imported_at": {
+            "type": "string"
+          },
+          "rows": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "dataset_version",
+          "rows",
+          "imported_at"
+        ],
+        "type": "object"
+      },
+      "DayBody": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "goal": {
+            "$ref": "#/components/schemas/GoalBody"
+          },
+          "missing": {
+            "description": "Macros that at least one entry did not report.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TotalsBody"
+          }
+        },
+        "required": [
+          "date",
+          "entries",
+          "totals",
+          "missing",
+          "goal"
+        ],
+        "type": "object"
+      },
+      "DaySummary": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "date": {
+            "type": "string"
+          },
+          "fat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "kcal": {
+            "format": "double",
+            "type": "number"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "protein": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "date",
+          "kcal",
+          "protein",
+          "carbs",
+          "fat",
+          "count",
+          "missing"
+        ],
+        "type": "object"
+      },
+      "Detail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "EntryBody": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": "number"
+          },
+          "barcode": {
+            "pattern": "^\\d{8,14}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "client_updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "eaten_on": {
+            "description": "Local calendar date the client assigned.",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string"
+          },
+          "fat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "food_id": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grams": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": "number"
+          },
+          "kcal": {
+            "description": "kcal per 100 g snapshot.",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "meal": {
+            "enum": [
+              "breakfast",
+              "lunch",
+              "dinner",
+              "snack"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "protein": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "salt": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "sugar": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "enum": [
+              "g",
+              "ml",
+              "piece",
+              "serving"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "eaten_on",
+          "meal",
+          "name",
+          "amount",
+          "unit",
+          "grams",
+          "kcal",
+          "client_updated_at"
+        ],
+        "type": "object"
+      },
+      "EntryDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": "number"
+          },
+          "barcode": {
+            "pattern": "^\\d{8,14}$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "client_updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "eaten_on": {
+            "description": "Local calendar date the client assigned.",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string"
+          },
+          "fat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "food_id": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grams": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kcal": {
+            "description": "kcal per 100 g snapshot.",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "meal": {
+            "enum": [
+              "breakfast",
+              "lunch",
+              "dinner",
+              "snack"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "protein": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "salt": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sugar": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "enum": [
+              "g",
+              "ml",
+              "piece",
+              "serving"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+          "server_seq",
+          "eaten_on",
+          "meal",
+          "name",
+          "amount",
+          "unit",
+          "grams",
+          "kcal",
+          "client_updated_at"
+        ],
+        "type": "object"
+      },
+      "ExportDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "app_version": {
+            "type": "string"
+          },
+          "attribution": {
+            "description": "Credits for the data sources the foods come from.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "deleted_entries": {
+            "items": {
+              "$ref": "#/components/schemas/TombstoneDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "exported_at": {
+            "type": "string"
+          },
+          "favorites": {
+            "items": {
+              "$ref": "#/components/schemas/FavoriteDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "foods": {
+            "items": {
+              "$ref": "#/components/schemas/FoodDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "format_version": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "saved_meals": {
+            "items": {
+              "$ref": "#/components/schemas/SavedMealDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "schema_version": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/SettingsDoc",
+            "description": "Absent until goals were saved."
+          }
+        },
+        "required": [
+          "format_version",
+          "schema_version",
+          "exported_at",
+          "app_version",
+          "entries",
+          "deleted_entries",
+          "foods",
+          "saved_meals",
+          "favorites"
+        ],
+        "type": "object"
+      },
+      "FavoriteDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "food_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "food_id",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+          "server_seq"
+        ],
+        "type": "object"
+      },
+      "FavoriteOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "favorite": {
+            "type": "boolean"
+          },
+          "food_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "food_id",
+          "favorite"
+        ],
+        "type": "object"
+      },
+      "FieldProblem": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ],
+        "type": "object"
+      },
+      "FoodBody": {
+        "additionalProperties": false,
+        "properties": {
+          "barcode": {
+            "maxLength": 32,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "kcal": {
+            "description": "Required. kcal per 100 g or 100 ml.",
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "nutriscore": {
+            "enum": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e"
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "protein": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "quantity": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "salt": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_grams": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_size": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "sugar": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "kcal"
+        ],
+        "type": "object"
+      },
+      "FoodDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "allergens": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "image_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredients": {
+            "type": "string"
+          },
+          "kcal": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nutriscore": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "protein": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "salt": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "serving_grams": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_size": {
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "off",
+              "bls",
+              "user",
+              "catalog"
+            ],
+            "type": "string"
+          },
+          "source_checked_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_updated_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sugar": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "barcode",
+          "name",
+          "brand",
+          "quantity",
+          "serving_size",
+          "serving_grams",
+          "kcal",
+          "protein",
+          "carbs",
+          "fat",
+          "sugar",
+          "satfat",
+          "fiber",
+          "salt",
+          "nutriscore",
+          "source",
+          "source_id",
+          "source_updated_at",
+          "source_checked_at",
+          "image_key",
+          "ingredients",
+          "allergens",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+          "server_seq"
+        ],
+        "type": "object"
+      },
+      "FoodView": {
+        "additionalProperties": false,
+        "properties": {
+          "allergens": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "image_path": {
+            "description": "Same-origin path of the product image.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ingredients": {
+            "type": "string"
+          },
+          "kcal": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nutriscore": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "protein": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": "string"
+          },
+          "salt": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_grams": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_size": {
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "off",
+              "bls",
+              "user",
+              "catalog"
+            ],
+            "type": "string"
+          },
+          "source_checked_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stale": {
+            "description": "Cached from Open Food Facts and not checked for 90 days.",
+            "type": "boolean"
+          },
+          "sugar": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "barcode",
+          "name",
+          "brand",
+          "quantity",
+          "serving_size",
+          "serving_grams",
+          "kcal",
+          "protein",
+          "carbs",
+          "fat",
+          "sugar",
+          "satfat",
+          "fiber",
+          "salt",
+          "nutriscore",
+          "source",
+          "source_id",
+          "source_checked_at",
+          "stale",
+          "image_path",
+          "ingredients",
+          "allergens",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "GoalBody": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs_g": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fat_g": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "kcal": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "protein_g": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kcal",
+          "protein_g",
+          "carbs_g",
+          "fat_g"
+        ],
+        "type": "object"
+      },
+      "ImportOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "favorites": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "foods": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "removed": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "saved_meals": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entries",
+          "foods",
+          "saved_meals",
+          "favorites",
+          "removed"
+        ],
+        "type": "object"
+      },
+      "LoginInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "minLength": 3,
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object"
+      },
+      "MeOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "auth_mode": {
+            "enum": [
+              "password",
+              "proxy"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBody"
+          }
+        },
+        "required": [
+          "user",
+          "auth_mode"
+        ],
+        "type": "object"
+      },
+      "Meta": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "head": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "min_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "server_time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "head",
+          "min_seq",
+          "server_time"
+        ],
+        "type": "object"
+      },
+      "Op": {
+        "additionalProperties": false,
+        "properties": {
+          "base_seq": {
+            "description": "Optional. Only used to report a conflict; it never blocks a write.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "client_ts": {
+            "type": "string"
+          },
+          "data": {
+            "description": "The entity body. Required for upsert, absent for delete."
+          },
+          "entity": {
+            "enum": [
+              "entry",
+              "food",
+              "settings",
+              "saved_meal",
+              "favorite"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "op_id": {
+            "description": "UUIDv7 created with the mutation. Replaying it is safe.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "upsert",
+              "delete"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "op_id",
+          "entity",
+          "type",
+          "id"
+        ],
+        "type": "object"
+      },
+      "OpProblem": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/FieldProblem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "OpResult": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "description": "An existing row was newer than base_seq and was overwritten.",
+            "type": "boolean"
+          },
+          "op_id": {
+            "type": "string"
+          },
+          "problem": {
+            "$ref": "#/components/schemas/OpProblem"
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "applied",
+              "duplicate",
+              "rejected",
+              "tombstoned"
+            ],
+            "type": "string"
+          },
+          "tombstone": {
+            "description": "The deleted row, when status is tombstoned."
+          }
+        },
+        "required": [
+          "op_id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "Problem": {
+        "additionalProperties": false,
+        "properties": {
+          "can_add_manually": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/Detail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "min_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "product": {
+            "$ref": "#/components/schemas/ProductHint"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "retry_after": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "status",
+          "code"
+        ],
+        "type": "object"
+      },
+      "ProductHint": {
+        "additionalProperties": false,
+        "properties": {
+          "image_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "image_path"
+        ],
+        "type": "object"
+      },
+      "PullChange": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "description": "The full row for an upsert; {deleted_at} for a delete."
+          },
+          "entity": {
+            "enum": [
+              "entry",
+              "food",
+              "settings",
+              "saved_meal",
+              "favorite"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "upsert",
+              "delete"
+            ],
+            "type": "string"
+          },
+          "seq": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "seq",
+          "entity",
+          "id",
+          "op",
+          "data"
+        ],
+        "type": "object"
+      },
+      "PullResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/PullChange"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next": {
+            "description": "Pass this as since on the next pull. It equals the last seq in the page, or since when the page is empty.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changes",
+          "next",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "PushRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ops": {
+            "items": {
+              "$ref": "#/components/schemas/Op"
+            },
+            "maxItems": 100,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "client_id",
+          "ops"
+        ],
+        "type": "object"
+      },
+      "PushResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "description": "The user's head sequence after the batch.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/OpResult"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "results",
+          "cursor"
+        ],
+        "type": "object"
+      },
+      "RangeOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "days": {
+            "description": "Every date in the range, including days with no entries.",
+            "items": {
+              "$ref": "#/components/schemas/DaySummary"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "from": {
+            "type": "string"
+          },
+          "goal": {
+            "$ref": "#/components/schemas/GoalBody"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "days",
+          "goal"
+        ],
+        "type": "object"
+      },
+      "RecentOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "foods": {
+            "items": {
+              "$ref": "#/components/schemas/FoodView"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "foods"
+        ],
+        "type": "object"
+      },
+      "SavedMealDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SavedMealItemDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "items",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+          "server_seq"
+        ],
+        "type": "object"
+      },
+      "SavedMealItemDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "food_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grams": {
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kcal": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "protein": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "salt": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "sugar": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "enum": [
+              "g",
+              "ml",
+              "piece",
+              "serving"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "food_id",
+          "name",
+          "brand",
+          "amount",
+          "unit",
+          "grams",
+          "kcal",
+          "protein",
+          "carbs",
+          "fat",
+          "sugar",
+          "satfat",
+          "fiber",
+          "salt",
+          "position"
+        ],
+        "type": "object"
+      },
+      "SearchHit": {
+        "additionalProperties": false,
+        "properties": {
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "brand": {
+            "type": "string"
+          },
+          "favorite": {
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Null for catalog hits: look the barcode up to log it.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "image_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kcal": {
+            "format": "double",
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nutriscore": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serving_grams": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_size": {
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "off",
+              "bls",
+              "user",
+              "catalog"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "barcode",
+          "name",
+          "brand",
+          "kcal",
+          "serving_size",
+          "serving_grams",
+          "source",
+          "nutriscore",
+          "image_path",
+          "favorite"
+        ],
+        "type": "object"
+      },
+      "SearchOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHit"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "query",
+          "results"
+        ],
+        "type": "object"
+      },
+      "SettingsBody": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "day_start_hour": {
+            "format": "int64",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "fat_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "goal_kcal": {
+            "format": "int64",
+            "maximum": 9000,
+            "minimum": 500,
+            "type": "integer"
+          },
+          "protein_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "theme": {
+            "enum": [
+              "auto",
+              "light",
+              "dark"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "goal_kcal",
+          "protein_g",
+          "carbs_g",
+          "fat_g",
+          "day_start_hour",
+          "theme"
+        ],
+        "type": "object"
+      },
+      "SettingsDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "day_start_hour": {
+            "format": "int64",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "fat_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "goal_kcal": {
+            "format": "int64",
+            "maximum": 9000,
+            "minimum": 500,
+            "type": "integer"
+          },
+          "protein_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "theme": {
+            "enum": [
+              "auto",
+              "light",
+              "dark"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "updated_at",
+          "server_seq",
+          "goal_kcal",
+          "protein_g",
+          "carbs_g",
+          "fat_g",
+          "day_start_hour",
+          "theme"
+        ],
+        "type": "object"
+      },
+      "SettingsView": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "day_start_hour": {
+            "format": "int64",
+            "maximum": 23,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "fat_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "goal_kcal": {
+            "format": "int64",
+            "maximum": 9000,
+            "minimum": 500,
+            "type": "integer"
+          },
+          "last_login_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "protein_g": {
+            "format": "int64",
+            "maximum": 500,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "server_date": {
+            "description": "The server's current UTC date. The client never uses it to assign eaten_on.",
+            "type": "string"
+          },
+          "server_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "theme": {
+            "enum": [
+              "auto",
+              "light",
+              "dark"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "updated_at",
+          "server_seq",
+          "last_login_at",
+          "server_date",
+          "goal_kcal",
+          "protein_g",
+          "carbs_g",
+          "fat_g",
+          "day_start_hour",
+          "theme"
+        ],
+        "type": "object"
+      },
+      "Snapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "favorites": {
+            "items": {
+              "$ref": "#/components/schemas/FavoriteDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "foods": {
+            "items": {
+              "$ref": "#/components/schemas/FoodDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "min_seq": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "saved_meals": {
+            "items": {
+              "$ref": "#/components/schemas/SavedMealDoc"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/SettingsDoc"
+          }
+        },
+        "required": [
+          "cursor",
+          "min_seq",
+          "foods",
+          "entries",
+          "saved_meals",
+          "favorites"
+        ],
+        "type": "object"
+      },
+      "TombstoneDoc": {
+        "additionalProperties": false,
+        "properties": {
+          "deleted_at": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "deleted_at"
+        ],
+        "type": "object"
+      },
+      "TotalsBody": {
+        "additionalProperties": false,
+        "properties": {
+          "carbs": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fat": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "kcal": {
+            "description": "Rounded to a whole number after summing unrounded entries.",
+            "format": "double",
+            "type": "number"
+          },
+          "protein": {
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kcal",
+          "protein",
+          "carbs",
+          "fat",
+          "count"
+        ],
+        "type": "object"
+      },
+      "UserBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_login_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "last_login_at"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "session": {
+        "in": "cookie",
+        "name": "__Host-plate_session",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "Single-user calorie log. Errors are RFC 9457 problems with a stable `code`.",
+    "title": "Plate API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/about": {
+      "get": {
+        "operationId": "about",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AboutOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Version, data source attribution and catalog release",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Sign in with email and password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "End this session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout-all": {
+      "post": {
+        "operationId": "logout-all",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "End every session for this user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The signed-in user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/days": {
+      "get": {
+        "operationId": "list-days",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RangeOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Per-day totals for a date range (at most 366 days)",
+        "tags": [
+          "days"
+        ]
+      }
+    },
+    "/days/{date}": {
+      "get": {
+        "operationId": "get-day",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Entries and totals for one local date",
+        "tags": [
+          "days"
+        ]
+      }
+    },
+    "/entries/{id}": {
+      "delete": {
+        "operationId": "delete-entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Tombstone an entry (idempotent)",
+        "tags": [
+          "entries"
+        ]
+      },
+      "get": {
+        "operationId": "get-entry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDoc"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "One entry, including a tombstone",
+        "tags": [
+          "entries"
+        ]
+      },
+      "put": {
+        "operationId": "put-entry",
+        "parameters": [
+          {
+            "description": "Client-generated UUIDv7. This is the only create path.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Client-generated UUIDv7. This is the only create path.",
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryDoc"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create or update an entry (idempotent by client ID)",
+        "tags": [
+          "entries"
+        ]
+      }
+    },
+    "/export": {
+      "get": {
+        "operationId": "export",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportDoc"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Full JSON backup",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/foods/barcode/{code}": {
+      "get": {
+        "description": "Your foods first, then the catalog seed, then Open Food Facts. A product without kcal returns 422 not_loggable.",
+        "operationId": "lookup-barcode",
+        "parameters": [
+          {
+            "description": "6 to 14 digits; other characters are ignored.",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "description": "6 to 14 digits; other characters are ignored.",
+              "maxLength": 32,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Resolve a barcode to a loggable food",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/recent": {
+      "get": {
+        "operationId": "recent-foods",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Distinct foods logged most recently",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/search": {
+      "get": {
+        "operationId": "search-foods",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Search foods by name, brand or barcode",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/{id}": {
+      "put": {
+        "description": "A correction updates the row in place and sets source=user. If a live food already owns the barcode, that row is corrected and returned; use its id.",
+        "operationId": "put-food",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Create a custom food or correct an existing one",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/{id}/favorite": {
+      "delete": {
+        "operationId": "clear-favorite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Remove a favorite (idempotent)",
+        "tags": [
+          "foods"
+        ]
+      },
+      "get": {
+        "operationId": "get-favorite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Is this food a favorite?",
+        "tags": [
+          "foods"
+        ]
+      },
+      "put": {
+        "operationId": "set-favorite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Mark a food as a favorite (idempotent)",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/images/catalog/{barcode}": {
+      "get": {
+        "operationId": "get-catalog-image",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "barcode",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9]{8,14}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The product image"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The image of a catalog product by barcode",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/{key}": {
+      "get": {
+        "operationId": "get-image",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-f]{32}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The product image"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A cached product image by server-generated key",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/import": {
+      "post": {
+        "description": "The whole document is validated before anything is written. A snapshot of the database is taken first. Rows the backup lacks are tombstoned.",
+        "operationId": "import",
+        "parameters": [
+          {
+            "description": "Replace is destructive: rows missing from the backup are tombstoned.",
+            "explode": false,
+            "in": "query",
+            "name": "mode",
+            "required": true,
+            "schema": {
+              "description": "Replace is destructive: rows missing from the backup are tombstoned.",
+              "enum": [
+                "replace"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "An export document.",
+                "type": "object"
+              }
+            },
+            "application/octet-stream": {
+              "schema": {
+                "contentMediaType": "application/octet-stream",
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Restore a backup, replacing current data",
+        "tags": [
+          "backup"
+        ]
+      }
+    },
+    "/settings": {
+      "get": {
+        "operationId": "get-settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Goals, display settings, last login and the server date",
+        "tags": [
+          "settings"
+        ]
+      },
+      "put": {
+        "operationId": "put-settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Replace settings",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/sync/meta": {
+      "get": {
+        "operationId": "sync-meta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Stream bounds and whether sync is enabled",
+        "tags": [
+          "sync"
+        ]
+      }
+    },
+    "/sync/pull": {
+      "get": {
+        "operationId": "sync-pull",
+        "parameters": [
+          {
+            "description": "The last sequence the client has applied. Changes with a greater seq are returned.",
+            "explode": false,
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "default": 0,
+              "description": "The last sequence the client has applied. Changes with a greater seq are returned.",
+              "format": "int64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "format": "int64",
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Changes after a cursor, oldest first",
+        "tags": [
+          "sync"
+        ]
+      }
+    },
+    "/sync/push": {
+      "post": {
+        "description": "At most 100 ops. Each op is applied under its own savepoint: a rejected op rolls back only itself. A repeated op_id returns its recorded outcome as a duplicate.",
+        "operationId": "sync-push",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Apply a batch of client mutations",
+        "tags": [
+          "sync"
+        ]
+      }
+    },
+    "/sync/snapshot": {
+      "get": {
+        "operationId": "sync-snapshot",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Every live row plus a cursor to continue from",
+        "tags": [
+          "sync"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ]
+}

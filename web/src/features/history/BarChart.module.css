@@ -1,0 +1,74 @@
+.figure {
+  margin: 0;
+}
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.axis {
+  font-family: var(--font);
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+.grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.base {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+.bar {
+  fill: var(--accent);
+}
+.over {
+  fill: var(--red);
+}
+.wash {
+  fill: var(--accent);
+  opacity: 0.1;
+}
+.none {
+  fill: transparent;
+}
+.value {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.goal {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.goalLabel {
+  font-family: var(--font);
+  font-size: 10.5px;
+  fill: var(--ink-2);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.slot {
+  cursor: pointer;
+  outline: none;
+}
+.slot:focus-visible .wash {
+  opacity: 0.22;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.tip {
+  min-height: 22px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}

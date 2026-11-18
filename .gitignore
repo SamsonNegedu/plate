@@ -1,0 +1,16 @@
+/bin/
+/data/*
+/coverage/
+node_modules/
+.env
+*.db
+!data/off-catalog.db
+*.db-wal
+*.db-shm
+internal/webui/dist/*
+!internal/webui/dist/.gitkeep
+web/test-results/
+web/playwright-report/
+.DS_Store
+web/public/wasm/
+web/.auth/

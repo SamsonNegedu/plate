@@ -1,0 +1,231 @@
+chain,product,barcode,expected_source
+Edeka,Traubensaft,4311596477982,catalog
+Edeka,Pflanzliche Scheiben,4311596645336,catalog
+Edeka,Almzeit Pilze,4006402075512,catalog
+Edeka,Mozzarella cheese sticks,4014500520070,catalog
+Edeka,Sahne Pudding Vanilla,4311596460489,catalog
+Edeka,Geflügel Roulade,4311596445257,catalog
+Edeka,Calamares a La Romana,4311501445037,catalog
+Edeka,Wiener Würstchen 6,4311501356630,catalog
+Edeka,Scharfe Schote,4002468205825,catalog
+Edeka,Kräuter Baguette,4311501398357,catalog
+Edeka,Martin Rütter Hundjes Lakritz-Edition,4037400344645,catalog
+Edeka,Frischcreme natur,4056924001711,catalog
+Edeka,Birne-Quitte Joghurt,9004831021143,catalog
+Edeka,Overnight Oats,6415000163640,catalog
+Edeka,Miree Walnuss,4019300150168,catalog
+Edeka,Savoiardi biscuits,4311501425527,catalog
+Edeka,Skyr Natur,4036300136626,catalog
+Edeka,Make Choco Crumble Great Again,4311501629789,catalog
+Edeka,Omni Bar Carrot Ginger,4260698540004,catalog
+Edeka,Pure Tea Bio Ingwer Tee,90426353,catalog
+Edeka,Pistaziencreme,8055404680015,catalog
+Edeka,feinste Räucherrolle,2330422001995,catalog
+Rewe,Hummus Natur,4337256471534,catalog
+Rewe,Milde Orange,42258865,catalog
+Rewe,Johannisbeeren Pfirsich eis,4008211005148,catalog
+Rewe,Holunderblüten Sirup,4337256086479,catalog
+Rewe,Tortilla Chips mit Salz,4388860474527,catalog
+Rewe,Cashewkerne,4388844001770,off
+Rewe,Soja Sauce,4388860394610,off
+Rewe,Barista Hafer-Soja Drink,4337256279796,off
+Rewe,Erbsen extra fein,4337256273510,catalog
+Rewe,Pitaroll,4337256575881,catalog
+Rewe,"Schnittlauch, bio",4388844006522,catalog
+Rewe,Thunfisch steaks,4337256118569,catalog
+Rewe,Mango in Würfeln,4337256753142,catalog
+Rewe,Die Ofenfrische Schinken-Ananas,4001724011200,off
+Rewe,Edel-Bitterschokolade 72%,4337256747912,catalog
+Rewe,Natives Olivenöl Extra,4388840216673,off
+Rewe,Waldhonig,4337256380409,catalog
+Rewe,H-Vollmilch,4388844271449,off
+Rewe,Kaffee Kränze,4337256597166,catalog
+Rewe,Rauchsalami,4001956315411,catalog
+Rewe,Mini Berner Würstchen,4388860595772,catalog
+Rewe,Kakao Drink,4388860189278,off
+Aldi Nord,Veganer Brotzeit-Leverkäse - Paprika,4061464607491,catalog
+Aldi Nord,Weiße Nuß,4061458141857,catalog
+Aldi Nord,Kakao Drink,4047247250122,catalog
+Aldi Nord,Vital und fit – Mehrkornbrötchen,29065844,catalog
+Aldi Nord,Fish & Chips,4061462988813,catalog
+Aldi Nord,Hirtenkäse & Kräuteroliven Antipasti,4006495770752,catalog
+Aldi Nord,Kartoffelpuffer,29066926,catalog
+Aldi Nord,vegane Gemüsebällchen,2009010228099,catalog
+Aldi Nord,Haferpops Natur,29034451,catalog
+Aldi Nord,Heiße Sanddorn,29033461,catalog
+Aldi Nord,Aperitivo Spritz alkoholfrei,4061459335323,catalog
+Aldi Nord,Handbrot - Schinken und Käse,4069365048818,catalog
+Aldi Nord,Pralinen Typ Spaghetti-Eis,4061459924404,catalog
+Aldi Nord,Frischei-Waffeln XXL,4061461517731,catalog
+Aldi Nord,Veganer Leverkäse-Aufschnitt - Pizza,4061463478191,catalog
+Aldi Nord,Pizzeria Quattro Formaggi,29068760,catalog
+Aldi Nord,Mozzarella di Bufala Campana D.O.P.,4061461452520,catalog
+Aldi Nord,Waldpilzsuppe,4061463579201,catalog
+Aldi Nord,Bio-Haferdrink - Mandel,4061458023467,catalog
+Aldi Nord,Porridge Winterzauber,4061461027414,catalog
+Aldi Nord,Weizen Knusperbrot,29024957,catalog
+Aldi Nord,Weisse Mandel,4061458141901,catalog
+Aldi Süd,Lassi Mango,4061458049450,catalog
+Aldi Süd,Nougat-Ecken,4061463562241,catalog
+Aldi Süd,Cocktail-Rispentomaten,4061464578821,unloggable
+Aldi Süd,Haferflocken Zart,4061458061490,catalog
+Aldi Süd,Bio-Pure-Bite - Kakao,4061459021714,catalog
+Aldi Süd,Pizza Mac and Cheese,4061459713053,catalog
+Aldi Süd,Trockenpflaumen,4061458070348,catalog
+Aldi Süd,Bio-Dinkel-Oliven-Snack - Kräuter der Provence,4061462883859,catalog
+Aldi Süd,Bio-Steinofenbaguette - Dinkel,4061459644937,catalog
+Aldi Süd,Sun Rice,4061458042826,catalog
+Aldi Süd,Vegane Scheiben auf Basis von Kokosöl,4061464559158,catalog
+Aldi Süd,Dattelsirup,4061462540707,catalog
+Aldi Süd,Das Rustikale - Roggenmischbrot,4061462468179,catalog
+Aldi Süd,Milchdrink - Popcorn-Geschmack,4061463060822,catalog
+Aldi Süd,Käse - Brotzeitbeisser,4061458020718,catalog
+Aldi Süd,Bubble Tea - Black Tea Papaya & Watermelon Bubbles,4004019076113,catalog
+Aldi Süd,Geflügel-Salami,4061458206044,catalog
+Aldi Süd,Hummus Klassisch,4061458173582,catalog
+Aldi Süd,Würzsauce 2 in 1 - Ketchup & Mayonnaise,4061458032087,catalog
+Aldi Süd,Edle Trüffel - Eierlikör mit Jamaica-Rum,4061459731859,catalog
+Aldi Süd,Premium-Joghurt - Mango,4061458022354,catalog
+Aldi Süd,Bio-Reibekäse - Bergkäse,4061459343526,catalog
+Lidl,Pesto alla genovese,4056489202974,catalog
+Lidl,Champignonlyoner,20355227,catalog
+Lidl,White Tiger (Garnelen Geräuchert Pfeffer),4056489430827,catalog
+Lidl,Gofre moi,20261405,catalog
+Lidl,Hähnchenflügel,4056489115984,catalog
+Lidl,haltbare fettarme Milch,4056489233817,off
+Lidl,Champignons,4388860198812,off
+Lidl,Tagliatelle Spinat-Ricotta,20219239,catalog
+Lidl,Kaffee Mandel,42426202,catalog
+Lidl,TK Magronen-Pfanne,4056489455585,catalog
+Lidl,Schlagsahne,4056489037163,catalog
+Lidl,Hummus z sosem pomidorowym,4056489339052,catalog
+Lidl,Crunchy Almond,20559670,catalog
+Lidl,Brussels pate,4056489134688,catalog
+Lidl,Granola crunchy pekan & lönnsirap,7311312007865,catalog
+Lidl,Cuna de queso viejo,20645250,catalog
+Lidl,Kümmel ganz,20227548,catalog
+Lidl,Lait entier,4056489492160,catalog
+Lidl,MCennedy Lemon Flavor American Style Cake,20427450,catalog
+Lidl,Bio Knuspermüsli,4052917023142,catalog
+Lidl,Roggen Vollkornbrot,4056489235712,catalog
+Lidl,Schlagsahne,4056489109471,off
+Kaufland,Konfitüre Extra Sauerkirsche,4063367438950,catalog
+Kaufland,passierte Tomaten,4337185461002,off
+Kaufland,Pflanzenmargarine,4337185563874,catalog
+Kaufland,Orangensaft,4337185500060,off
+Kaufland,Reis lose Langkornnaturreis,4300175849531,catalog
+Kaufland,Zimbo Curry -Wurst,4024722021897,catalog
+Kaufland,Ziegenfrischkäse natur,4337185654541,catalog
+Kaufland,Bio Kürbis Kruste,4059373600313,catalog
+Kaufland,Apfelsaft naturtrüb,4337185500008,catalog
+Kaufland,Müllermlich hake White Choc & Mandel Geschmack,42375692,catalog
+Kaufland,Oliven - gefüllt mit Paprikapaste,4337185538469,catalog
+Kaufland,Choclait Chips Stracciatella,7613036700047,catalog
+Kaufland,Choc It! Schokolade,4337185491672,catalog
+Kaufland,K-take it veggie Organic Soygurt Vanilla 500g,4335896745329,catalog
+Kaufland,Suppen Maultaschen,4075600055657,catalog
+Kaufland,Frucht auf Joghurt Zitrone,4337185611674,catalog
+Kaufland,Sauerkirsch Marmelade,3859893692871,catalog
+Kaufland,Hähnchen-Brühwurst Roulade,4063367297168,catalog
+Kaufland,Yuzu & lemon mochi,5027324001822,catalog
+Kaufland,Choco Rice Pearls,4337185934926,catalog
+Kaufland,Kirsch Grütze,4337185923753,catalog
+Kaufland,Ringel-Würmchen,4063367214028,catalog
+Penny,Fettarmer Joghurt - Erdbeere,20225339,catalog
+Penny,Speisekartoffeln festkochend,4337256014762,catalog
+Penny,Very Fair Schokolade - Vollmilch & Salted Caramel,28738282,catalog
+Penny,Leberwurst fein,21420337,catalog
+Penny,Mineralwasser Spritzig,9001521000228,catalog
+Penny,Steirische Kürbiskerne,25930658,catalog
+Penny,Süßrahm-Butter 82 %,22217264,catalog
+Penny,Netz Pommes,27293546,catalog
+Penny,Der große Bauer Greek Style Kirsch,4002334115654,catalog
+Penny,Kako-Nibs,21747410,catalog
+Penny,Haferflocken zart,21281211,catalog
+Penny,Ahornsirup,22048776,catalog
+Penny,Bio-Kulturheidelbeeren,4388844297210,catalog
+Penny,"Mandeln blanchiert, geröstet",28018995,catalog
+Penny,Nudelsalat mit Geflügelfrikadellen und Erbsen,20737429,catalog
+Penny,westernpfanne,4061458041973,catalog
+Penny,"Bio-Joghurt mild - 3,8 % Fett",22583079,catalog
+Penny,Bio-Streichcreme - Tomate-Basilikum,21642876,catalog
+Penny,Paderborner Brot,28307969,catalog
+Penny,Bio Milch,21231049,catalog
+Penny,Lebkuchen,4008355034370,catalog
+Penny,Kicher Erbsen Chips Paprika,4018077242090,catalog
+Netto,Fit Vital Brötchen,4316268667258,catalog
+Netto,Salami geräuchert,4316268462624,catalog
+Netto,Schokolade Vollmilch Ganze Mandel,4316268553148,catalog
+Netto,Mehrkorn Brötchen Bio,4316268588836,catalog
+Netto,Kingsway 100 % Orangensaft,4015042102939,catalog
+Netto,feine Quark-Creme Erdbeer,5710405083908,catalog
+Netto,Latte macchiato,4316268595438,catalog
+Netto,Sahne-Joghurt mild - Bratapfel,4014500511481,catalog
+Netto,HaferDrink Barista,4311596654574,catalog
+Netto,Ritter Sport Weihnachtsmix,4000417902405,catalog
+Netto,Bio Gurke,42394266,catalog
+Netto,Blue Note,5711953097430,catalog
+Netto,Do NOT post products in other languages If the language is not printed on the Produkt!,42413769,catalog
+Netto,Thurländer Hartkäse-Couton Salat,4036701314203,catalog
+Netto,Ziegenkäse,4316268595797,catalog
+Netto,Comté-Salami,4006639098407,catalog
+Netto,"Williams Christ Birnen, halbe Frucht, gezuckert",4316268709804,catalog
+Netto,Premium Knusper-Früchtemüsli - Multi-Frucht,4316268590655,catalog
+Netto,Mandeln gestiftet,4316268091596,catalog
+Netto,Hühnerfrikassee,4316268679565,catalog
+Netto,Käse,4316268674928,catalog
+Netto,Sonnenblumenkerne,4316268538503,catalog
+dm,Aloe & Frucht,4058172487149,catalog
+dm,Hořká čokoláda,4066447337006,catalog
+dm,Weizenmehl / Farine de blé Type 1050,4058172329159,catalog
+dm,Schokoreiswaffeln,4058172814082,catalog
+dm,Mivolis dm,4058172309977,catalog
+dm,beeren crunchy,4058172786112,off
+dm,Dinkel Frischwaffeln,4058172485350,catalog
+dm,Haferflocken Großblatt,4066447123135,catalog
+dm,Pistazien Creme,4066447717969,off
+dm,Hummus natur,4058172605970,off
+dm,Reiswaffeln mit Sesam gesalzen,4058172485251,catalog
+dm,Marzipan Nougat Riegel,4010355346070,catalog
+dm,Cashewbruch,4058172109157,catalog
+dm,Dinkel Doppelkeks,4066447051247,off
+dm,Riegel Schoko-Aprikose,4008391213357,catalog
+dm,Hafer Drink natur,4066447009040,off
+dm,Wald honig,4058172451393,off
+dm,Proteinmüsli Kakao Nibs & Nuss,4058172307225,catalog
+dm,Mais-Amaranth-Waffeln gesalzen mit Reis & Leinsamen,4010355117571,catalog
+dm,Dinkelcracker Sesam,4010355326713,catalog
+dm,Gemüsebratlinge,4066447422801,catalog
+dm,Hafer Getreidebrei,4104420081482,catalog
+Rossmann,"Leinöl nativ, kaltgepresst",4305615550992,catalog
+Rossmann,Amaranth gepufft ohne Zuckerzusatz,4305615664088,catalog
+Rossmann,Haferriegel Kakao & Haselnuss,4305615826592,catalog
+Rossmann,Coconut Original,4260402485232,catalog
+Rossmann,Crunchy Cubes Schoko,4305615685922,catalog
+Rossmann,Rote Beete Meerrettich,4305615677583,catalog
+Rossmann,Leinsamen geschrotet,4305615664217,catalog
+Rossmann,Apfelringe,4305615462868,catalog
+Rossmann,Genießer Kollektion,4305615765631,catalog
+Rossmann,Mon cheri Cherry Club - Orange Fusion,8000500372715,catalog
+Rossmann,Einer bio kokosöl,4305615678009,catalog
+Rossmann,Heiße Zitrone-Limette,4305615263052,catalog
+Rossmann,This Is Food Cold Brew Coffee,4260556630045,catalog
+Rossmann,Veganer Linseneintopf,4305615666365,catalog
+Rossmann,Edel-Nuss-Mix,4305615416144,off
+Rossmann,Duo Creme,4305615866901,catalog
+Rossmann,Proteinriegel,4305615709819,catalog
+Rossmann,Erdbeere Fruchtaufstrich,4305615770741,catalog
+Rossmann,"Haltbare Landmilch 3,8% Fett",4305615757834,catalog
+Rossmann,Falafel,4305615183336,off
+Rossmann,Bio Zartbitter creme,4305615792194,catalog
+Rossmann,Dunkle Vollmilch Feinmild,4305615838960,catalog
+none,Known miss 1,409999990007,miss
+none,Known miss 2,409999990020,miss
+none,Known miss 3,409999990033,miss
+none,Known miss 4,409999990046,miss
+none,Known miss 5,409999990059,miss
+none,Known miss 6,409999990072,miss
+none,Known miss 7,409999990085,miss
+none,Known miss 8,409999990098,miss
+none,Known miss 9,409999990111,miss
+none,Known miss 10,409999990124,miss

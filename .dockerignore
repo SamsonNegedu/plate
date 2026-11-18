@@ -1,0 +1,5 @@
+.git
+bin
+data/*
+!data/off-catalog.db
+web/node_modules

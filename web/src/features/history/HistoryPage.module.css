@@ -1,0 +1,118 @@
+.page {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+.title {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.card {
+  position: relative;
+  padding: 14px 12px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.empty {
+  padding: 4px 0 8px;
+  text-align: center;
+}
+.empty p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.summary {
+  margin: -2px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.stats div {
+  padding-top: 6px;
+  border-top: 1.5px solid var(--ink);
+}
+.stats dt {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.stats dd {
+  margin: 2px 0 0;
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.stats dd small {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.table th,
+.table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+.table th:first-child,
+.table thead th {
+  text-align: left;
+  font-weight: 600;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+.d {
+  flex: 1;
+  font-size: 15px;
+}
+.c {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.k {
+  min-width: 84px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+}
+.over {
+  color: var(--red);
+}
+.chev {
+  color: var(--ink-3);
+  font-size: 18px;
+}

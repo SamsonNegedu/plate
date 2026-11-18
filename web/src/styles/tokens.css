@@ -1,0 +1,63 @@
+/* Single source of design tokens. mockups.html links this file; do not duplicate values there. */
+:root {
+  --bg: #f4f5ef;
+  --surface: #ffffff;
+  --surface-2: #e9ecdf;
+  --ink: #171a16;
+  --ink-2: #5a6155;
+  --ink-3: #8c9385;
+  --line: #d6dbcc;
+  --accent: #2e6b4a;
+  --accent-2: #3d865e;
+  --on-accent: #ffffff;
+  --red: #ae352b;
+  --amber: #b0731b;
+  --frame: #1b1f19;
+  --frame-line: #2e342b;
+  --scrim: rgba(20, 26, 18, 0.2);
+  --shadow: 0 34px 60px -34px rgba(20, 26, 18, 0.45), 0 2px 6px rgba(20, 26, 18, 0.06);
+  --font: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12150f;
+    --surface: #1a1e17;
+    --surface-2: #232920;
+    --ink: #ecefe4;
+    --ink-2: #a6ad9d;
+    --ink-3: #7c8475;
+    --line: #2d3329;
+    --accent: #6cba8c;
+    --accent-2: #86cba2;
+    --on-accent: #0e1712;
+    --red: #e2796d;
+    --amber: #dfa63d;
+    --frame: #0c0e0b;
+    --frame-line: #262c22;
+    --scrim: rgba(0, 0, 0, 0.38);
+    --shadow: 0 34px 60px -30px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #12150f;
+  --surface: #1a1e17;
+  --surface-2: #232920;
+  --ink: #ecefe4;
+  --ink-2: #a6ad9d;
+  --ink-3: #7c8475;
+  --line: #2d3329;
+  --accent: #6cba8c;
+  --accent-2: #86cba2;
+  --on-accent: #0e1712;
+  --red: #e2796d;
+  --amber: #dfa63d;
+  --frame: #0c0e0b;
+  --frame-line: #262c22;
+  --scrim: rgba(0, 0, 0, 0.38);
+  --shadow: 0 34px 60px -30px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}

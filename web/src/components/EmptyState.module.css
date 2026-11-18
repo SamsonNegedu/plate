@@ -1,0 +1,21 @@
+.empty {
+  padding: 28px 0 8px;
+  text-align: center;
+}
+.title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.body {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}

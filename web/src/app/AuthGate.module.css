@@ -1,0 +1,19 @@
+.splash {
+  padding: 64px var(--gutter);
+  text-align: center;
+  color: var(--ink-2);
+}
+.access {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 64px var(--gutter);
+}
+.access h1 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 600;
+}
+.access p {
+  margin: 0 0 24px;
+  color: var(--ink-2);
+}
