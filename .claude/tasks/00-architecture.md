@@ -1,6 +1,6 @@
 # Architecture and locked decisions
 
-Status: proposed, to be confirmed by Phase 0 spikes.
+Status: the decision record. The system as built is described in `docs/` (start at `docs/README.md`: architecture, data model, sync, food and search, security, client, API, configuration). This file keeps the reasons behind the choices; where it and `docs/` disagree, `docs/` and the code win.
 
 ## Context
 
@@ -20,7 +20,7 @@ Constraints that drive every decision:
 
 One user row, one set of goals, many devices. Every syncable table carries `user_id` so a future multi-user version does not require a schema rewrite, but no sharing or permissions UI ships in v1.
 
-The server binds to loopback by default. Remote access is through Cloudflare Tunnel, with Cloudflare Access in front of the hostname. The origin has no inbound ports; cloudflared makes outbound connections and proxies to the Go process. The camera requires HTTPS on any non-localhost origin, so plain HTTP on a LAN IP is not a supported deployment.
+The server listens on `PLATE_ADDR` (default `:8080`) inside its container and is reached through an HTTPS proxy or tunnel the operator runs; the container publishes no port. The camera requires HTTPS on any non-localhost origin, so plain HTTP is not an option off the dev machine.
 
 ### ADR-002 — One Go binary embeds the built SPA
 
@@ -130,6 +130,8 @@ This removes a third-party request from the phone, keeps the CSP tight (`img-src
 
 ### ADR-011 — Cloudflare Tunnel + Access, snapshot backups
 
+Superseded on 2026-11-18: Cloudflare Tunnel and Access were dropped. The container publishes no port and the operator puts any HTTPS proxy or tunnel in front; the app session is the only auth gate (ADR-009). Docker Compose runs `plate` alone and releases are published to ghcr.io. The snapshot-backup and restore-drill points still stand. The original text follows for the record.
+
 - Cloudflare Tunnel terminates TLS at Cloudflare and reaches the Go process through cloudflared. No inbound ports are open on the origin.
 - Cloudflare Access gates the hostname with the operator's identity. The app keeps its own password session as a second layer; a tunnel or Access misconfiguration does not expose the log.
 - Security headers are set by the app and reinforced at Cloudflare. HSTS is enabled at the edge.
@@ -173,87 +175,9 @@ The catalog is built from the OFF German subset, not from a third-party identity
 - Offline: v1 serves the catalog from the server. A top-5k starter pack for Dexie is a v1.1 option.
 - No identity-only rows: the seed filters out products without kcal, and every result is loggable.
 
-## API shape
+## Where the detail lives
 
-All endpoints are under `/api/v1`. Errors are RFC 9457 `application/problem+json` with a `code`, `detail`, and `request_id`.
-
-| Method | Path | Purpose |
-|---|---|---|
-| POST | `/auth/login` | Session cookie |
-| POST | `/auth/logout` | Delete session |
-| GET | `/auth/me` | Current user and settings |
-| GET/PUT | `/settings` | Goals, day start, theme |
-| GET | `/days/{date}` | Entries + totals for a local day |
-| GET | `/days?from=&to=` | Per-day totals for history |
-| PUT | `/entries/{id}` | Idempotent create/update, client UUID |
-| DELETE | `/entries/{id}` | Tombstone |
-| GET | `/foods/barcode/{code}` | Cache-first lookup, OFF on miss |
-| GET | `/foods/search?q=` | FTS5 + OFF fallback |
-| PUT | `/foods/{id}` | Custom food or correction |
-| GET/PUT/DELETE | `/foods/{id}/favorite` | Favorites |
-| GET | `/foods/recent` | Distinct recent foods |
-| GET | `/saved-meals` | List saved meals |
-| GET/PUT/DELETE | `/saved-meals/{id}` | Saved meal and items |
-| POST | `/sync/push` | Batch ops, idempotent |
-| GET | `/sync/pull?since=` | Ordered changes |
-| GET | `/sync/snapshot` | Live rows + cursor |
-| GET | `/sync/meta` | Enabled flag, head, per-user min_seq, server time |
-| GET | `/export` | Full JSON backup |
-| POST | `/import` | Restore a backup |
-| GET | `/images/{key}` | Allowlisted, cached product image |
-| GET | `/healthz`, `/readyz` | Liveness and readiness |
-
-`PUT /entries/{id}` rather than `POST /entries` is intentional: the client generates the ID, so a retried create is the same request.
-
-## Data model overview
-
-All timestamps are UTC RFC 3339 text. All local dates are `YYYY-MM-DD` text. Nutrition is stored per 100 g/ml and snapshotted onto each entry.
-
-| Table | Purpose | Sync |
-|---|---|---|
-| `users` | Single admin row | no |
-| `sessions` | scs session rows | no |
-| `settings` | Goals, macro targets, day_start_hour, theme | yes |
-| `foods` | OFF, BLS, catalog cache, and user custom foods; barcode unique | yes |
-| `catalog_foods` | OFF German seed with nutrition: barcode, name, brand, per-100 g | no |
-| `catalog_fts` | FTS5 over the catalog | derived |
-| `entries` | One logged portion; nutrition snapshot | yes |
-| `saved_meals` | Named meal template | yes |
-| `saved_meal_items` | Template items | yes |
-| `favorites` | User food favorites | yes |
-| `change_log` | Per-user monotonic change stream | no |
-| `sync_ops` | Applied operation IDs for idempotency | no |
-| `search_cache` | Normalized OFF search responses, TTL | no |
-| `foods_fts` | FTS5 external content index | derived |
-| `image_cache` | On-disk image cache metadata | no |
-
-Every syncable table carries `id`, `user_id`, `created_at`, `updated_at`, `deleted_at`, and `server_seq`. `entries` additionally stores `eaten_on`, `meal`, `amount`, `unit`, `grams`, and the full per-100 g snapshot.
-
-Full column lists and constraints are in `db/migrations/` (the schema's single source of truth).
-
-## Sync policy in one page
-
-1. Local write: Dexie transaction writes the entity and an outbox row with a UUIDv7 `op_id`.
-2. Optimistic UI reads the local row immediately. The day total derives from local entries, never from a server-cached total.
-3. Drain: after 800 ms of quiet, on `online`, on visibility, on app start, and every 60 s while visible, a single leader tab drains the outbox in order.
-4. Push: up to 100 ops per request. The server verifies the session, validates every op, applies the batch in one `BEGIN IMMEDIATE` transaction, records `sync_ops`, appends `change_log`, and returns per-op results.
-5. Pull: the client pulls from its cursor until `hasMore` is false, applies changes in one Dexie transaction, then clears applied outbox rows.
-6. Failure: 401 pauses sync and asks for login. 5xx/network retries with exponential backoff and jitter. A validation failure marks that op failed and surfaces it in Settings; it never blocks other ops.
-7. Multi-tab: `navigator.locks` elects one drainer. A `BroadcastChannel` tells other tabs to re-read Dexie. If Web Locks is unavailable, a Dexie lease row with a 15 s expiry is the fallback.
-8. Bootstrap: a new device pulls a snapshot, sets its cursor, then pulls deltas. If the cursor is below `sync_state.min_seq` for that user, it discards local state and re-snapshots.
-9. Export is independent of sync: `GET /export` always produces a complete JSON backup.
-
-`change_log.seq` is global and AUTOINCREMENT. Pulls filter by `user_id`, so a user's change stream has gaps but stays monotonic. `sync_state` stores `min_seq` and `head_seq` per user, computed from that user's pruned rows. Never compare a client cursor to a global minimum: one user's pruning must not force another user's resync.
-
-## Search policy in one page
-
-- Exact barcode, then local FTS5 over `foods` and `catalog_foods`, then OFF fallback, then empty state with manual entry.
-- A catalog hit is loggable immediately; it never calls OFF for the common path.
-- The FTS5 indexes are updated by triggers. Custom foods, BLS rows, and catalog rows are indexed identically.
-- Ranking: exact barcode > favorite > recent > whole-word match (name or brand) > prefix-only match > OFF fallback. Within a tier, order by bm25, then catalog scan count. Run the whole-word query and the prefix query separately and concatenate; a single prefix query cannot tell `Ja!` from `Jana` (Spike F: `ja!` ranked `Jana jagoda guava` first at 50k rows).
-- Client: MiniSearch over cached foods gives sub-50 ms keystroke results. Server queries are debounced 250 ms and aborted when the query changes.
-- German fixture set: `joghurt`, `Joghurt`, `käse`, `Kase`, `Vollkornbrot`, `vollkorn`, `Müller`, `ja!`, `Gut & Günstig`, `Milbona`, `Hähnchenbrust`.
-- OFF search is proxied and cached. A query that returns nothing is cached too, for one hour, to avoid hammering the API.
+The API, data model, sync protocol and search behavior used to be specified here. They are now described from the code in `docs/api.md` (generated from the OpenAPI spec), `docs/data-model.md`, `docs/sync.md` and `docs/food-and-search.md`, so they cannot drift from what is built.
 
 ## Performance budgets
 
@@ -294,8 +218,8 @@ Background Sync is Chromium-only. iOS relies on foreground sync triggers; this i
 | SSRF via OFF/image proxy | Fixed allowlisted hosts, no user-supplied URLs, response size cap |
 | Abuse of the proxy | Per-IP and global rate limits, disk cache bounds |
 | Data loss | WAL, pre-migration snapshot, off-host snapshot, export, restore drill |
-| Edge bypass | No inbound origin ports; Access in front; app password as the inner gate |
-| Token compromise | Tunnel token and Access policy rotate independently; no origin fallback |
+| Exposed origin | The app publishes no port; reach it only through the operator's HTTPS proxy or tunnel; the app password is the gate |
+| Spoofed client IP or identity | Forwarded headers are never read; rate limits key on the socket peer |
 | Dependency compromise | Lockfiles, pinned versions, `govulncheck`, `pnpm audit`, SBOM |
 
 CSP baseline: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'`.
@@ -308,7 +232,7 @@ CSP baseline: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-s
 | OFF coverage gaps for discounter own-brands | High | Medium | OFF catalog seed, no-match path, one-time label entry, BLS generic foods, correction flow |
 | Catalog seed misses a common product | Medium | Medium | Coverage corpus, seed ranking by scan counts, OFF fallback, user cache |
 | Catalog seed goes stale | Medium | Medium | Dataset version, release refresh, background revalidation, stale hint |
-| OFF dump build is slow or too large | Medium | Low | Default 20k–50k seed; full subset optional; streaming build in CI |
+| OFF dump build is slow or too large | Medium | Low | Seed filtered to products with calories (about 70,000 rows); streaming build |
 | OFF rate limits or outage | Medium | Medium | Server proxy, cache, circuit breaker, manual fallback |
 | Sync bug loses or duplicates a write | Medium | High | Idempotent ops, tombstones, two-client tests, export, local-only kill switch |
 | SQLite lock contention | Low | Medium | WAL, one writer, `BEGIN IMMEDIATE`, busy timeout, single-user load |
@@ -317,8 +241,8 @@ CSP baseline: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-s
 | Browser storage eviction | Medium | High | `navigator.storage.persist()`, server source of truth, export reminders |
 | Day rollover/timezone bugs | Medium | Medium | Explicit local date, configurable day start, DST and midnight tests |
 | PWA update during a scan | Low | Medium | Prompt-based updates, defer while camera or sheet is active |
-| Cloudflare tunnel or Access outage | Medium | High | App is unreachable while down; local logging continues if the PWA is installed; no origin fallback |
-| Access session expiry blocks sync | Medium | Medium | 30-day Access session, client detects non-JSON login and offers "Sign in to continue" |
+| Proxy or tunnel outage | Medium | High | App is unreachable while down; local logging continues if the PWA is installed |
+| A proxy sign-in page replaces JSON | Low | Medium | Client detects a non-JSON response, keeps local data and offers "Sign in to continue" |
 | Scope creep (recipes, weight, OCR) | High | Medium | Explicit non-goals; backlog only |
 
 ## Non-goals for v1

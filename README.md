@@ -2,7 +2,7 @@
 
 Single-user, offline-first PWA for logging calories by barcode. React 19 + TypeScript + Vite client, Go + SQLite server, one static binary that serves the API and the built SPA.
 
-Plan and progress: `.claude/tasks/README.md`. Locked decisions: `.claude/tasks/00-architecture.md`. Visual direction: `mockups.html`.
+Documentation: [`docs/`](docs/README.md) (architecture, data model, sync, security, client, API, configuration, runbook). Plan and progress: `.claude/tasks/README.md`. Locked decisions: `.claude/tasks/00-architecture.md`. Visual direction: `mockups.html`.
 
 ## Run it
 

@@ -59,19 +59,21 @@ Logs are JSON on stdout. Request logs contain method, path, status, duration, an
 
 ## Backups
 
-There is no replication sidecar. Backups are SQLite snapshots, copied off the host. A snapshot on the same disk is not a backup.
+Two things protect the data, and neither is a scheduled job: you run them.
 
-
-Pre-migration snapshots are written automatically. Take one by hand:
+- **Export a backup** (Settings, "Export a backup") downloads a complete JSON copy of your entries, foods, saved meals and goals. It works from any device and restores with "Import a backup", which replaces the account's data after taking a server snapshot first. Do this regularly and keep the file off the host.
+- **A copy of the database file.** Stop the app, copy `plate.db` from the volume, start it again. Do not copy it while the app runs.
 
 ```
-docker compose exec plate /plate -healthcheck   # app is up; snapshots are on the volume
+docker compose stop plate
 docker run --rm -v plate-data:/data -v "$PWD/backups":/backup alpine \
-  sh -c 'ls -1t /data/snapshots | head -1 | xargs -I{} cp /data/snapshots/{} /backup/'
+  cp /data/plate.db "/backup/plate-$(date +%Y%m%d).db"
+docker compose start plate
 ```
 
+The server also writes snapshots on its own, but only around risky changes: before applying a migration (`pre-migrate`) and before an import (`pre-import`), in `<data>/snapshots`. They are for rollback, not for backup. Copy backups off the host; a copy on the same disk is not a backup.
 
-Copy snapshots off the host; a snapshot on the same disk is not a backup.
+There is no scheduled snapshot, no replication, and no automatic off-host copy yet.
 
 ## Restore drill
 
@@ -86,7 +88,7 @@ docker run --rm -v plate-data:/data -v "$PWD/backups":/backup alpine \
 docker compose start plate
 ```
 
-Verify `/readyz`, login, the known entry, and an export.
+Verify `/readyz`, login, the known entry, and an export. To restore from an exported JSON file instead, use Settings, "Import a backup".
 
 ## Password reset and session revoke
 

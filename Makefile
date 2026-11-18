@@ -69,7 +69,7 @@ fmt:
 
 generate:
 	@if [ -f sqlc.yaml ]; then $(SQLC) generate; fi
-	@if [ -d cmd/genopenapi ]; then go run ./cmd/genopenapi > internal/httpapi/openapi.json && pnpm --dir web gen:api; fi
+	@if [ -d cmd/genopenapi ]; then go run ./cmd/genopenapi > internal/httpapi/openapi.json && go run ./cmd/genopenapi -markdown > docs/api.md && pnpm --dir web gen:api; fi
 
 sqlc-diff:
 	@if [ -f sqlc.yaml ]; then $(SQLC) diff; else echo "sqlc.yaml not present yet, skipping"; fi
@@ -106,5 +106,5 @@ audit: audit-go
 verify: lint test build sqlc-diff
 	@$(MAKE) generate >/dev/null
 	@if git rev-parse --git-dir >/dev/null 2>&1; then \
-		git diff --quiet -- db internal web/src/api || (echo "generated files are stale"; exit 1); \
+		git diff --quiet -- db internal web/src/api docs/api.md || (echo "generated files are stale"; exit 1); \
 	fi

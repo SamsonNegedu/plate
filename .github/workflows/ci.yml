@@ -73,7 +73,7 @@ jobs:
       - uses: ./.github/actions/setup-web
       - run: make generate
       - name: Generated files are committed
-        run: git diff --exit-code -- db internal web/src/api
+        run: git diff --exit-code -- db internal web/src/api docs/api.md
 
   build:
     runs-on: ubuntu-latest
