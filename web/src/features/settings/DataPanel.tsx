@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useReducer, useRef } from "react";
 import { useAuth } from "@/app/auth";
 import { useSyncEngine } from "@/app/sync";
 import { Button } from "@/components/Button";
@@ -7,8 +7,8 @@ import { useDb } from "@/db/context";
 import { download, localDump } from "@/lib/diagnostics";
 import { useUi } from "@/lib/ui";
 import { NetworkError } from "@/sync/errors";
+import { DELETE_WORD, dataReducer, initialDataState } from "./dataMachine";
 import {
-  type BackupSummary,
   deleteServerData,
   fetchExport,
   importBackup,
@@ -30,75 +30,76 @@ export function DataPanel() {
   const engine = useSyncEngine();
   const toast = useUi((s) => s.toast);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [pending, setPending] = useState<{ text: string; summary: BackupSummary } | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [typed, setTyped] = useState("");
+  const [state, dispatch] = useReducer(dataReducer, initialDataState);
+  const { restore, wipe, problem } = state;
 
   const exportServer = async () => {
-    setProblem(null);
+    dispatch({ type: "problemCleared" });
     try {
       download(`plate-backup-${stamp()}.json`, await fetchExport());
     } catch (e) {
-      if (e instanceof NetworkError)
-        setProblem(
+      dispatch({
+        type: "exportFailed",
+        message: failureMessage(
+          e,
           "You are offline. Use the offline copy under Advanced, which may be incomplete.",
-        );
-      else setProblem(e instanceof Error ? e.message : "Export failed.");
+          "Export failed.",
+        ),
+      });
     }
   };
 
   const exportLocal = async () => download(`plate-local-${stamp()}.json`, await localDump(db));
 
   const pick = async (file: File) => {
-    setProblem(null);
-    setPending(null);
+    dispatch({ type: "fileChosen" });
     try {
       const text = await file.text();
-      setPending({ text, summary: summarizeBackup(text) });
+      dispatch({ type: "fileRead", text, summary: summarizeBackup(text) });
     } catch (e) {
-      setProblem(e instanceof Error ? e.message : "Could not read that file.");
+      const message = e instanceof Error ? e.message : "Could not read that file.";
+      dispatch({ type: "fileUnreadable", message });
     }
   };
 
   const confirmImport = async () => {
-    if (!pending) return;
-    setBusy(true);
-    setProblem(null);
+    if (restore.step !== "confirming") return;
+    dispatch({ type: "restoreStarted" });
     try {
-      await importBackup(pending.text);
+      await importBackup(restore.text);
       await wipeLocal(db, { everything: false });
       await engine?.resync();
       toast({ message: "Backup restored" });
-      setPending(null);
+      dispatch({ type: "restoreDone" });
       window.location.reload();
     } catch (e) {
-      setProblem(
-        failureMessage(e, "You are offline. Importing needs the server.", "Import failed."),
-      );
-    } finally {
-      setBusy(false);
+      dispatch({
+        type: "restoreFailed",
+        message: failureMessage(
+          e,
+          "You are offline. Importing needs the server.",
+          "Import failed.",
+        ),
+      });
     }
   };
 
   const deleteAll = async () => {
-    setBusy(true);
-    setProblem(null);
+    dispatch({ type: "wipeStarted" });
     try {
       await deleteServerData();
       await wipeLocal(db, { everything: true });
       await auth.logout();
       window.location.assign("/login");
     } catch (e) {
-      setProblem(
-        failureMessage(
+      dispatch({
+        type: "wipeFailed",
+        message: failureMessage(
           e,
           "You are offline. Deleting needs the server so every device is cleared.",
           "Delete failed.",
         ),
-      );
-      setBusy(false);
+      });
     }
   };
 
@@ -141,26 +142,26 @@ export function DataPanel() {
         </p>
       ) : null}
 
-      {pending ? (
+      {restore.step !== "idle" ? (
         <div className={panel(true)}>
           <h3>Replace all data with this backup?</h3>
           <dl className={cls.facts}>
             <div>
               <dt>Entries</dt>
-              <dd>{pending.summary.entries}</dd>
+              <dd>{restore.summary.entries}</dd>
             </div>
             <div>
               <dt>Foods</dt>
-              <dd>{pending.summary.foods}</dd>
+              <dd>{restore.summary.foods}</dd>
             </div>
             <div>
               <dt>Saved meals</dt>
-              <dd>{pending.summary.savedMeals}</dd>
+              <dd>{restore.summary.savedMeals}</dd>
             </div>
             <div>
               <dt>Dates</dt>
               <dd>
-                {pending.summary.from ? `${pending.summary.from} to ${pending.summary.to}` : "None"}
+                {restore.summary.from ? `${restore.summary.from} to ${restore.summary.to}` : "None"}
               </dd>
             </div>
           </dl>
@@ -169,10 +170,14 @@ export function DataPanel() {
             snapshot first.
           </p>
           <div className={cls.actions}>
-            <Button variant="danger" onClick={() => void confirmImport()} busy={busy}>
+            <Button
+              variant="danger"
+              onClick={() => void confirmImport()}
+              busy={restore.step === "restoring"}
+            >
               Replace all data
             </Button>
-            <Button variant="ghost" onClick={() => setPending(null)}>
+            <Button variant="ghost" onClick={() => dispatch({ type: "restoreCancelled" })}>
               Cancel
             </Button>
           </div>
@@ -185,38 +190,32 @@ export function DataPanel() {
           Removes your log from the server and from this device, then signs you out. Export a backup
           first.
         </p>
-        {deleting ? (
+        {wipe.step !== "idle" ? (
           <>
             <Field
               label="Type DELETE to confirm"
               autoCapitalize="characters"
               autoComplete="off"
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
+              value={wipe.typed}
+              onChange={(e) => dispatch({ type: "wipeTyped", typed: e.target.value })}
             />
             <div className={cls.actions}>
               <Button
                 variant="danger"
-                disabled={typed !== "DELETE"}
-                busy={busy}
+                disabled={wipe.typed !== DELETE_WORD}
+                busy={wipe.step === "wiping"}
                 onClick={() => void deleteAll()}
               >
                 Delete everything
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setDeleting(false);
-                  setTyped("");
-                }}
-              >
+              <Button variant="ghost" onClick={() => dispatch({ type: "wipeCancelled" })}>
                 Cancel
               </Button>
             </div>
           </>
         ) : (
           <div className={cls.actions}>
-            <Button variant="danger" onClick={() => setDeleting(true)}>
+            <Button variant="danger" onClick={() => dispatch({ type: "wipeOpened" })}>
               Delete all data
             </Button>
           </div>

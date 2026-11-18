@@ -14,6 +14,19 @@ import { AccessExpired, NetworkError } from "@/sync/errors";
 
 export type AuthStatus = "loading" | "authed" | "anon" | "access";
 
+/**
+ * One state, so an email can never exist without a session and "offline" only exists where it means something:
+ * authed + offline is a device that was signed in earlier and could not reach the server to confirm; anon + offline is
+ * a sign-in screen shown because the network is down.
+ */
+type AuthState =
+  | { status: "loading" }
+  | { status: "authed"; email: string | null; offline: boolean }
+  | { status: "anon"; offline: boolean }
+  | { status: "access" };
+
+const SIGNED_OUT: AuthState = { status: "anon", offline: false };
+
 interface AuthValue {
   status: AuthStatus;
   email: string | null;
@@ -30,9 +43,7 @@ const Ctx = createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const db = useDb();
-  const [status, setStatus] = useState<AuthStatus>("loading");
-  const [email, setEmail] = useState<string | null>(null);
-  const [offline, setOffline] = useState(false);
+  const [state, setState] = useState<AuthState>({ status: "loading" });
 
   const recheck = useCallback(async () => {
     try {
@@ -40,28 +51,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.data) {
         await setMeta(db, META.userId, res.data.user.id);
         await setMeta(db, META.email, res.data.user.email);
-        setEmail(res.data.user.email);
-        setOffline(false);
-        setStatus("authed");
+        setState({ status: "authed", email: res.data.user.email, offline: false });
         return;
       }
       if (res.response.status === 401) {
-        setStatus("anon");
+        setState(SIGNED_OUT);
         return;
       }
       throw toApiError(res.response.status, res.error);
     } catch (err) {
       const cachedUser = await getMeta<string>(db, META.userId);
       if (err instanceof AccessExpired) {
-        setStatus("access");
+        setState({ status: "access" });
       } else if ((err instanceof NetworkError || err instanceof ApiError) && cachedUser) {
         // Only a 401 ends the session. A 429 or 5xx means the server could not confirm it right now.
-        setEmail((await getMeta<string>(db, META.email)) ?? null);
-        setOffline(true);
-        setStatus("authed");
+        const email = (await getMeta<string>(db, META.email)) ?? null;
+        setState({ status: "authed", email, offline: true });
       } else {
-        setStatus("anon");
-        setOffline(err instanceof NetworkError);
+        setState({ status: "anon", offline: err instanceof NetworkError });
       }
     }
   }, [db]);
@@ -86,12 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Signing out locally still works when the server is unreachable.
     }
-    setStatus("anon");
+    setState(SIGNED_OUT);
   }, []);
 
   const value = useMemo<AuthValue>(
-    () => ({ status, email, offline, login, logout, expire: () => setStatus("anon"), recheck }),
-    [status, email, offline, login, logout, recheck],
+    () => ({
+      status: state.status,
+      email: state.status === "authed" ? state.email : null,
+      offline: (state.status === "authed" || state.status === "anon") && state.offline,
+      login,
+      logout,
+      expire: () => setState(SIGNED_OUT),
+      recheck,
+    }),
+    [state, login, logout, recheck],
   );
   return <Ctx value={value}>{children}</Ctx>;
 }

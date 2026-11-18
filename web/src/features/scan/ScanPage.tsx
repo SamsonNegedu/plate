@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
@@ -7,7 +7,7 @@ import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { useSettings } from "@/db/hooks";
 import { useScanFeedback } from "@/db/prefs";
-import { createDetector, type Detector, makeDeduper } from "@/food/barcode";
+import { createDetector, makeDeduper } from "@/food/barcode";
 import { type CameraState, useCamera } from "@/food/camera";
 import { digitsOnly, resolveBarcode } from "@/food/lookup";
 import { copy } from "@/lib/copy";
@@ -15,6 +15,7 @@ import { defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { useUi } from "@/lib/ui";
 import { useNow } from "@/lib/useNow";
 import { beep, haptic } from "./feedback";
+import { cameraWanted, initialScanState, scanReducer } from "./scanMachine";
 
 const ERRORS: Partial<Record<CameraState, string>> = {
   denied: copy.scan.denied,
@@ -32,13 +33,8 @@ export default function ScanPage() {
   const settings = useSettings();
   const feedback = useScanFeedback();
   const sheetOpen = useUi((s) => s.sheets.length > 0);
-  const [typing, setTyping] = useState(false);
-  const [typed, setTyped] = useState("");
-  const [typedError, setTypedError] = useState<string | undefined>();
-  const [busy, setBusy] = useState(false);
-  const [announce, setAnnounce] = useState("");
-  const [detector, setDetector] = useState<Detector | null>(null);
-  const [detectorFailed, setDetectorFailed] = useState(false);
+  const [scan, dispatch] = useReducer(scanReducer, initialScanState);
+  const detector = scan.detector.kind === "ready" ? scan.detector.detector : null;
   const fileRef = useRef<HTMLInputElement>(null);
   const accept = useRef(makeDeduper());
 
@@ -48,14 +44,14 @@ export default function ScanPage() {
     requested && isValidDate(requested) ? requested : logicalDate(now, settings?.dayStartHour ?? 0);
   const meal = defaultMeal(now);
 
-  const active = !sheetOpen && !typing && !busy;
+  const active = !sheetOpen && cameraWanted(scan);
   const { videoRef, state: cameraState, torchAvailable, torchOn, toggleTorch } = useCamera(active);
 
   useEffect(() => {
     let alive = true;
     createDetector()
-      .then((d) => alive && setDetector(d))
-      .catch(() => alive && setDetectorFailed(true));
+      .then((d) => alive && dispatch({ type: "detectorReady", detector: d }))
+      .catch(() => alive && dispatch({ type: "detectorFailed" }));
     return () => {
       alive = false;
     };
@@ -64,7 +60,7 @@ export default function ScanPage() {
   const handle = useCallback(
     async (raw: string) => {
       const code = digitsOnly(raw);
-      setBusy(true);
+      dispatch({ type: "lookupStarted" });
       try {
         const r = await resolveBarcode(db, code, { online: navigator.onLine });
         switch (r.kind) {
@@ -86,12 +82,11 @@ export default function ScanPage() {
             ui.open({ kind: "manual", meal, date, barcode: code });
             break;
           case "invalid":
-            setAnnounce(copy.scan.invalid);
-            setTypedError(copy.scan.invalid);
+            dispatch({ type: "announced", message: copy.scan.invalid });
             break;
         }
       } finally {
-        setBusy(false);
+        dispatch({ type: "lookupEnded" });
       }
     },
     [db, ui, meal, date],
@@ -109,7 +104,7 @@ export default function ScanPage() {
       stopped = true;
       if (feedback.haptics) haptic();
       if (feedback.sound) beep();
-      setAnnounce(copy.scan.found);
+      dispatch({ type: "announced", message: copy.scan.found });
       void handle(code);
     };
     const tick = async (now: number) => {
@@ -141,7 +136,7 @@ export default function ScanPage() {
 
   const readPhoto = async (file: File) => {
     if (!detector) {
-      setAnnounce(copy.scan.unsupported);
+      dispatch({ type: "announced", message: copy.scan.unsupported });
       return;
     }
     try {
@@ -151,26 +146,27 @@ export default function ScanPage() {
       if (code) {
         if (feedback.haptics) haptic();
         await handle(code);
-      } else setAnnounce(copy.scan.noBarcodeInPhoto);
+      } else dispatch({ type: "announced", message: copy.scan.noBarcodeInPhoto });
     } catch {
-      setAnnounce(copy.scan.noBarcodeInPhoto);
+      dispatch({ type: "announced", message: copy.scan.noBarcodeInPhoto });
     }
   };
 
   const submitTyped = () => {
-    const code = digitsOnly(typed);
+    if (scan.input.kind !== "typing") return;
+    const code = digitsOnly(scan.input.value);
     if (code.length < 6 || code.length > 14) {
-      setTypedError(copy.scan.invalid);
+      dispatch({ type: "typedRejected", error: copy.scan.invalid });
       return;
     }
-    setTyping(false);
-    setTyped("");
+    dispatch({ type: "typingClosed" });
     void handle(code);
   };
 
-  const error = ERRORS[cameraState] ?? (detectorFailed ? copy.scan.unsupported : undefined);
+  const error =
+    ERRORS[cameraState] ?? (scan.detector.kind === "failed" ? copy.scan.unsupported : undefined);
   let status: string = copy.scan.point;
-  if (busy) status = copy.scan.lookingUp;
+  if (scan.lookup === "running") status = copy.scan.lookingUp;
   else if (cameraState === "starting") status = copy.scan.start;
 
   return (
@@ -214,11 +210,11 @@ export default function ScanPage() {
         )}
       </div>
       <p className="min-h-5.5 text-center text-label text-ink-2" role="status" aria-live="polite">
-        {announce || status}
+        {scan.announcement || status}
       </p>
 
       <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
-        <Button onClick={() => setTyping(true)}>
+        <Button onClick={() => dispatch({ type: "typingOpened" })}>
           <Icon name="barcode" />
           {copy.scan.typeBarcode}
         </Button>
@@ -248,11 +244,11 @@ export default function ScanPage() {
         {copy.common.back}
       </Button>
 
-      {typing ? (
+      {scan.input.kind === "typing" ? (
         <Sheet
           title={copy.scan.typeBarcode}
           description="Digits only. Spaces and dashes are ignored."
-          onClose={() => setTyping(false)}
+          onClose={() => dispatch({ type: "typingClosed" })}
           footer={
             <Button variant="primary" block onClick={submitTyped}>
               Look up
@@ -264,12 +260,9 @@ export default function ScanPage() {
             inputMode="numeric"
             autoComplete="off"
             autoFocus
-            value={typed}
-            error={typedError}
-            onChange={(e) => {
-              setTyped(e.target.value);
-              setTypedError(undefined);
-            }}
+            value={scan.input.value}
+            error={scan.input.error ?? undefined}
+            onChange={(e) => dispatch({ type: "typedChanged", value: e.target.value })}
             onKeyDown={(e) => {
               if (e.key === "Enter") submitTyped();
             }}
