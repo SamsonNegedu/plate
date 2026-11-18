@@ -35,12 +35,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: { go-version-file: go.mod, cache: true }
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/golangci-lint
-          key: golangci-${{ runner.os }}-${{ hashFiles('go.sum', '.golangci.yml') }}
-          restore-keys: golangci-${{ runner.os }}-
-      - run: make lint-go sqlc-diff
+      # Prebuilt tools: `go run` would compile golangci-lint and sqlc from source on every run. Versions match go.mod.
+      - uses: golangci/golangci-lint-action@v8
+        with: { version: v2.15.0 }
+      - uses: sqlc-dev/setup-sqlc@v4
+        with: { sqlc-version: "1.30.0" }
+      - run: make sqlc-diff SQLC=sqlc
 
   audit:
     runs-on: ubuntu-latest
@@ -71,7 +71,9 @@ jobs:
       - uses: actions/setup-go@v5
         with: { go-version-file: go.mod, cache: true }
       - uses: ./.github/actions/setup-web
-      - run: make generate
+      - uses: sqlc-dev/setup-sqlc@v4
+        with: { sqlc-version: "1.30.0" }
+      - run: make generate SQLC=sqlc
       - name: Generated files are committed
         run: git diff --exit-code -- db internal web/src/api docs/api.md
 
@@ -84,7 +86,8 @@ jobs:
         with: { go-version-file: go.mod, cache: true }
       - uses: ./.github/actions/setup-web
       - run: make build
-      - run: go build -o bin/e2eseed ./tools/e2eseed
+      # Same flags as make build, so the compiled dependencies are reused instead of rebuilt.
+      - run: go build -trimpath -ldflags="-s -w" -o bin/e2eseed ./tools/e2eseed
       - uses: actions/upload-artifact@v4
         with:
           name: plate-linux-amd64
@@ -114,10 +117,9 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      # The runner image already carries Chrome's system libraries, so a cached browser needs no apt step.
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: pnpm --dir web exec playwright install --with-deps chromium
-      - if: steps.browsers.outputs.cache-hit == 'true'
-        run: pnpm --dir web exec playwright install-deps chromium
       - run: pnpm --dir web exec playwright test --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
         if: failure()

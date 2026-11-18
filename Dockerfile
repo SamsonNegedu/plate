@@ -11,6 +11,12 @@ FROM golang:1.27-alpine AS go
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
+# Compile the third-party tree (mostly SQLite) in its own layer, keyed on go.mod and go.sum, so a code-only change
+# reuses it. Same flags as the real build, or the cache would not match. A dependency missing here only costs time.
+RUN CGO_ENABLED=0 go build -trimpath \
+    github.com/alexedwards/argon2id github.com/alexedwards/scs/v2 github.com/danielgtaylor/huma/v2 \
+    github.com/danielgtaylor/huma/v2/adapters/humachi github.com/go-chi/chi/v5 github.com/google/uuid \
+    github.com/pressly/goose/v3 modernc.org/sqlite
 COPY . .
 COPY --from=web /src/internal/webui/dist internal/webui/dist
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/plate ./cmd/plate
