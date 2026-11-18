@@ -9,7 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"net/netip"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -61,11 +60,9 @@ type env struct {
 }
 
 type opts struct {
-	register  func(huma.API, chi.Router)
-	proxyMode bool
-	proxy     auth.Proxy
-	dataDir   string
-	syncOff   bool
+	register func(huma.API, chi.Router)
+	dataDir  string
+	syncOff  bool
 	// imageClient replaces the image proxy's HTTP client so tests never reach the internet.
 	imageClient *http.Client
 	imagesDir   string
@@ -89,7 +86,7 @@ func newEnv(t *testing.T, o opts) *env {
 		t.Fatal(err)
 	}
 	ss := auth.NewSessionStore(d)
-	cfg := config.Config{AdminEmail: testEmail, AdminPassword: testPassword, AuthMode: "password"}
+	cfg := config.Config{AdminEmail: testEmail, AdminPassword: testPassword}
 	if err := auth.Bootstrap(t.Context(), cfg, d, ss, slog.New(slog.NewTextHandler(io.Discard, nil))); err != nil {
 		t.Fatal(err)
 	}
@@ -100,16 +97,12 @@ func build(t *testing.T, d *sql.DB, ss *auth.SessionStore, o opts) *env {
 	t.Helper()
 	logs := &bytes.Buffer{}
 	base, _ := url.Parse("https://plate.example.com")
-	mode := "password"
-	if o.proxyMode {
-		mode = "proxy"
-	}
 	log := slog.New(slog.NewJSONHandler(logs, nil))
 	off := &fakeOFF{products: map[string]food.OFFProduct{}}
 	images := food.NewImages(d, food.ImagesConfig{Dir: filepath.Join(o.imageDir(), "images"), Client: o.imageClient})
-	a := NewAuth(ss, o.proxy, o.proxyMode)
+	a := NewAuth(ss)
 	h, _ := New(Deps{
-		Config:   config.Config{BaseURL: base, AuthMode: mode, DataDir: o.dataDir, SyncEnabled: !o.syncOff},
+		Config:   config.Config{BaseURL: base, DataDir: o.dataDir, SyncEnabled: !o.syncOff},
 		Log:      log,
 		DB:       d,
 		Auth:     a,
@@ -409,34 +402,11 @@ func TestLogoutAllRevokesEveryDevice(t *testing.T) {
 	}
 }
 
-func TestProxyModeTrustsIdentityOnlyFromCIDRAndNeverCreatesUsers(t *testing.T) {
-	proxy := auth.Proxy{Trust: true, CIDRs: []netip.Prefix{netip.MustParsePrefix("172.18.0.0/16")}}
-	e := newEnv(t, opts{proxyMode: true, proxy: proxy})
-	hdr := header("Cf-Access-Authenticated-User-Email", testEmail)
-
-	if rec := e.do("GET", "/api/v1/auth/me", "", hdr, remote("198.51.100.7:1")); rec.Code != 401 {
-		t.Fatalf("outside the CIDR = %d, want 401", rec.Code)
-	}
-	if rec := e.do("GET", "/api/v1/auth/me", "", hdr, remote("172.18.0.5:1")); rec.Code != 200 {
-		t.Fatalf("from the proxy = %d %s", rec.Code, rec.Body)
-	}
-	stranger := header("Cf-Access-Authenticated-User-Email", "stranger@example.com")
-	if rec := e.do("GET", "/api/v1/auth/me", "", stranger, remote("172.18.0.5:1")); rec.Code != 401 {
-		t.Fatalf("unknown identity = %d, want 401", rec.Code)
-	}
-	var n int
-	_ = e.db.QueryRow(`SELECT count(*) FROM users`).Scan(&n)
-	if n != 1 {
-		t.Fatalf("users = %d; the header must never create one", n)
-	}
-}
-
-func TestPasswordModeIgnoresAccessHeader(t *testing.T) {
-	proxy := auth.Proxy{Trust: true, CIDRs: []netip.Prefix{netip.MustParsePrefix("172.18.0.0/16")}}
-	e := newEnv(t, opts{proxy: proxy})
+func TestAccessHeaderNeverAuthenticates(t *testing.T) {
+	e := newEnv(t, opts{})
 	rec := e.do("GET", "/api/v1/auth/me", "", header("Cf-Access-Authenticated-User-Email", testEmail), remote("172.18.0.5:1"))
 	if rec.Code != 401 {
-		t.Fatalf("password mode accepted the proxy header: %d", rec.Code)
+		t.Fatalf("an identity header authenticated the request: %d", rec.Code)
 	}
 }
 

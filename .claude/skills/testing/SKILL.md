@@ -32,12 +32,12 @@ description: Use when adding or changing tests, fixtures, CI checks, or when ver
 | Search | German fixtures, punctuation, prefix, short-query fallback, ranking |
 | Entries | idempotent PUT, tombstone, undo paths, day totals |
 | Sync | duplicates, conflict, tombstone, rejected op in batch, stale cursor, snapshot, randomized convergence |
-| Auth | bootstrap, login, logout, expiry, rate limit, CSRF origin, proxy CIDR |
+| Auth | bootstrap, login, logout, expiry, rate limit, CSRF origin, forwarded headers ignored |
 | Migrations | up/down/up, schema snapshot, partial unique barcode |
 | Export/import | round-trip, bad schema rejected before write, pre-import snapshot |
 | PWA | offline reload, offline write, reconnect sync, update prompt, no API in SW cache |
 | Visual | screenshots at 400 px, light/dark, every surface/state | no diff vs approved baseline |
-| Edge | Cloudflare Access blocks non-operator emails; no origin port; Access-expiry reauth |
+| Edge | no origin port; a proxy sign-in page is treated as re-authentication |
 | UI | keyboard path, 400 px, light/dark, axe on each new surface |
 
 ## Go

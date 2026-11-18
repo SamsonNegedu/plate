@@ -89,7 +89,7 @@ func TestCoverage(t *testing.T) {
 		}
 		seedPath = seedFile(t, catalog, "corpus-slice")
 	}
-	if _, err := ImportCatalog(context.Background(), x.db, seedPath, "", quiet()); err != nil {
+	if _, err := ImportCatalog(context.Background(), x.db, seedPath, quiet()); err != nil {
 		t.Fatal(err)
 	}
 
@@ -206,7 +206,7 @@ func TestRealSeedSearch(t *testing.T) {
 	}
 	x := newFx(t)
 	start := time.Now()
-	res, err := ImportCatalog(context.Background(), x.db, seed, "", quiet())
+	res, err := ImportCatalog(context.Background(), x.db, seed, quiet())
 	if err != nil {
 		t.Fatal(err)
 	}

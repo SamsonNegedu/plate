@@ -27,9 +27,6 @@ type Auth struct {
 	Sessions *scs.SessionManager
 	Store    *auth.SessionStore
 	Limits   *auth.LoginLimits
-	Proxy    auth.Proxy
-	// ProxyMode trusts Cf-Access-Authenticated-User-Email from the proxy CIDR instead of a session.
-	ProxyMode bool
 	// Reads and Sync cap requests per user per minute: 60 for the general API, 120 for /sync.
 	Reads *ratelimit.Limiter
 	Sync  *ratelimit.Limiter
@@ -38,16 +35,14 @@ type Auth struct {
 }
 
 // NewAuth builds the production auth wiring from the database.
-func NewAuth(sessions *auth.SessionStore, proxy auth.Proxy, proxyMode bool) *Auth {
+func NewAuth(sessions *auth.SessionStore) *Auth {
 	return &Auth{
-		Sessions:  auth.NewSessionManager(sessions),
-		Store:     sessions,
-		Limits:    auth.NewLoginLimits(),
-		Proxy:     proxy,
-		ProxyMode: proxyMode,
-		Reads:     ratelimit.NewLimiter(300, time.Minute),
-		Sync:      ratelimit.NewLimiter(600, time.Minute),
-		Lookups:   ratelimit.NewLimiter(60, time.Minute),
+		Sessions: auth.NewSessionManager(sessions),
+		Store:    sessions,
+		Limits:   auth.NewLoginLimits(),
+		Reads:    ratelimit.NewLimiter(300, time.Minute),
+		Sync:     ratelimit.NewLimiter(600, time.Minute),
+		Lookups:  ratelimit.NewLimiter(60, time.Minute),
 	}
 }
 
@@ -123,7 +118,7 @@ func (d Deps) csrf(next http.Handler) http.Handler {
 
 func (a *Auth) clientInfo(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), clientIPKey, a.Proxy.ClientIP(r))
+		ctx := context.WithValue(r.Context(), clientIPKey, auth.ClientIP(r))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -139,9 +134,7 @@ func isPublic(r *http.Request) bool {
 
 // require rejects unauthenticated requests. scs re-commits a loaded session when an idle timeout is set, so every
 // authenticated request slides the idle deadline. Everything under /api/v1 is private unless isPublic says otherwise.
-func (a *Auth) require(db interface {
-	UserByEmail(context.Context, string) (domain.User, error)
-}) func(http.Handler) http.Handler {
+func (a *Auth) require() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if isPublic(r) {
@@ -149,13 +142,6 @@ func (a *Auth) require(db interface {
 				return
 			}
 			uid := a.Sessions.GetString(r.Context(), auth.UserKey)
-			if uid == "" && a.ProxyMode {
-				if email := a.Proxy.AccessEmail(r); email != "" {
-					if u, err := db.UserByEmail(r.Context(), strings.ToLower(email)); err == nil {
-						uid = u.ID
-					}
-				}
-			}
 			if uid == "" {
 				writeProblem(w, r, http.StatusUnauthorized, "unauthorized", "Sign in to continue.")
 				return
@@ -182,14 +168,13 @@ type userOutput struct{ Body UserBody }
 
 type meOutput struct {
 	Body struct {
-		User     UserBody `json:"user"`
-		AuthMode string   `json:"auth_mode" enum:"password,proxy"`
+		User UserBody `json:"user"`
 	}
 }
 
 // useAuth installs session loading and the default-deny gate. It must run before any route is registered.
 func (d Deps) useAuth(sub chi.Router) {
-	sub.Use(d.Auth.Sessions.LoadAndSave, d.Auth.clientInfo, d.Auth.require(store.NewRepo(d.DB)), d.Auth.rateLimit)
+	sub.Use(d.Auth.Sessions.LoadAndSave, d.Auth.clientInfo, d.Auth.require(), d.Auth.rateLimit)
 }
 
 func (d Deps) registerAuth(api huma.API) {
@@ -255,7 +240,6 @@ func (d Deps) registerAuth(api huma.API) {
 		}
 		out := &meOutput{}
 		out.Body.User = UserBody{ID: u.ID, Email: u.Email, LastLoginAt: u.LastLoginAt}
-		out.Body.AuthMode = d.Config.AuthMode
 		return out, nil
 	})
 }

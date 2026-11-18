@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/netip"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -18,25 +17,20 @@ type Config struct {
 	DataDir         string
 	DBPath          string
 	BaseURL         *url.URL
-	TrustProxy      bool
-	ProxyCIDRs      []netip.Prefix
 	AdminEmail      string
 	AdminPassword   string
 	LogLevel        slog.Level
-	AuthMode        string
 	ResetPassword   bool
 	SyncEnabled     bool
 	ReindexFTS      bool
 	ImportBLSPath   string
 	ImportCatalog   string
-	CatalogVersion  string
 	CatalogReimport bool
 	IntegrityCheck  bool
 	MaintenanceHr   int
 	OFFBaseURL      string
 	OFFSearchURL    string
 	OFFUserAgent    string
-	ImageMaxBytes   int64
 	ImageCacheMB    int64
 }
 
@@ -77,23 +71,19 @@ func Load(env func(string) string) (Config, error) {
 	c := Config{
 		Addr:            str("PLATE_ADDR", ":8080"),
 		DataDir:         str("PLATE_DATA_DIR", "./data"),
-		TrustProxy:      boolean("PLATE_TRUST_PROXY", false),
 		AdminEmail:      str("PLATE_ADMIN_EMAIL", ""),
 		AdminPassword:   env("PLATE_ADMIN_PASSWORD"),
-		AuthMode:        str("PLATE_AUTH_MODE", "password"),
 		ResetPassword:   boolean("PLATE_ADMIN_RESET_PASSWORD", false),
 		SyncEnabled:     boolean("PLATE_SYNC_ENABLED", true),
 		ReindexFTS:      boolean("PLATE_REINDEX_FTS", false),
 		ImportBLSPath:   str("PLATE_IMPORT_BLS_PATH", ""),
 		ImportCatalog:   str("PLATE_IMPORT_CATALOG_PATH", ""),
-		CatalogVersion:  str("PLATE_CATALOG_DATASET_VERSION", ""),
 		CatalogReimport: boolean("PLATE_CATALOG_REIMPORT", false),
 		IntegrityCheck:  boolean("PLATE_INTEGRITY_CHECK", true),
 		MaintenanceHr:   int(integer("PLATE_MAINTENANCE_HOUR", 3)),
 		OFFBaseURL:      str("PLATE_OFF_BASE_URL", "https://world.openfoodfacts.org"),
 		OFFSearchURL:    str("PLATE_OFF_SEARCH_URL", "https://search.openfoodfacts.org"),
 		OFFUserAgent:    str("PLATE_OFF_USER_AGENT", "Plate/1.0 (self-hosted)"),
-		ImageMaxBytes:   integer("PLATE_IMAGE_MAX_BYTES", 2_000_000),
 		ImageCacheMB:    integer("PLATE_IMAGE_CACHE_MB", 256),
 	}
 	c.DBPath = str("PLATE_DB_PATH", filepath.Join(c.DataDir, "plate.db"))
@@ -121,31 +111,10 @@ func Load(env func(string) string) (Config, error) {
 		c.BaseURL = base
 	}
 
-	if c.AuthMode != "password" && c.AuthMode != "proxy" {
-		errs = append(errs, errors.New("PLATE_AUTH_MODE: want password or proxy"))
-	}
 	if c.MaintenanceHr < 0 || c.MaintenanceHr > 23 {
 		errs = append(errs, errors.New("PLATE_MAINTENANCE_HOUR: want 0-23"))
 	}
 
-	for _, raw := range strings.Split(env("PLATE_PROXY_CIDRS"), ",") {
-		raw = strings.TrimSpace(raw)
-		if raw == "" {
-			continue
-		}
-		p, err := netip.ParsePrefix(raw)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("PLATE_PROXY_CIDRS: %q is not a CIDR", raw))
-			continue
-		}
-		c.ProxyCIDRs = append(c.ProxyCIDRs, p)
-	}
-	if (c.TrustProxy || c.AuthMode == "proxy") && len(c.ProxyCIDRs) == 0 {
-		errs = append(errs, errors.New("PLATE_PROXY_CIDRS: required when proxy trust or proxy auth is on"))
-	}
-	if c.AuthMode == "proxy" && !c.TrustProxy {
-		errs = append(errs, errors.New("PLATE_AUTH_MODE=proxy requires PLATE_TRUST_PROXY=true"))
-	}
 	if c.ResetPassword && c.AdminPassword == "" {
 		errs = append(errs, errors.New("PLATE_ADMIN_RESET_PASSWORD needs PLATE_ADMIN_PASSWORD"))
 	}

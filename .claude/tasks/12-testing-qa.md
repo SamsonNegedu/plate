@@ -88,7 +88,7 @@ Prove the product end to end on the devices and failure modes that matter, and l
 ### Auth
 
 - Bootstrap creates one user; restart does not duplicate.
-- Login, logout, expired session, rate limit, foreign Origin, proxy CIDR rejection.
+- Login, logout, expired session, rate limit, foreign Origin, forwarded identity headers ignored.
 - Cookie flags and `__Host-` prefix.
 - Session survives restart.
 - A logged-out device cannot sync.

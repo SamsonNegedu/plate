@@ -17,7 +17,7 @@ Start with `.claude/tasks/README.md`, then the current phase file. Locked decisi
 - The mockups are the design floor. Match or exceed them; a downgrade requires updating the mockup first and an explicit decision.
 - No analytics, no trackers, no third-party runtime services.
 - Camera requires HTTPS. Localhost is the only exception.
-- Cloudflare Tunnel is the only path to the origin. No inbound ports; Access is the outer gate and the app session is the inner gate.
+- HTTPS comes from a proxy or tunnel you run in front. The app publishes no port, and the app session is the only auth gate: the app never trusts forwarded identity or IP headers.
 - One binary, one SQLite file, no external queue or cache.
 
 ## Stack
@@ -39,7 +39,7 @@ Start with `.claude/tasks/README.md`, then the current phase file. Locked decisi
 | Queries | sqlc |
 | Migrations | goose v3 |
 | Auth | `alexedwards/scs/v2` + Argon2id |
-| Deploy | Cloudflare Tunnel + Access, SQLite snapshot backups |
+| Deploy | Docker Compose, SQLite snapshot backups |
 
 ## Go skill routing
 

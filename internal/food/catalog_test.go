@@ -66,7 +66,7 @@ func TestImportReplacesTheCatalogAndBuildsSearch(t *testing.T) {
 	x := newFx(t)
 	ctx := context.Background()
 	p := seedFile(t, []domain.CatalogFood{cf("3017620422003", "Nutella", 539), cf("4000000000011", "Joghurt", 61)}, "2026-11")
-	res, err := ImportCatalog(ctx, x.db, p, "", quiet())
+	res, err := ImportCatalog(ctx, x.db, p, quiet())
 	if err != nil || res.Rows != 2 || res.Version != "2026-11" {
 		t.Fatalf("res = %+v, %v", res, err)
 	}
@@ -86,12 +86,12 @@ func TestImportReplacesTheCatalogAndBuildsSearch(t *testing.T) {
 func TestReimportIsIdempotentAndReplacesOldRows(t *testing.T) {
 	x := newFx(t)
 	ctx := context.Background()
-	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Alt", 1), cf("4000000000012", "Weg", 1)}, "v1"), "", quiet()); err != nil {
+	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Alt", 1), cf("4000000000012", "Weg", 1)}, "v1"), quiet()); err != nil {
 		t.Fatal(err)
 	}
 	p := seedFile(t, []domain.CatalogFood{cf("4000000000011", "Neu", 2), cf("4000000000013", "Dazu", 3)}, "v2")
 	for range 2 {
-		if _, err := ImportCatalog(ctx, x.db, p, "", quiet()); err != nil {
+		if _, err := ImportCatalog(ctx, x.db, p, quiet()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -114,24 +114,13 @@ func TestReimportIsIdempotentAndReplacesOldRows(t *testing.T) {
 	}
 }
 
-func TestVersionOverride(t *testing.T) {
-	x := newFx(t)
-	res, err := ImportCatalog(context.Background(), x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "A", 1)}, "built"), "release-7", quiet())
-	if err != nil || res.Version != "release-7" {
-		t.Fatalf("%+v %v", res, err)
-	}
-	if c, _ := x.r.CatalogByBarcode(context.Background(), "4000000000011"); c.DatasetVersion != "release-7" {
-		t.Fatalf("version = %q", c.DatasetVersion)
-	}
-}
-
 func TestDuplicateBarcodesResolveLastWins(t *testing.T) {
 	x := newFx(t)
 	p := rawSeed(t, looseSchema, goodMeta,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g) VALUES ('4000000000011','Erste',10)`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g) VALUES ('4000000000011','Zweite',20)`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g) VALUES ('4000000000012','Andere',30)`)
-	if _, err := ImportCatalog(context.Background(), x.db, p, "", quiet()); err != nil {
+	if _, err := ImportCatalog(context.Background(), x.db, p, quiet()); err != nil {
 		t.Fatal(err)
 	}
 	c, _ := x.r.CatalogByBarcode(context.Background(), "4000000000011")
@@ -151,7 +140,7 @@ func TestRowsWithoutKcalOrWithBadDataAreSkipped(t *testing.T) {
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g) VALUES ('4000000000013','  ',10)`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g) VALUES ('4000000000014','Absurd',99999)`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g,fat_100g) VALUES ('4000000000015','Fett 500g',100,500)`)
-	res, err := ImportCatalog(context.Background(), x.db, p, "", quiet())
+	res, err := ImportCatalog(context.Background(), x.db, p, quiet())
 	if err != nil || res.Rows != 1 || res.Skipped != 7 {
 		t.Fatalf("res = %+v, %v", res, err)
 	}
@@ -167,7 +156,7 @@ func TestOnlyAllowlistedImageURLsSurvive(t *testing.T) {
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g,image_source_url) VALUES ('4000000000012','B',1,'http://169.254.169.254/latest/meta-data')`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g,image_source_url) VALUES ('4000000000013','C',1,'https://evil.example/images/x.jpg')`,
 		`INSERT INTO catalog_foods(barcode,name,kcal_100g,image_source_url) VALUES ('4000000000014','D',1,'https://images.openfoodfacts.org@evil.example/images/x.jpg')`)
-	if _, err := ImportCatalog(context.Background(), x.db, p, "", quiet()); err != nil {
+	if _, err := ImportCatalog(context.Background(), x.db, p, quiet()); err != nil {
 		t.Fatal(err)
 	}
 	for bc, want := range map[string]bool{"4000000000011": true, "4000000000012": false, "4000000000013": false, "4000000000014": false} {
@@ -181,7 +170,7 @@ func TestOnlyAllowlistedImageURLsSurvive(t *testing.T) {
 func TestBadSeedFilesLeaveThePreviousCatalogIntact(t *testing.T) {
 	x := newFx(t)
 	ctx := context.Background()
-	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Behalten", 1)}, "v1"), "", quiet()); err != nil {
+	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Behalten", 1)}, "v1"), quiet()); err != nil {
 		t.Fatal(err)
 	}
 	notSQLite := filepath.Join(t.TempDir(), "junk.db")
@@ -200,7 +189,7 @@ func TestBadSeedFilesLeaveThePreviousCatalogIntact(t *testing.T) {
 		"no tables":         rawSeed(t, `CREATE TABLE other (x)`),
 	}
 	for name, p := range bad {
-		if _, err := ImportCatalog(ctx, x.db, p, "", quiet()); err == nil {
+		if _, err := ImportCatalog(ctx, x.db, p, quiet()); err == nil {
 			t.Errorf("%s: import succeeded", name)
 		}
 	}
@@ -221,7 +210,7 @@ func TestSeedAboveTheSizeLimitIsRejectedUnopened(t *testing.T) {
 	old := MaxSeedBytes
 	MaxSeedBytes = 10
 	t.Cleanup(func() { MaxSeedBytes = old })
-	if _, err := ImportCatalog(context.Background(), x.db, p, "", quiet()); err == nil || !strings.Contains(err.Error(), "limit") {
+	if _, err := ImportCatalog(context.Background(), x.db, p, quiet()); err == nil || !strings.Contains(err.Error(), "limit") {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -230,7 +219,7 @@ func TestSeedFileIsNeverModified(t *testing.T) {
 	x := newFx(t)
 	p := seedFile(t, []domain.CatalogFood{cf("4000000000011", "A", 1)}, "v1")
 	before, _ := os.ReadFile(p)
-	if _, err := ImportCatalog(context.Background(), x.db, p, "", quiet()); err != nil {
+	if _, err := ImportCatalog(context.Background(), x.db, p, quiet()); err != nil {
 		t.Fatal(err)
 	}
 	after, _ := os.ReadFile(p)
@@ -247,7 +236,7 @@ func TestImportDoesNotTouchUserFoodsOrEntries(t *testing.T) {
 	ctx := context.Background()
 	x.addCatalog(t, "3017620422003", "Nutella", 539)
 	cat, _ := x.svc.Barcode(ctx, uid, "3017620422003") // materialized
-	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Neu", 1)}, "v2"), "", quiet()); err != nil {
+	if _, err := ImportCatalog(ctx, x.db, seedFile(t, []domain.CatalogFood{cf("4000000000011", "Neu", 1)}, "v2"), quiet()); err != nil {
 		t.Fatal(err)
 	}
 	got, err := x.r.Food(ctx, uid, cat.ID)

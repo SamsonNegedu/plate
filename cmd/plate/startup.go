@@ -52,7 +52,7 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 			}
 		}
 		if importNow {
-			if _, err := food.ImportCatalog(ctx, db, seed, cfg.CatalogVersion, log); err != nil {
+			if _, err := food.ImportCatalog(ctx, db, seed, log); err != nil {
 				return err
 			}
 			log.Info("catalog import finished",

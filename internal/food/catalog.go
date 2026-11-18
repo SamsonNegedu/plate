@@ -115,7 +115,7 @@ type CatalogImport struct {
 // ImportCatalog replaces catalog_foods from a seed file in one transaction. The file is untrusted: it is opened read-only,
 // its structure is checked first (no triggers, views or unexpected tables), and rows are copied into the app-owned
 // table one by one, validated. Any failure leaves the previous catalog intact.
-func ImportCatalog(ctx context.Context, db *sql.DB, path, versionOverride string, log *slog.Logger) (CatalogImport, error) {
+func ImportCatalog(ctx context.Context, db *sql.DB, path string, log *slog.Logger) (CatalogImport, error) {
 	start := time.Now()
 	info, err := os.Stat(path) // #nosec G703 -- the path is the operator's PLATE_IMPORT_CATALOG_PATH
 	if err != nil {
@@ -139,9 +139,6 @@ func ImportCatalog(ctx context.Context, db *sql.DB, path, versionOverride string
 		return CatalogImport{}, err
 	}
 	version := meta["dataset_version"]
-	if versionOverride != "" {
-		version = versionOverride
-	}
 
 	var res CatalogImport
 	res.Version = version

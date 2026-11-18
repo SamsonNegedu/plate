@@ -32,5 +32,5 @@ Tag `vX.Y.Z` to publish a release image; CI smoke-tests it first (`make docker-s
 
 ## Notes
 
-- The camera needs HTTPS except on localhost. If you front the app with Cloudflare Tunnel, see `docs/cloudflare.md`.
+- The camera needs HTTPS except on localhost.
 - Food data comes from Open Food Facts (ODbL). See the in-app attribution page.

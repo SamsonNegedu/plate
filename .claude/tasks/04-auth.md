@@ -75,20 +75,9 @@ Set in middleware. Cloudflare also enforces HSTS at the edge:
 
 Cloudflare Access is the outer gate, not a replacement for the app session:
 
-- An Access application covers the hostname, allows only the operator's email, and uses a 30-day session.
-- The app still requires its own password session. Access stops unauthenticated requests at the edge; the app stops anyone who reaches the origin without a session.
 - When Access expires, `/api/*` may return an HTML login page or a redirect instead of JSON. The client detects a non-JSON response, keeps local data, pauses sync, and shows "Sign in to continue" linking to the public hostname.
 - The app's own 401 remains a separate state: "Session expired, sign in with your password."
 
-Optional `AUTH_MODE=proxy`:
-
-- `PLATE_AUTH_MODE=proxy`, `PLATE_TRUST_PROXY=true`, `PLATE_PROXY_CIDRS=<cloudflared cidr>`.
-- Trust only `Cf-Access-Authenticated-User-Email`, only when the immediate peer is inside the CIDR allowlist.
-- Map the identity to the existing single user. Never create a user from the header in v1.
-- Refuse to start if proxy mode is enabled without a CIDR allowlist.
-- `CF-Connecting-IP` is used for rate limiting only when the peer is inside the same CIDR.
-
-The default remains `AUTH_MODE=password`; Access is additional, not a replacement. This is deliberate: a tunnel or Access misconfiguration must not expose the log.
 
 ## Audit and logging
 
@@ -106,9 +95,7 @@ The default remains `AUTH_MODE=password`; Access is additional, not a replacemen
 - Expired session returns 401.
 - Rate limit returns 429 after the configured attempts.
 - Mutation with a foreign Origin returns 403.
-- Proxy mode rejects requests outside the CIDR allowlist and never creates a user from the header.
 - An Access-expired response (HTML or redirect) is detected by the client as re-authentication, not as a JSON error.
-- `CF-Connecting-IP` is ignored outside the trusted CIDR.
 - Password reset updates the hash, revokes all sessions, and refuses an invalid or missing password.
 - Security headers are present on HTML and API responses.
 

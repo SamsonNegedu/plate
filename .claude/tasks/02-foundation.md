@@ -35,7 +35,6 @@ plate/
   Makefile
   Dockerfile
   compose.yaml
-  docs/cloudflare.md
   .env.example
   go.mod
 ```
@@ -59,27 +58,20 @@ Environment only, validated at startup, fail fast with a readable error.
 | `PLATE_ADDR` | `:8080` | HTTP listen address |
 | `PLATE_DATA_DIR` | `./data` | DB, images, snapshots |
 | `PLATE_DB_PATH` | `$DATA_DIR/plate.db` | SQLite file |
-| `PLATE_BASE_URL` | `http://localhost:8080` | Public HTTPS URL behind Cloudflare; used for cookie origin checks |
-| `PLATE_TRUST_PROXY` | `false` | `true` behind cloudflared |
-| `PLATE_PROXY_CIDRS` | empty | cloudflared network CIDR; required when trust is on |
+| `PLATE_BASE_URL` | `http://localhost:8080` | Public HTTPS URL; used for cookie origin checks |
 | `PLATE_ADMIN_EMAIL` | none | First-run bootstrap |
 | `PLATE_ADMIN_PASSWORD` | none | First-run bootstrap; never logged |
 | `PLATE_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
-| `PLATE_AUTH_MODE` | `password` | `password` or `proxy` |
 | `PLATE_ADMIN_RESET_PASSWORD` | `false` | One-shot reset using `PLATE_ADMIN_PASSWORD`, then revoke sessions |
 | `PLATE_SYNC_ENABLED` | `true` | Set `false` to pause sync server-side |
 | `PLATE_REINDEX_FTS` | `false` | One-shot FTS rebuild on startup |
 | `PLATE_IMPORT_BLS_PATH` | empty | One-shot BLS import from a local file |
 | `PLATE_IMPORT_CATALOG_PATH` | empty | OFF catalog seed, imported only when the catalog is empty |
-| `PLATE_CATALOG_DATASET_VERSION` | file mtime | Snapshot label stored with the catalog |
 | `PLATE_INTEGRITY_CHECK` | `true` | Run `PRAGMA quick_check` at startup |
 | `PLATE_MAINTENANCE_HOUR` | `3` | Local hour for optimize and prune jobs |
-| `PLATE_TRUST_PROXY` | `false` | Required for proxy auth |
-| `PLATE_PROXY_CIDRS` | empty | Allowlist for proxy auth |
 | `PLATE_OFF_BASE_URL` | `https://world.openfoodfacts.org` | Test override |
 | `PLATE_OFF_SEARCH_URL` | `https://search.openfoodfacts.org` | Test override |
 | `PLATE_OFF_USER_AGENT` | `Plate/1.0 (self-hosted)` | Set a real contact before public use |
-| `PLATE_IMAGE_MAX_BYTES` | `2000000` | Per-image cap |
 | `PLATE_IMAGE_CACHE_MB` | `256` | Disk cache bound |
 
 ## Server skeleton
@@ -106,11 +98,9 @@ Environment only, validated at startup, fail fast with a readable error.
 ## Cloudflare edge
 
 - `compose.yaml` runs one service: `plate`, with no published port.
-- cloudflared is run by the operator when used; it is documented in `docs/cloudflare.md`, not shipped in compose.
+- cloudflared is run by the operator when used; it is not shipped in compose.
 - The Go process binds `:8080` inside the container network and is reached by the operator's proxy or tunnel.
-- `PLATE_TRUST_PROXY=true` and `PLATE_PROXY_CIDRS` cover the cloudflared network. The app reads `CF-Connecting-IP` only from that CIDR.
 - `PLATE_BASE_URL` is the public `https://` hostname.
-- `docs/cloudflare.md` documents the Access application, the email policy, the 30-day session, and cache bypass rules for `/api/*`, `/healthz`, and `/readyz`.
 - Cloudflare cache rules never cache authenticated HTML or API responses; immutable build assets may be cached at the edge.
 
 ## Makefile targets
@@ -156,7 +146,6 @@ make verify       # lint + test + build + sqlc-diff + generated diff
 - [x] Embedded SPA handler and dev proxy.
 - [x] Makefile and CI workflows.
 - [x] Dockerfile, compose with `plate`, `.env.example`.
-- [x] `docs/cloudflare.md` for the tunnel, Access policy, and cache rules.
 - [x] `CLAUDE.md`, the guardrail skills in `.claude/skills/`, and `.claude/settings.json`.
 - [x] `README.md` with local setup and the phase pointer.
 

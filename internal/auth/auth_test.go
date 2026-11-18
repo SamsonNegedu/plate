@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
-	"net/netip"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -260,27 +259,16 @@ func req(remote string, hdr map[string]string) *http.Request {
 	return r
 }
 
-func TestClientIPTrustsCloudflareOnlyFromCIDR(t *testing.T) {
-	p := Proxy{Trust: true, CIDRs: []netip.Prefix{netip.MustParsePrefix("172.18.0.0/16")}}
-	hdr := map[string]string{"CF-Connecting-IP": "203.0.113.9", "Cf-Access-Authenticated-User-Email": "me@x.y"}
-
-	if got := p.ClientIP(req("172.18.0.5:4000", hdr)); got != "203.0.113.9" {
-		t.Errorf("trusted peer: %q", got)
+func TestClientIPIgnoresForwardedHeaders(t *testing.T) {
+	hdr := map[string]string{"CF-Connecting-IP": "203.0.113.9", "X-Forwarded-For": "203.0.113.10", "Cf-Access-Authenticated-User-Email": "me@x.y"}
+	if got := ClientIP(req("198.51.100.7:4000", hdr)); got != "198.51.100.7" {
+		t.Errorf("forwarded headers must be ignored: %q", got)
 	}
-	if got := p.ClientIP(req("198.51.100.7:4000", hdr)); got != "198.51.100.7" {
-		t.Errorf("untrusted peer must be ignored: %q", got)
+	if got := ClientIP(req("[::ffff:198.51.100.7]:4000", nil)); got != "198.51.100.7" {
+		t.Errorf("mapped IPv4: %q", got)
 	}
-	if got := p.AccessEmail(req("198.51.100.7:4000", hdr)); got != "" {
-		t.Errorf("identity header from outside the CIDR must be ignored: %q", got)
-	}
-	if got := p.AccessEmail(req("172.18.0.5:4000", hdr)); got != "me@x.y" {
-		t.Errorf("identity header from the proxy: %q", got)
-	}
-	if got := (Proxy{}).ClientIP(req("172.18.0.5:4000", hdr)); got != "172.18.0.5" {
-		t.Errorf("trust off: %q", got)
-	}
-	if got := p.ClientIP(req("172.18.0.5:4000", map[string]string{"CF-Connecting-IP": "garbage"})); got != "172.18.0.5" {
-		t.Errorf("garbage header: %q", got)
+	if got := ClientIP(req("garbage", nil)); got != "unknown" {
+		t.Errorf("unparsable peer: %q", got)
 	}
 }
 

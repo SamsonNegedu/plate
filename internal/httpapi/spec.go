@@ -21,9 +21,9 @@ func SpecJSON() ([]byte, error) {
 	}
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	_, api := New(Deps{
-		Config: config.Config{BaseURL: base, AuthMode: "password"},
+		Config: config.Config{BaseURL: base},
 		Log:    log,
-		Auth:   NewAuth(auth.NewSessionStore(nil), auth.Proxy{}, false),
+		Auth:   NewAuth(auth.NewSessionStore(nil)),
 		Food:   food.NewService(nil, nil, log),
 		Images: food.NewImages(nil, food.ImagesConfig{}),
 	})

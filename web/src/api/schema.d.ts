@@ -692,8 +692,6 @@ export interface components {
             password: string;
         };
         MeOutputBody: {
-            /** @enum {string} */
-            auth_mode: "password" | "proxy";
             user: components["schemas"]["UserBody"];
         };
         Meta: {

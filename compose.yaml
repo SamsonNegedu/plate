@@ -11,9 +11,8 @@ services:
       PLATE_ADMIN_PASSWORD: ${PLATE_ADMIN_PASSWORD:-}
       PLATE_LOG_LEVEL: ${PLATE_LOG_LEVEL:-info}
       PLATE_OFF_USER_AGENT: ${PLATE_OFF_USER_AGENT:-Plate/1.0 (self-hosted)}
-      PLATE_MAINTENANCE_HOUR: ${PLATE_MAINTENANCE_HOUR:-3}
       PLATE_SYNC_ENABLED: ${PLATE_SYNC_ENABLED:-true}
-      PLATE_IMAGE_CACHE_MB: ${PLATE_IMAGE_CACHE_MB:-256}
+      PLATE_ADMIN_RESET_PASSWORD: ${PLATE_ADMIN_RESET_PASSWORD:-false}
       # The bundled /seed/off-catalog.db is imported when the catalog is empty.
       PLATE_CATALOG_REIMPORT: ${PLATE_CATALOG_REIMPORT:-false}
     volumes:

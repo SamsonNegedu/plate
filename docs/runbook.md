@@ -1,6 +1,6 @@
 # Runbook
 
-Operate Plate with Docker Compose. The app is one binary, one SQLite file, and no external queue or cache. You front it with your own proxy or tunnel; the app password is the inner gate. Cloudflare Tunnel remains documented in `docs/cloudflare.md`.
+Operate Plate with Docker Compose. The app is one binary, one SQLite file, and no external queue or cache. Put your own HTTPS proxy or tunnel in front; the app password is the only gate. Cloudflare Tunnel remains documented in `docs/cloudflare.md`.
 
 ## Files and ports
 
@@ -31,7 +31,7 @@ Expose the app over HTTPS only. Keep the database port and files off the network
 
 3. The image already contains the catalog seed at `/seed/off-catalog.db`. It is imported automatically when the catalog is empty, so the first boot takes a little longer and needs no extra setting. Confirm the log line `catalog import finished`.
 
-4. Put the app behind your proxy or tunnel. If that is Cloudflare Tunnel, see `docs/cloudflare.md`.
+4. Put the app behind an HTTPS proxy or tunnel. The app never trusts forwarded headers, so every request appears to come from the proxy: the 5-per-minute login limit by address is shared, and the per-account limit still applies.
 
 5. Start and check:
 
@@ -158,7 +158,6 @@ Compose always runs `latest`. Releases are tagged `vX.Y.Z`; CI smoke-tests the i
 
 ## Rotate secrets
 
-- **Access policy:** change it in Zero Trust; the app session is independent, so no user data is affected.
 - **OFF contact:** update `PLATE_OFF_USER_AGENT`, restart.
 
 ## Alerts
@@ -168,9 +167,4 @@ Operate these outside the app; the app has no analytics and no third-party runti
 - Uptime check on `/healthz` every minute; alert after two consecutive failures.
 - Disk space alert at 80%.
 - Backup copy older than 24 hours.
-- Tunnel health and Access policy changes in Cloudflare.
 - Weekly log review for 5xx spikes, OFF failures, and rate-limit hits.
-
-## Access expiry
-
-When the Cloudflare Access session expires, `/api/*` may return an HTML sign-in page instead of JSON. The client shows "Sign in to continue" and keeps local data. After Access re-authentication, sync resumes. Record the exact behaviour you observe in `docs/spike-results.md`.

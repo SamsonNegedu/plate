@@ -76,15 +76,11 @@ form-action 'self';
 - Parameterized SQL only. FTS input is tokenized, quoted, and bound; never concatenated.
 - Escape nothing by hand in React; never use `dangerouslySetInnerHTML`.
 
-## Cloudflare edge and proxy auth
+## Proxy and tunnel
 
-- Cloudflare Tunnel is the only path to the origin. No inbound ports; cloudflared connects out.
-- Cloudflare Access is the outer gate, restricted to the operator's email with a 30-day session. The app password remains the inner gate.
-- `AUTH_MODE=proxy` is optional. It requires `TRUST_PROXY=true` and a non-empty CIDR allowlist for cloudflared.
-- Trust only `Cf-Access-Authenticated-User-Email`, and only when the immediate peer is in the allowlist. Never create a user from the header.
-- Use `CF-Connecting-IP` for rate limiting only from the trusted CIDR.
-- When Access expires, the API may return an HTML login page or redirect, not JSON. The client must treat that as re-authentication, not a server error.
-- Refuse to start if proxy mode is enabled without a CIDR allowlist.
+- The app publishes no port. HTTPS comes from a proxy or tunnel you run in front.
+- The app session is the only auth gate. Never read `Cf-Access-*`, `CF-Connecting-IP` or `X-Forwarded-For`; rate limits key on the socket peer.
+- When a proxy returns an HTML login page or redirect instead of JSON, the client treats it as re-authentication, not a server error.
 
 ## Imported datasets
 
@@ -129,6 +125,4 @@ form-action 'self';
 - A crafted barcode or search query used to break FTS syntax.
 - An open proxy endpoint used to scan the internal network.
 - A huge import file used to exhaust memory or disk.
-- A misconfigured proxy allowlist that trusts any `X-Forwarded-For` or any source IP.
-- A tunnel or Access misconfiguration that exposes the origin because a direct DNS record exists.
 - A rate-limit bypass through many IPs; keep the global limit too.

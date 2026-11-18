@@ -116,9 +116,8 @@ Rejected: `@zxing/browser` directly. It works but ships a large JS decoder and l
 - `scs` sessions backed by a small SQLite store implementing its `Store` interface. Cookie is `__Host-plate_session`, `HttpOnly`, `Secure`, `SameSite=Lax`, 30-day sliding expiry.
 - Login is rate-limited per IP and per account. Session ID rotates on login. Logout deletes the server row.
 - State-changing requests require JSON content type and a same-origin `Origin`/`Sec-Fetch-Site` check.
-- Cloudflare Access is the outer gate: an Access application on the hostname allows the operator's email, with a 30-day session. The app still requires its own session; Access does not replace the login screen. If Access expires, the API returns an HTML login response instead of JSON, and the client shows a "Sign in to continue" action.
-- Optional `AUTH_MODE=proxy` trusts the `Cf-Access-Authenticated-User-Email` header only when `TRUST_PROXY=true` and the request arrives from the cloudflared CIDR. It is not enabled by default; the app password remains the inner gate.
-- Rate limiting uses `CF-Connecting-IP` only when the request arrives from the trusted cloudflared CIDR; otherwise it uses the socket address.
+- The app session is the only auth gate. The app never reads forwarded identity or IP headers (`Cf-Access-*`, `CF-Connecting-IP`, `X-Forwarded-For`); rate limits key on the socket peer. Decision (2026-11-18): the proxy auth mode and trusted-proxy settings were removed. Behind a proxy all requests share its address, so the per-address login limit is shared and the per-account limit still applies.
+- A proxy or tunnel in front may return an HTML sign-in page instead of JSON; the client shows "Sign in to continue" and keeps local data.
 - Passkeys via `go-webauthn` are a post-v1 upgrade.
 
 Rejected: JWT in localStorage. XSS exposure and revocation complexity. Rejected: no auth. The phone needs HTTPS and a remote origin.
@@ -296,7 +295,6 @@ Background Sync is Chromium-only. iOS relies on foreground sync triggers; this i
 | Abuse of the proxy | Per-IP and global rate limits, disk cache bounds |
 | Data loss | WAL, pre-migration snapshot, off-host snapshot, export, restore drill |
 | Edge bypass | No inbound origin ports; Access in front; app password as the inner gate |
-| Spoofed client IP | Trust `CF-Connecting-IP` only from the cloudflared CIDR |
 | Token compromise | Tunnel token and Access policy rotate independently; no origin fallback |
 | Dependency compromise | Lockfiles, pinned versions, `govulncheck`, `pnpm audit`, SBOM |
 

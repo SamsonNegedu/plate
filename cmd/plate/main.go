@@ -93,19 +93,17 @@ func run() error {
 		return err
 	}
 
-	proxy := auth.Proxy{Trust: cfg.TrustProxy, CIDRs: cfg.ProxyCIDRs}
 	off := food.NewOFF(food.OFFConfig{BaseURL: cfg.OFFBaseURL, SearchURL: cfg.OFFSearchURL, UserAgent: cfg.OFFUserAgent})
 	foods := food.NewService(db, off, log)
 	images := food.NewImages(db, food.ImagesConfig{
 		Dir:        filepath.Join(cfg.DataDir, "images"),
-		MaxBytes:   cfg.ImageMaxBytes,
 		CacheBytes: cfg.ImageCacheMB << 20,
 	})
 	handler, _ := httpapi.New(httpapi.Deps{
 		Config: cfg,
 		Log:    log,
 		DB:     db,
-		Auth:   httpapi.NewAuth(sessions, proxy, cfg.AuthMode == "proxy"),
+		Auth:   httpapi.NewAuth(sessions),
 		Food:   foods,
 		Images: images,
 		Web:    webui.Handler(),

@@ -23,7 +23,6 @@ Compose health checks use `/healthz` and `/readyz` through the binary's `-health
 - `.env.example` documents every variable. `.env` is never committed.
 - The tunnel token is a secret for cloudflared only; the Go process never reads it and `.env` does not contain it.
 - `PLATE_BASE_URL` is the public HTTPS hostname.
-- `PLATE_TRUST_PROXY=true` and `PLATE_PROXY_CIDRS` cover the cloudflared network.
 - Bootstrap credentials are set once and used to create the user. Once the user exists they are ignored; removing them is recommended but needs no redeploy.
 - The OFF `User-Agent` includes a real contact before public use.
 - Secrets live in the host environment or a secrets file with `0600`, not in the image.
@@ -199,7 +198,6 @@ Each item needs its own phase file and a new architecture decision before implem
 ## Deliverables
 
 - [ ] Dockerfile and compose with `plate`.
-- [ ] `docs/cloudflare.md` for the tunnel, Access policy, cache rules, and rate-limit rule.
 - [ ] `.env.example` and a secrets checklist.
 - [ ] `docs/runbook.md` and `docs/attribution.md` (OFF ODbL, BLS).
 - [ ] Snapshot backup policy and a completed restore drill.
