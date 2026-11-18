@@ -14,7 +14,7 @@ The plan in `.claude/tasks` is the contract. This skill keeps work inside the cu
 3. Read `.claude/tasks/00-architecture.md` and the phase file in full.
 4. Read the files the phase names. Do not assume their contents.
 5. Check the phase's `Status` line. If it is `blocked`, do not start.
-6. If Phase 0 is not complete, do not write production code. Spikes only.
+6. Open Phase 0 items (device scan runs, the real corpus) do not block production code. They gate launch (Phases 11 and 12), not development.
 
 ## While coding
 
@@ -47,7 +47,7 @@ Do not claim a phase is complete when a deployment, device, or restore step was 
 
 ## Anti-patterns
 
-- Starting Phase 8 UI before the Phase 6 sync invariant tests pass.
+- Changing sync behavior without the sync invariant tests passing first.
 - Marking a checklist item done because the code compiles.
 - Silently changing the em dash-free copy style, the design tokens, or a stack choice.
 - Bundling two phases in one review.
