@@ -1,53 +1,142 @@
 name: ci
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   CGO_ENABLED: "0"
 
+# Every job starts at once; only e2e waits, for the binary that `build` produces. Wall time is the slowest path
+# (build then e2e), not the sum of all jobs.
 jobs:
-  go:
+  go-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: { go-version-file: go.mod, cache: true }
       - run: go test ./...
-      - run: make lint-go sqlc-diff audit-go
-      - run: go build ./cmd/plate
-  web:
+
+  go-lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { package_json_file: web/package.json }
-      - uses: actions/setup-node@v4
-        with: { node-version: 24, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
-      - run: pnpm --dir web install --frozen-lockfile
-      - run: pnpm --dir web lint
-      - run: pnpm --dir web typecheck
-      - run: pnpm --dir web test
-      - run: pnpm --dir web build
-  e2e:
-    needs: [go, web]
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod, cache: true }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/golangci-lint
+          key: golangci-${{ runner.os }}-${{ hashFiles('go.sum', '.golangci.yml') }}
+          restore-keys: golangci-${{ runner.os }}-
+      - run: make lint-go sqlc-diff
+
+  audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: { go-version-file: go.mod, cache: true }
       - uses: pnpm/action-setup@v4
         with: { package_json_file: web/package.json }
-      - uses: actions/setup-node@v4
-        with: { node-version: 24, cache: pnpm, cache-dependency-path: web/pnpm-lock.yaml }
-      - run: make build
-      - run: pnpm --dir web exec playwright install --with-deps chromium
-      - run: pnpm --dir web exec playwright test
-      - uses: actions/upload-artifact@v4
-        with: { name: plate-linux-amd64, path: bin/plate }
-  docker:
-    needs: [go, web]
+      - run: make audit
+
+  web:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - run: make docker-smoke
+      - uses: ./.github/actions/setup-web
+      - run: pnpm --dir web lint
+      - run: pnpm --dir web typecheck
+      - run: pnpm --dir web test
+
+  generated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod, cache: true }
+      - uses: ./.github/actions/setup-web
+      - run: make generate
+      - name: Generated files are committed
+        run: git diff --exit-code -- db internal web/src/api
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version-file: go.mod, cache: true }
+      - uses: ./.github/actions/setup-web
+      - run: make build
+      - run: go build -o bin/e2eseed ./tools/e2eseed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plate-linux-amd64
+          path: |
+            bin/plate
+            bin/e2eseed
+          retention-days: 7
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [mobile-400, desktop] # each project gets its own server and user, so they run side by side
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-web
+      - uses: actions/download-artifact@v4
+        with: { name: plate-linux-amd64, path: bin }
+      - run: chmod +x bin/plate bin/e2eseed
+      - id: playwright
+        run: echo "version=$(pnpm --dir web exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: browsers
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: pnpm --dir web exec playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: pnpm --dir web exec playwright install-deps chromium
+      - run: pnpm --dir web exec playwright test --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-${{ matrix.project }}
+          path: web/test-results
+          retention-days: 7
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: plate:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: scripts/docker-smoke.sh plate:smoke
