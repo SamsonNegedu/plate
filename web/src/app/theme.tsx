@@ -3,6 +3,8 @@ import { useSettings } from "@/db/hooks";
 import type { Theme } from "@/db/types";
 
 const KEY = "plate.theme";
+// The two page backgrounds from tokens.css, used for the browser's status-bar color.
+const BAR: Record<"light" | "dark", string> = { light: "#f4f5ef", dark: "#12150f" };
 
 /** The only app preference kept in localStorage: it lets the inline script in index.html theme the first paint. */
 export function cachedTheme(): Theme {
@@ -18,6 +20,11 @@ export function applyTheme(theme: Theme): void {
   const root = document.documentElement;
   if (theme === "auto") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", theme);
+  // index.html picks the bar color from the phone's setting; an explicit choice here must win, or the bar clashes.
+  for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+    const own = meta.media.includes("dark") ? "dark" : "light";
+    meta.content = BAR[theme === "auto" ? own : theme];
+  }
   try {
     localStorage.setItem(KEY, theme);
   } catch {
