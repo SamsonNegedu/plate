@@ -91,13 +91,15 @@ export const digitsOnly = (s: string): string => s.replace(/\D/g, "");
  * Barcode to food. Local first, then the server (which checks the catalog before Open Food Facts). A miss or an outage
  * never dead-ends: the caller opens the manual sheet with the barcode.
  */
+export const isBarcodeLength = (code: string): boolean => code.length >= 6 && code.length <= 14;
+
 export async function resolveBarcode(
   db: PlateDB,
   raw: string,
   opts: { signal?: AbortSignal; online?: boolean } = {},
 ): Promise<LookupResult> {
   const code = digitsOnly(raw);
-  if (code.length < 6 || code.length > 14) return { kind: "invalid" };
+  if (!isBarcodeLength(code)) return { kind: "invalid" };
 
   const local = await findFoodByBarcode(db, code);
   if (local) return { kind: "found", food: local, cached: true };

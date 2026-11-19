@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
@@ -9,7 +9,7 @@ import { useSettings } from "@/db/hooks";
 import { useScanFeedback } from "@/db/prefs";
 import { createDetector, makeDeduper } from "@/food/barcode";
 import { type CameraState, useCamera } from "@/food/camera";
-import { digitsOnly, resolveBarcode } from "@/food/lookup";
+import { digitsOnly, isBarcodeLength, resolveBarcode } from "@/food/lookup";
 import { copy } from "@/lib/copy";
 import { defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { useUi } from "@/lib/ui";
@@ -37,6 +37,8 @@ export default function ScanPage() {
   const detector = scan.detector.kind === "ready" ? scan.detector.detector : null;
   const fileRef = useRef<HTMLInputElement>(null);
   const accept = useRef(makeDeduper());
+  // Bumped when a lookup ends without opening a sheet, so the frame loop (which stops on a code) starts again.
+  const [resume, setResume] = useState(0);
 
   const now = useNow();
   const requested = params.get("date");
@@ -83,8 +85,12 @@ export default function ScanPage() {
             break;
           case "invalid":
             dispatch({ type: "announced", message: copy.scan.invalid });
+            setResume((n) => n + 1);
             break;
         }
+      } catch (err) {
+        setResume((n) => n + 1);
+        throw err;
       } finally {
         dispatch({ type: "lookupEnded" });
       }
@@ -99,13 +105,15 @@ export default function ScanPage() {
     let stopped = false;
     let last = 0;
     let handleId = 0;
-    const found = (code: string) => {
-      if (!accept.current(code)) return;
+    const found = (code: string): boolean => {
+      // An unsupported code is ignored so the camera keeps looking; the loop only stops for a code worth resolving.
+      if (!isBarcodeLength(digitsOnly(code)) || !accept.current(code)) return false;
       stopped = true;
       if (feedback.haptics) haptic();
       if (feedback.sound) beep();
       dispatch({ type: "announced", message: copy.scan.found });
       void handle(code);
+      return true;
     };
     const tick = async (now: number) => {
       if (stopped) return;
@@ -113,7 +121,7 @@ export default function ScanPage() {
         last = now;
         try {
           const code = await detector.detect(video);
-          if (code) return found(code);
+          if (code && found(code)) return;
         } catch {
           // A frame that cannot be read is skipped.
         }
@@ -132,7 +140,7 @@ export default function ScanPage() {
       if ("cancelVideoFrameCallback" in video) video.cancelVideoFrameCallback(handleId);
       else cancelAnimationFrame(handleId);
     };
-  }, [cameraState, videoRef, detector, feedback.haptics, feedback.sound, handle]);
+  }, [cameraState, videoRef, detector, feedback.haptics, feedback.sound, handle, resume]);
 
   const readPhoto = async (file: File) => {
     if (!detector) {
