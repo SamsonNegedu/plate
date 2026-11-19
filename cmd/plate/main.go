@@ -34,7 +34,7 @@ func main() {
 	}
 }
 
-// healthcheck lets the distroless image probe /readyz without a shell or curl.
+// healthcheck lets the image probe /readyz without a shell or curl.
 func healthcheck() int {
 	raw := os.Getenv("PLATE_HEALTHCHECK_URL")
 	if raw == "" {

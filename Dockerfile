@@ -23,15 +23,16 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath \
 COPY . .
 COPY --from=web /src/internal/webui/dist internal/webui/dist
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o /out/plate ./cmd/plate
-# The distroless user must own the empty data dir so a fresh named volume inherits it.
+# The runtime user (65532) must own the empty data dir so a fresh named volume inherits it.
 RUN mkdir -p /out/data && chown 65532:65532 /out/data
 
-FROM gcr.io/distroless/static-debian12:nonroot
+# No RUN here, so the arm64 image needs no emulation. Alpine carries the CA bundle; uid 65532 needs no passwd entry.
+FROM alpine:3.22
 COPY --from=go /out/plate /plate
 COPY --from=go --chown=65532:65532 /out/data /data
 COPY --from=go /src/data/off-catalog.db /seed/off-catalog.db
 ENV PLATE_ADDR=:8080 PLATE_DATA_DIR=/data
 VOLUME /data
 EXPOSE 8080
-USER nonroot
+USER 65532:65532
 ENTRYPOINT ["/plate"]

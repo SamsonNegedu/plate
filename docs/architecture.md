@@ -57,7 +57,7 @@ Plate is a single-user, offline-first PWA for logging calories by barcode. A Rea
 - Startup order: open the database; snapshot it if migrations are pending, then migrate; run the integrity check (`PRAGMA quick_check`); create the admin on first boot (or reset the password when asked); prune expired sessions; run the one-shot imports (BLS, FTS rebuild) when requested; import the catalog seed if the catalog is empty; then listen.
 - A daily in-process job (`PLATE_MAINTENANCE_HOUR`, default 3) runs `PRAGMA optimize`, truncates the WAL, expires the search cache, and prunes old change-log rows and applied-op records. The image cache is bounded when images are written: least-recently-used files are evicted past `PLATE_IMAGE_CACHE_MB`. It never blocks requests and a failure is logged and retried the next day.
 - Pre-migration snapshots (`VACUUM INTO`) are written automatically. There is no scheduled backup job yet: copy snapshots off the host yourself ([runbook.md](runbook.md)).
-- The container is distroless and non-root, runs read-only with all capabilities dropped, and publishes no port. HTTPS comes from a proxy or tunnel the operator runs in front.
+- The container is a minimal Alpine image with only the binary, running non-root, runs read-only with all capabilities dropped, and publishes no port. HTTPS comes from a proxy or tunnel the operator runs in front.
 
 ## Quality gates
 
