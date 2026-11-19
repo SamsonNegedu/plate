@@ -31,11 +31,6 @@ export function AppShell() {
   useStorageGuards(auth.status === "authed");
   return (
     <div className="mx-auto max-w-[560px] pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+24px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
-      {/* Solid color behind the status bar, so the OS blur never sits over the app name. Zero height outside notched phones. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-x-0 top-0 z-30 h-[env(safe-area-inset-top,0px)] bg-bg"
-      />
       <AppBar />
       <main className="pt-1" id="main">
         {quota ? (
