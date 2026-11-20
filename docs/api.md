@@ -10,10 +10,16 @@ All paths are under `/api/v1`. Every operation needs a session cookie unless it 
 
 | Method | Path | What it does | Auth | Responses |
 |---|---|---|---|---|
-| POST | `/auth/login` | Sign in with email and password | public | 200, default |
+| GET | `/auth/challenge` | Get a proof-of-work challenge for signup | public | 200, 403, 500 |
+| POST | `/auth/delete-account` | Delete this account and all of its data | session | 204, 401, 422, 429, 500 |
+| POST | `/auth/login` | Sign in with username and password | public | 200, default |
 | POST | `/auth/logout` | End this session | public | 204, default |
 | POST | `/auth/logout-all` | End every session for this user | session | 204, default |
 | GET | `/auth/me` | The signed-in user | session | 200, default |
+| POST | `/auth/recovery-codes` | Replace the recovery codes | session | 200, 401, 422, 429, 500 |
+| POST | `/auth/recovery-codes/ack` | Confirm the recovery codes were saved | session | 204, default |
+| POST | `/auth/reset` | Set a new password with a recovery code | public | 204, 401, 422, 429, 500 |
+| POST | `/auth/signup` | Create an account and sign in | public | 200, 403, 409, 422, 429, 500 |
 
 ## backup
 

@@ -17,13 +17,13 @@ type Config struct {
 	DataDir         string
 	DBPath          string
 	BaseURL         *url.URL
-	AdminEmail      string
-	AdminPassword   string
 	LogLevel        slog.Level
-	ResetPassword   bool
+	SignupEnabled   bool
+	SignupPoWBits   int
 	SyncEnabled     bool
 	ReindexFTS      bool
 	ImportBLSPath   string
+	ImportBLSUser   string
 	ImportCatalog   string
 	CatalogReimport bool
 	IntegrityCheck  bool
@@ -71,12 +71,12 @@ func Load(env func(string) string) (Config, error) {
 	c := Config{
 		Addr:            str("PLATE_ADDR", ":8080"),
 		DataDir:         str("PLATE_DATA_DIR", "./data"),
-		AdminEmail:      str("PLATE_ADMIN_EMAIL", ""),
-		AdminPassword:   env("PLATE_ADMIN_PASSWORD"),
-		ResetPassword:   boolean("PLATE_ADMIN_RESET_PASSWORD", false),
+		SignupEnabled:   boolean("PLATE_SIGNUP_ENABLED", true),
+		SignupPoWBits:   int(integer("PLATE_SIGNUP_POW_BITS", 17)),
 		SyncEnabled:     boolean("PLATE_SYNC_ENABLED", true),
 		ReindexFTS:      boolean("PLATE_REINDEX_FTS", false),
 		ImportBLSPath:   str("PLATE_IMPORT_BLS_PATH", ""),
+		ImportBLSUser:   str("PLATE_IMPORT_BLS_USERNAME", ""),
 		ImportCatalog:   str("PLATE_IMPORT_CATALOG_PATH", ""),
 		CatalogReimport: boolean("PLATE_CATALOG_REIMPORT", false),
 		IntegrityCheck:  boolean("PLATE_INTEGRITY_CHECK", true),
@@ -115,11 +115,11 @@ func Load(env func(string) string) (Config, error) {
 		errs = append(errs, errors.New("PLATE_MAINTENANCE_HOUR: want 0-23"))
 	}
 
-	if c.ResetPassword && c.AdminPassword == "" {
-		errs = append(errs, errors.New("PLATE_ADMIN_RESET_PASSWORD needs PLATE_ADMIN_PASSWORD"))
+	if c.ImportBLSPath != "" && c.ImportBLSUser == "" {
+		errs = append(errs, errors.New("PLATE_IMPORT_BLS_PATH needs PLATE_IMPORT_BLS_USERNAME"))
 	}
-	if c.AdminPassword != "" && len(c.AdminPassword) < 12 {
-		errs = append(errs, errors.New("PLATE_ADMIN_PASSWORD: use at least 12 characters"))
+	if c.SignupPoWBits > 28 {
+		errs = append(errs, errors.New("PLATE_SIGNUP_POW_BITS: want 0-28"))
 	}
 
 	return c, errors.Join(errs...)

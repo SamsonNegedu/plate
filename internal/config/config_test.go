@@ -14,7 +14,7 @@ func TestDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.Addr != ":8080" || c.DBPath != "data/plate.db" || !c.SyncEnabled || !c.IntegrityCheck || c.MaintenanceHr != 3 {
+	if c.Addr != ":8080" || c.DBPath != "data/plate.db" || !c.SyncEnabled || !c.SignupEnabled || c.SignupPoWBits != 17 || !c.IntegrityCheck || c.MaintenanceHr != 3 {
 		t.Fatalf("unexpected defaults: %+v", c)
 	}
 }
@@ -27,8 +27,8 @@ func TestValidation(t *testing.T) {
 		"http base off localhost": {map[string]string{"PLATE_BASE_URL": "http://plate.example.com"}, "https except on localhost"},
 		"bad bool":                {map[string]string{"PLATE_SYNC_ENABLED": "maybe"}, "not a boolean"},
 		"bad hour":                {map[string]string{"PLATE_MAINTENANCE_HOUR": "25"}, "want 0-23"},
-		"reset needs password":    {map[string]string{"PLATE_ADMIN_RESET_PASSWORD": "true"}, "needs PLATE_ADMIN_PASSWORD"},
-		"short password":          {map[string]string{"PLATE_ADMIN_PASSWORD": "short"}, "at least 12"},
+		"too many pow bits":       {map[string]string{"PLATE_SIGNUP_POW_BITS": "29"}, "want 0-28"},
+		"bls needs an account":    {map[string]string{"PLATE_IMPORT_BLS_PATH": "/x.xlsx"}, "PLATE_IMPORT_BLS_USERNAME"},
 		"bad log level":           {map[string]string{"PLATE_LOG_LEVEL": "loud"}, "PLATE_LOG_LEVEL"},
 	}
 	for name, tc := range cases {

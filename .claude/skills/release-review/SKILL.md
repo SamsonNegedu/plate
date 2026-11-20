@@ -78,7 +78,7 @@ Review real changes only. Do not invent findings or audit untouched code.
 - Migration is additive or expand/contract.
 - Pre-migration snapshot exists.
 - New config variable documented in `.env.example`.
-- Admin actions use one-shot startup flags, not a new CLI.
+- Host actions use one-shot startup flags, not a new CLI. Nothing in normal use needs an operator.
 - Maintenance job remains non-blocking and idempotent.
 - New data source attributed.
 - Runbook updated for a new operational step.

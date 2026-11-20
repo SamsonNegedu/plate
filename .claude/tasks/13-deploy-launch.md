@@ -118,11 +118,10 @@ Document the exact commands in `docs/runbook.md`.
 
 ## Operational actions without a CLI
 
-Every admin action is a one-shot startup flag: set it, restart, verify, remove it. No second binary, no subcommands.
+Every host action is a one-shot startup flag: set it, restart, verify, remove it. No second binary, no subcommands.
 
 | Action | Flag |
 |---|---|
-| Reset the admin password and revoke sessions | `PLATE_ADMIN_RESET_PASSWORD=true` + `PLATE_ADMIN_PASSWORD=...` |
 | Import BLS | `PLATE_IMPORT_BLS_PATH=/data/bls.csv` |
 | Import OFF catalog seed | Automatic when the catalog is empty; `PLATE_CATALOG_REIMPORT=true` replaces it |
 | Rebuild FTS | `PLATE_REINDEX_FTS=true` |
@@ -150,7 +149,6 @@ It never runs during startup migrations and never blocks requests. A failure is 
 - Confirm the tunnel is healthy and Access is enforcing the policy.
 - Rotate the tunnel token and the Access policy without downtime.
 - Restore from an off-host snapshot.
-- Reset the admin password with the startup flag; confirm every session is revoked.
 - Rotate the OFF contact and any R2 credentials.
 - Recover from a full disk.
 - Read the startup `PRAGMA quick_check` result and what to do if it fails.

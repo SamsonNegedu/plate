@@ -20,7 +20,7 @@ What Plate does with it:
 - **Share-alike.** The seed is for the operator's own deployment. If you publish or give away the seed, publish it under the
   ODbL with the credit above. Plate does not redistribute the seed itself.
 
-Not verified by the project: whether a private, single-user deployment counts as "public use" under the ODbL. The conservative
+Not verified by the project: whether a small, self-hosted deployment counts as "public use" under the ODbL. The conservative
 reading, which this project follows, is to keep the credit and the license notice with the data in the app and the export.
 
 ## Bundeslebensmittelschlüssel (BLS) 4.0 (CC BY 4.0)

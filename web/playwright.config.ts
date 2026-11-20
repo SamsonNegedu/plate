@@ -42,7 +42,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "D=$(mktemp -d) && (if [ -x ../bin/e2eseed ]; then ../bin/e2eseed $D/seed.db; else (cd .. && go run ./tools/e2eseed $D/seed.db); fi) && PLATE_ADDR=127.0.0.1:18081 PLATE_DATA_DIR=$D PLATE_IMPORT_CATALOG_PATH=$D/seed.db PLATE_ADMIN_EMAIL=e2e@example.com PLATE_ADMIN_PASSWORD=e2e-test-passphrase PLATE_OFF_BASE_URL=http://127.0.0.1:1 PLATE_OFF_SEARCH_URL=http://127.0.0.1:1 ../bin/plate",
+      "D=$(mktemp -d) && (if [ -x ../bin/e2eseed ]; then ../bin/e2eseed $D/seed.db; else (cd .. && go run ./tools/e2eseed $D/seed.db); fi) && PLATE_ADDR=127.0.0.1:18081 PLATE_DATA_DIR=$D PLATE_IMPORT_CATALOG_PATH=$D/seed.db PLATE_SIGNUP_POW_BITS=0 PLATE_OFF_BASE_URL=http://127.0.0.1:1 PLATE_OFF_SEARCH_URL=http://127.0.0.1:1 ../bin/plate",
     url: "http://127.0.0.1:18081/healthz",
     reuseExistingServer: false,
   },

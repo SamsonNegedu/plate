@@ -8,12 +8,12 @@ export function ToastHost() {
   const toasts = useUi((s) => s.toasts);
   const dismiss = useUi((s) => s.dismiss);
   return (
-    <Toast.Provider swipeDirection="down" duration={5000} label="Notifications">
+    <Toast.Provider swipeDirection="up" duration={5000} label="Notifications">
       {toasts.map((t) => (
         <Toast.Root
           key={t.id}
           className={cn(
-            "flex min-h-12 items-center gap-3 rounded-ctl border py-1.5 pr-1.5 pl-4 data-[state=open]:animate-pop motion-reduce:animate-none",
+            "pointer-events-auto flex min-h-12 items-center gap-3 rounded-ctl border py-1.5 pr-1.5 pl-4 data-[state=open]:animate-pop motion-reduce:animate-none",
             t.tone === "error" ? "border-red bg-surface text-ink" : "border-ink bg-ink text-bg",
           )}
           duration={t.persistent ? Infinity : 5000}
@@ -42,7 +42,7 @@ export function ToastHost() {
           ) : null}
         </Toast.Root>
       ))}
-      <Toast.Viewport className="fixed inset-x-0 bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+10px)] z-[60] mx-auto grid max-w-[560px] gap-2 px-4 outline-none" />
+      <Toast.Viewport className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+8px)] z-[60] mx-auto grid max-w-[560px] gap-2 px-4 outline-none" />
     </Toast.Provider>
   );
 }

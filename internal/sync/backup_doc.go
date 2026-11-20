@@ -57,6 +57,7 @@ type SavedMealItemDoc struct {
 type SavedMealDoc struct {
 	ID        string             `json:"id" format:"uuid"`
 	Name      string             `json:"name"`
+	Servings  float64            `json:"servings" required:"false" doc:"Portions the recipe makes. Absent in older backups, which means 1."`
 	Items     []SavedMealItemDoc `json:"items"`
 	CreatedAt string             `json:"created_at"`
 	UpdatedAt string             `json:"updated_at"`
@@ -79,17 +80,18 @@ type TombstoneDoc struct {
 
 // ExportDoc is the full JSON backup. It never includes the shared OFF cache beyond foods the log references.
 type ExportDoc struct {
-	FormatVersion  int            `json:"format_version"`
-	SchemaVersion  int64          `json:"schema_version"`
-	ExportedAt     string         `json:"exported_at"`
-	AppVersion     string         `json:"app_version"`
-	Settings       *SettingsDoc   `json:"settings,omitempty" required:"false" doc:"Absent until goals were saved."`
-	Entries        []EntryDoc     `json:"entries"`
-	DeletedEntries []TombstoneDoc `json:"deleted_entries"`
-	Foods          []FoodDoc      `json:"foods"`
-	SavedMeals     []SavedMealDoc `json:"saved_meals"`
-	Favorites      []FavoriteDoc  `json:"favorites"`
-	Attribution    []string       `json:"attribution,omitempty" required:"false" doc:"Credits for the data sources the foods come from."`
+	FormatVersion  int               `json:"format_version"`
+	SchemaVersion  int64             `json:"schema_version"`
+	ExportedAt     string            `json:"exported_at"`
+	AppVersion     string            `json:"app_version"`
+	Settings       *SettingsDoc      `json:"settings,omitempty" required:"false" doc:"Absent until goals were saved."`
+	Entries        []EntryDoc        `json:"entries"`
+	DeletedEntries []TombstoneDoc    `json:"deleted_entries"`
+	Foods          []FoodDoc         `json:"foods"`
+	SavedMeals     []SavedMealDoc    `json:"saved_meals"`
+	Favorites      []FavoriteDoc     `json:"favorites"`
+	HealthRecords  []HealthRecordDoc `json:"health_records" required:"false" doc:"Weight, waist, appetite, nausea and dose records. Absent in older backups."`
+	Attribution    []string          `json:"attribution,omitempty" required:"false" doc:"Credits for the data sources the foods come from."`
 }
 
 func FoodToDoc(f domain.Food) FoodDoc {
@@ -129,7 +131,7 @@ func MealToDoc(m domain.SavedMeal) SavedMealDoc {
 		})
 	}
 	return SavedMealDoc{
-		ID: m.ID, Name: m.Name, Items: items, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
+		ID: m.ID, Name: m.Name, Servings: m.Servings, Items: items, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
 		DeletedAt: m.DeletedAt, ServerSeq: m.ServerSeq,
 	}
 }
@@ -146,8 +148,12 @@ func DocToMeal(d SavedMealDoc, userID string) domain.SavedMeal {
 			},
 		})
 	}
+	servings := d.Servings
+	if servings == 0 {
+		servings = 1
+	}
 	return domain.SavedMeal{
-		ID: d.ID, UserID: userID, Name: d.Name, CreatedAt: d.CreatedAt, UpdatedAt: d.UpdatedAt,
+		ID: d.ID, UserID: userID, Name: d.Name, Servings: servings, CreatedAt: d.CreatedAt, UpdatedAt: d.UpdatedAt,
 		DeletedAt: d.DeletedAt, ServerSeq: d.ServerSeq, Items: items,
 	}
 }

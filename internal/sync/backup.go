@@ -31,7 +31,7 @@ func (s *Service) Export(ctx context.Context, userID, appVersion string) (Export
 	doc := ExportDoc{
 		FormatVersion: FormatVersion, SchemaVersion: schema, ExportedAt: stamp(s.now()), AppVersion: appVersion,
 		Entries: []EntryDoc{}, DeletedEntries: []TombstoneDoc{}, Foods: []FoodDoc{}, SavedMeals: []SavedMealDoc{},
-		Favorites: []FavoriteDoc{},
+		Favorites: []FavoriteDoc{}, HealthRecords: []HealthRecordDoc{},
 	}
 	doc.Attribution = s.attribution
 	if st, err := r.Settings(ctx, userID); err == nil {
@@ -76,6 +76,16 @@ func (s *Service) Export(ctx context.Context, userID, appVersion string) (Export
 	for _, f := range favs {
 		doc.Favorites = append(doc.Favorites, FavoriteToDoc(f))
 		need[f.FoodID] = true
+	}
+
+	health, err := r.AllHealthRecords(ctx, userID)
+	if err != nil {
+		return ExportDoc{}, err
+	}
+	for _, h := range health {
+		if h.DeletedAt == nil {
+			doc.HealthRecords = append(doc.HealthRecords, HealthToDoc(h))
+		}
 	}
 
 	custom, err := r.UserFoods(ctx, userID)
@@ -139,7 +149,7 @@ func bad(field, msg string) error {
 }
 
 func (s *Service) validateBackup(doc ExportDoc) error {
-	if len(doc.Entries)+len(doc.Foods)+len(doc.SavedMeals)+len(doc.Favorites)+len(doc.DeletedEntries) > maxImportRows {
+	if len(doc.Entries)+len(doc.Foods)+len(doc.SavedMeals)+len(doc.Favorites)+len(doc.DeletedEntries)+len(doc.HealthRecords) > maxImportRows {
 		return bad("document", "has too many rows")
 	}
 	var fields []domain.FieldError
@@ -177,6 +187,9 @@ func (s *Service) validateBackup(doc ExportDoc) error {
 		if m.Name == "" {
 			add(fmt.Sprintf("saved_meals[%d]", i), "needs a name")
 		}
+		if m.Servings < 0 || m.Servings > domain.MaxServings {
+			add(fmt.Sprintf("saved_meals[%d].servings", i), "must be above 0 and at most 1000")
+		}
 		for j, it := range m.Items {
 			if !domain.Unit(it.Unit).Valid() || it.Grams <= 0 || it.Amount <= 0 || it.Kcal < 0 {
 				add(fmt.Sprintf("saved_meals[%d].items[%d]", i, j), "is not a valid item")
@@ -191,6 +204,16 @@ func (s *Service) validateBackup(doc ExportDoc) error {
 			add(fmt.Sprintf("favorites[%d].food_id", i), "refers to a food that is not in the backup")
 		}
 	}
+	healthSeen := map[string]bool{}
+	for i, d := range doc.HealthRecords {
+		if err := domain.ValidateHealthRecord(DocToHealth(d, ""), s.now().AddDate(10, 0, 0)); err != nil {
+			add(fmt.Sprintf("health_records[%d]", i), err.Error())
+		}
+		if healthSeen[d.ID] {
+			add(fmt.Sprintf("health_records[%d]", i), "duplicate id")
+		}
+		healthSeen[d.ID] = true
+	}
 	if doc.Settings != nil {
 		if err := domain.ValidateSettings(settingsFromBody(doc.Settings.SettingsBody, "")); err != nil {
 			add("settings", err.Error())
@@ -204,11 +227,12 @@ func (s *Service) validateBackup(doc ExportDoc) error {
 
 // ImportResult counts what a restore wrote.
 type ImportResult struct {
-	Entries    int
-	Foods      int
-	SavedMeals int
-	Favorites  int
-	Removed    int
+	Entries       int
+	Foods         int
+	SavedMeals    int
+	Favorites     int
+	HealthRecords int
+	Removed       int
 }
 
 // Restore replaces the user's data with the backup in one transaction. Rows the backup does not contain are
@@ -235,7 +259,10 @@ func (s *Service) Restore(ctx context.Context, userID string, doc ExportDoc) (Im
 		if err := restoreMeals(ctx, r, userID, doc.SavedMeals, foodIDs, now, &res); err != nil {
 			return err
 		}
-		return restoreFavorites(ctx, r, userID, doc.Favorites, foodIDs, now, &res)
+		if err := restoreFavorites(ctx, r, userID, doc.Favorites, foodIDs, now, &res); err != nil {
+			return err
+		}
+		return restoreHealth(ctx, r, userID, doc.HealthRecords, now, &res)
 	})
 	return res, err
 }

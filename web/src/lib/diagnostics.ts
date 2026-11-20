@@ -8,6 +8,7 @@ export async function localDump(db: PlateDB): Promise<string> {
     foods: await db.foods.where("source").equals("user").toArray(),
     settings: await db.settings.toArray(),
     savedMeals: await db.savedMeals.toArray(),
+    healthRecords: await db.healthRecords.toArray(),
     savedMealItems: await db.savedMealItems.toArray(),
     favorites: await db.favorites.toArray(),
     outbox: await db.outbox.toArray(),

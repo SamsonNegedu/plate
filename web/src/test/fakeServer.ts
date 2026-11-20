@@ -160,6 +160,7 @@ export class FakeServer implements Transport {
       entries: live("entry"),
       saved_meals: live("saved_meal"),
       favorites: live("favorite"),
+      health_records: live("health_record"),
     };
   }
 

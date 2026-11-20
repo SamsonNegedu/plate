@@ -10,21 +10,51 @@ import (
 )
 
 const getSettings = `-- name: GetSettings :one
-SELECT user_id, goal_kcal, protein_g, carbs_g, fat_g, day_start_hour, theme, created_at, updated_at, deleted_at, server_seq
+SELECT user_id, goal_kcal, protein_g, carbs_g, fat_g, fiber_g, day_start_hour, theme,
+       weight_goal_kg, med_name, med_interval_days, med_started_on, med_supply_doses, med_supply_as_of,
+       created_at, updated_at, deleted_at, server_seq
 FROM settings WHERE user_id = ?
 `
 
-func (q *Queries) GetSettings(ctx context.Context, userID string) (Setting, error) {
+type GetSettingsRow struct {
+	UserID          string
+	GoalKcal        int64
+	ProteinG        int64
+	CarbsG          int64
+	FatG            int64
+	FiberG          int64
+	DayStartHour    int64
+	Theme           string
+	WeightGoalKg    *float64
+	MedName         *string
+	MedIntervalDays *int64
+	MedStartedOn    *string
+	MedSupplyDoses  *int64
+	MedSupplyAsOf   *string
+	CreatedAt       string
+	UpdatedAt       string
+	DeletedAt       *string
+	ServerSeq       int64
+}
+
+func (q *Queries) GetSettings(ctx context.Context, userID string) (GetSettingsRow, error) {
 	row := q.db.QueryRowContext(ctx, getSettings, userID)
-	var i Setting
+	var i GetSettingsRow
 	err := row.Scan(
 		&i.UserID,
 		&i.GoalKcal,
 		&i.ProteinG,
 		&i.CarbsG,
 		&i.FatG,
+		&i.FiberG,
 		&i.DayStartHour,
 		&i.Theme,
+		&i.WeightGoalKg,
+		&i.MedName,
+		&i.MedIntervalDays,
+		&i.MedStartedOn,
+		&i.MedSupplyDoses,
+		&i.MedSupplyAsOf,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -34,30 +64,48 @@ func (q *Queries) GetSettings(ctx context.Context, userID string) (Setting, erro
 }
 
 const upsertSettings = `-- name: UpsertSettings :exec
-INSERT INTO settings (user_id, goal_kcal, protein_g, carbs_g, fat_g, day_start_hour, theme, created_at, updated_at, server_seq)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO settings (
+    user_id, goal_kcal, protein_g, carbs_g, fat_g, fiber_g, day_start_hour, theme,
+    weight_goal_kg, med_name, med_interval_days, med_started_on, med_supply_doses, med_supply_as_of,
+    created_at, updated_at, server_seq
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (user_id) DO UPDATE SET
     goal_kcal = excluded.goal_kcal,
     protein_g = excluded.protein_g,
     carbs_g = excluded.carbs_g,
     fat_g = excluded.fat_g,
+    fiber_g = excluded.fiber_g,
     day_start_hour = excluded.day_start_hour,
     theme = excluded.theme,
+    weight_goal_kg = excluded.weight_goal_kg,
+    med_name = excluded.med_name,
+    med_interval_days = excluded.med_interval_days,
+    med_started_on = excluded.med_started_on,
+    med_supply_doses = excluded.med_supply_doses,
+    med_supply_as_of = excluded.med_supply_as_of,
     updated_at = excluded.updated_at,
     server_seq = excluded.server_seq
 `
 
 type UpsertSettingsParams struct {
-	UserID       string
-	GoalKcal     int64
-	ProteinG     int64
-	CarbsG       int64
-	FatG         int64
-	DayStartHour int64
-	Theme        string
-	CreatedAt    string
-	UpdatedAt    string
-	ServerSeq    int64
+	UserID          string
+	GoalKcal        int64
+	ProteinG        int64
+	CarbsG          int64
+	FatG            int64
+	FiberG          int64
+	DayStartHour    int64
+	Theme           string
+	WeightGoalKg    *float64
+	MedName         *string
+	MedIntervalDays *int64
+	MedStartedOn    *string
+	MedSupplyDoses  *int64
+	MedSupplyAsOf   *string
+	CreatedAt       string
+	UpdatedAt       string
+	ServerSeq       int64
 }
 
 func (q *Queries) UpsertSettings(ctx context.Context, arg UpsertSettingsParams) error {
@@ -67,8 +115,15 @@ func (q *Queries) UpsertSettings(ctx context.Context, arg UpsertSettingsParams) 
 		arg.ProteinG,
 		arg.CarbsG,
 		arg.FatG,
+		arg.FiberG,
 		arg.DayStartHour,
 		arg.Theme,
+		arg.WeightGoalKg,
+		arg.MedName,
+		arg.MedIntervalDays,
+		arg.MedStartedOn,
+		arg.MedSupplyDoses,
+		arg.MedSupplyAsOf,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.ServerSeq,

@@ -28,9 +28,6 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 		}
 		log.Info("startup action", slog.String("action", "integrity_check"), slog.String("result", result))
 	}
-	if err := auth.Bootstrap(ctx, cfg, db, sessions, log); err != nil {
-		return err
-	}
 	if n, err := sessions.PruneExpired(ctx); err != nil {
 		return err
 	} else if n > 0 {
@@ -60,9 +57,13 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 		}
 	}
 	if cfg.ImportBLSPath != "" {
-		user, err := store.NewRepo(db).FirstUser(ctx)
+		name, err := auth.NormalizeUsername(cfg.ImportBLSUser)
 		if err != nil {
-			return fmt.Errorf("BLS import needs an admin user: %w", err)
+			return fmt.Errorf("PLATE_IMPORT_BLS_USERNAME: %w", err)
+		}
+		user, err := store.NewRepo(db).UserByUsername(ctx, name)
+		if err != nil {
+			return fmt.Errorf("BLS import needs an existing account: %w", err)
 		}
 		if _, err := food.ImportBLS(ctx, db, user.ID, cfg.ImportBLSPath, log); err != nil {
 			return err

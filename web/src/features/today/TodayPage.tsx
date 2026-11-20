@@ -1,4 +1,5 @@
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Link, Navigate, useNavigate, useParams } from "react-router";
+import { useAuth } from "@/app/auth";
 import { Button } from "@/components/Button";
 import { DayNav } from "@/components/DayNav";
 import { EmptyState } from "@/components/EmptyState";
@@ -16,9 +17,10 @@ import { addDays, dayLabel, dayTitle, defaultMeal, isValidDate, logicalDate } fr
 import { formatKcal } from "@/lib/numbers";
 import { useUi } from "@/lib/ui";
 import { useNow } from "@/lib/useNow";
+import { HealthNudge } from "./HealthNudge";
 
 const chip =
-  "inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-pill border border-line bg-surface px-3.5 text-label text-ink";
+  "flex min-h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-1 rounded-pill border border-line bg-surface px-2.5 text-label text-ink";
 
 export function TodayPage() {
   const params = useParams();
@@ -35,6 +37,7 @@ function Day({ date, today }: { date: string; today: string }) {
   const db = useDb();
   const navigate = useNavigate();
   const ui = useUi();
+  const auth = useAuth();
   const now = useNow();
   const { logFood } = useLog();
   const settings = useSettings();
@@ -74,8 +77,32 @@ function Day({ date, today }: { date: string; today: string }) {
       <SummaryCard
         totals={day.totals}
         goalKcal={settings.goalKcal}
-        targets={{ protein: settings.proteinG, carbs: settings.carbsG, fat: settings.fatG }}
+        targets={{
+          protein: settings.proteinG,
+          carbs: settings.carbsG,
+          fat: settings.fatG,
+          fiber: settings.fiberG,
+        }}
+        onDetails={() => ui.open({ kind: "nutrients", date, scope: "day" })}
       />
+
+      <HealthNudge />
+
+      {auth.codesSaved === false ? (
+        <aside
+          className="mt-3 grid gap-1 rounded-card border border-amber bg-surface p-3.5"
+          aria-label={copy.codes.bannerTitle}
+        >
+          <p className="text-body font-semibold">{copy.codes.bannerTitle}</p>
+          <p className="text-label text-ink-2">{copy.codes.bannerBody}</p>
+          <Link
+            className="mt-1 inline-flex min-h-11 items-center text-label font-medium text-accent"
+            to="/settings"
+          >
+            {copy.codes.bannerAction}
+          </Link>
+        </aside>
+      ) : null}
 
       <div className="mt-3 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
         <Button variant="primary" onClick={() => navigate(`/scan?date=${date}`)}>
@@ -88,31 +115,42 @@ function Day({ date, today }: { date: string; today: string }) {
         </Button>
       </div>
 
-      {(recents ?? []).length > 0 || (yesterday?.totals.count ?? 0) > 0 ? (
-        <section className="mt-3 flex flex-wrap gap-2" aria-label={copy.today.recent}>
-          {(recents ?? []).map((r) => {
-            const p = startingPortion(r.food, r.pref);
-            return (
-              <button
-                key={r.food.id}
-                type="button"
-                className={chip}
-                onClick={() => void logFood(r.food, { ...p, meal, date })}
-                aria-label={`Add ${r.food.name} again to ${copy.meals[meal].toLowerCase()}`}
-              >
-                <Icon name="plus" size={16} />
-                <span className="truncate">{r.food.name}</span>
-                <small className="flex-none text-micro text-ink-2">to {copy.meals[meal]}</small>
-              </button>
-            );
-          })}
-          {(yesterday?.totals.count ?? 0) > 0 ? (
-            <button type="button" className={chip} onClick={() => void copyYesterday()}>
-              <Icon name="copy" size={16} />
-              <span className="truncate">{copy.today.copyYesterday}</span>
-            </button>
-          ) : null}
+      {(recents ?? []).length > 0 ? (
+        <section
+          className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-1"
+          aria-label={`Add again to ${copy.meals[meal].toLowerCase()}`}
+        >
+          <p className="text-micro text-ink-2" aria-hidden="true">
+            {`Add again to ${copy.meals[meal]}`}
+          </p>
+          <div className="flex gap-2">
+            {(recents ?? []).map((r) => {
+              const p = startingPortion(r.food, r.pref);
+              return (
+                <button
+                  key={r.food.id}
+                  type="button"
+                  className={chip}
+                  onClick={() => void logFood(r.food, { ...p, meal, date })}
+                  aria-label={`Add ${r.food.name} again to ${copy.meals[meal].toLowerCase()}`}
+                >
+                  <Icon name="plus" size={16} />
+                  <span className="truncate">{r.food.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </section>
+      ) : null}
+      {day.totals.count === 0 && (yesterday?.totals.count ?? 0) > 0 ? (
+        <button
+          type="button"
+          className="mt-1 inline-flex min-h-11 items-center gap-1.5 bg-transparent p-0 text-label font-medium text-accent"
+          onClick={() => void copyYesterday()}
+        >
+          <Icon name="copy" size={16} />
+          {copy.today.copyYesterday}
+        </button>
       ) : null}
 
       {day.totals.count === 0 ? (
@@ -127,6 +165,7 @@ function Day({ date, today }: { date: string; today: string }) {
             meal={m}
             entries={entries}
             onAdd={() => ui.open({ kind: "search", meal: m, date })}
+            onDetails={() => ui.open({ kind: "nutrients", date, scope: m })}
             onOpen={(e) => ui.open({ kind: "entry", entryId: e.id })}
             extra={
               entries.length > 0 ? (
@@ -135,7 +174,7 @@ function Day({ date, today }: { date: string; today: string }) {
                   className="inline-flex min-h-11 items-center bg-transparent p-0 text-meta text-ink-2 underline"
                   onClick={() => ui.open({ kind: "saveMeal", entries })}
                 >
-                  Save as meal
+                  Save as recipe
                   <span className="sr-only">{` ${formatKcal(entries.reduce((s, e) => s + (e.kcal * e.grams) / 100, 0))} kcal`}</span>
                 </button>
               ) : null

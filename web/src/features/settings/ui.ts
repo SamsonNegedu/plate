@@ -34,3 +34,13 @@ export const smallBtn = (danger = false) =>
     "min-h-11 rounded-ctl border border-line bg-surface px-3 text-label",
     danger ? "text-red" : "text-ink",
   );
+
+/** The Settings home list: one tappable row per group, its state on the right. */
+export const row = {
+  list: "grid border-t border-line",
+  link: "flex min-h-14 items-center gap-3 border-b border-line text-ink",
+  title: "flex-1 text-body font-medium",
+  value: "min-w-0 truncate text-label text-ink-2",
+  attention: "min-w-0 truncate text-label font-medium text-amber",
+  back: "inline-flex min-h-11 w-fit items-center gap-1 text-label font-medium text-ink-2",
+};

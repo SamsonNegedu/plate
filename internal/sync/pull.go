@@ -68,7 +68,7 @@ func (s *Service) Snapshot(ctx context.Context, userID string) (Snapshot, error)
 		return Snapshot{}, err
 	}
 	snap := Snapshot{
-		Cursor: st.HeadSeq, MinSeq: st.MinSeq, Foods: []FoodDoc{}, Entries: []EntryDoc{}, SavedMeals: []SavedMealDoc{}, Favorites: []FavoriteDoc{},
+		Cursor: st.HeadSeq, MinSeq: st.MinSeq, Foods: []FoodDoc{}, Entries: []EntryDoc{}, SavedMeals: []SavedMealDoc{}, Favorites: []FavoriteDoc{}, HealthRecords: []HealthRecordDoc{},
 	}
 	if set, err := r.Settings(ctx, userID); err == nil {
 		d := SettingsToDoc(set)
@@ -108,6 +108,15 @@ func (s *Service) Snapshot(ctx context.Context, userID string) (Snapshot, error)
 	for _, f := range favs {
 		if f.DeletedAt == nil {
 			snap.Favorites = append(snap.Favorites, FavoriteToDoc(f))
+		}
+	}
+	health, err := r.AllHealthRecords(ctx, userID)
+	if err != nil {
+		return Snapshot{}, err
+	}
+	for _, h := range health {
+		if h.DeletedAt == nil {
+			snap.HealthRecords = append(snap.HealthRecords, HealthToDoc(h))
 		}
 	}
 	return snap, nil

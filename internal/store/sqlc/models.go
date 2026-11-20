@@ -143,6 +143,22 @@ type FoodsTrgm struct {
 	Rank      *float64
 }
 
+type HealthRecord struct {
+	ID         string
+	UserID     string
+	Kind       string
+	RecordedOn string
+	RecordedAt string
+	Value      float64
+	Medication string
+	Site       string
+	Note       string
+	CreatedAt  string
+	UpdatedAt  string
+	DeletedAt  *string
+	ServerSeq  int64
+}
+
 type ImageCache struct {
 	Key         string
 	ContentType string
@@ -157,6 +173,13 @@ type Meta struct {
 	Value string
 }
 
+type RecoveryCode struct {
+	UserID    string
+	CodeHash  []byte
+	CreatedAt string
+	UsedAt    *string
+}
+
 type SavedMeal struct {
 	ID        string
 	UserID    string
@@ -165,6 +188,7 @@ type SavedMeal struct {
 	UpdatedAt string
 	DeletedAt *string
 	ServerSeq int64
+	Servings  float64
 }
 
 type SavedMealItem struct {
@@ -201,17 +225,24 @@ type Session struct {
 }
 
 type Setting struct {
-	UserID       string
-	GoalKcal     int64
-	ProteinG     int64
-	CarbsG       int64
-	FatG         int64
-	DayStartHour int64
-	Theme        string
-	CreatedAt    string
-	UpdatedAt    string
-	DeletedAt    *string
-	ServerSeq    int64
+	UserID          string
+	GoalKcal        int64
+	ProteinG        int64
+	CarbsG          int64
+	FatG            int64
+	DayStartHour    int64
+	Theme           string
+	CreatedAt       string
+	UpdatedAt       string
+	DeletedAt       *string
+	ServerSeq       int64
+	WeightGoalKg    *float64
+	MedName         *string
+	MedIntervalDays *int64
+	MedStartedOn    *string
+	MedSupplyDoses  *int64
+	MedSupplyAsOf   *string
+	FiberG          int64
 }
 
 type SyncOp struct {
@@ -231,10 +262,11 @@ type SyncState struct {
 }
 
 type User struct {
-	ID           string
-	Email        string
-	PasswordHash string
-	CreatedAt    string
-	UpdatedAt    string
-	LastLoginAt  *string
+	ID                  string
+	Username            string
+	PasswordHash        string
+	CreatedAt           string
+	UpdatedAt           string
+	LastLoginAt         *string
+	CodesAcknowledgedAt *string
 }

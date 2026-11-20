@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countLiveEntries = `-- name: CountLiveEntries :one
+SELECT count(*) FROM entries WHERE user_id = ? AND deleted_at IS NULL
+`
+
+func (q *Queries) CountLiveEntries(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countLiveEntries, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const getEntry = `-- name: GetEntry :one
 SELECT id, user_id, eaten_on, meal, food_id, name, brand, barcode, amount, unit, grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, note, created_at, updated_at, client_updated_at, deleted_at, server_seq FROM entries WHERE id = ? AND user_id = ?
 `

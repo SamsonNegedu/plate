@@ -36,7 +36,7 @@ func wantErr(t *testing.T, d *sql.DB, contains, q string, args ...any) {
 
 func seedUser(t *testing.T, d *sql.DB) {
 	t.Helper()
-	mustExec(t, d, `INSERT INTO users(id, email, password_hash, created_at, updated_at) VALUES ('u1','a@b.c','h',?,?)`, now, now)
+	mustExec(t, d, `INSERT INTO users(id, username, password_hash, created_at, updated_at) VALUES ('u1','a@b.c','h',?,?)`, now, now)
 }
 
 func addFood(t *testing.T, d *sql.DB, id, barcode, name, brand string, kcal any) {
@@ -86,7 +86,7 @@ func TestSchemaObjects(t *testing.T) {
 	}
 	want := "catalog_ad catalog_ai catalog_au catalog_foods catalog_fts catalog_meta catalog_trgm catalog_trgm_ad catalog_trgm_ai " +
 		"catalog_trgm_au change_log entries favorites foods foods_ad foods_ai foods_au foods_fts foods_trgm foods_trgm_ad " +
-		"foods_trgm_ai foods_trgm_au image_cache meta saved_meal_items saved_meals search_cache " +
+		"foods_trgm_ai foods_trgm_au health_records image_cache meta recovery_codes saved_meal_items saved_meals search_cache " +
 		"sessions settings sync_ops sync_state users"
 	if strings.Join(got, " ") != want {
 		t.Fatalf("schema drift:\n got %s\nwant %s", strings.Join(got, " "), want)
@@ -323,4 +323,71 @@ func TestMigrateSkipsSnapshotOnAFreshDatabase(t *testing.T) {
 	if m, _ := filepath.Glob(filepath.Join(snaps, "*")); len(m) != 0 {
 		t.Fatalf("a fresh database has nothing to protect: %v", m)
 	}
+}
+
+func TestHealthMigrationKeepsTheChangeLogSequence(t *testing.T) {
+	ctx := context.Background()
+	d := openTemp(t)
+	p, err := provider(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.UpTo(ctx, 12); err != nil {
+		t.Fatal(err)
+	}
+	seedUser(t, d)
+	for range 3 {
+		mustExec(t, d, `INSERT INTO change_log(user_id, entity, entity_id, op, payload, created_at) VALUES ('u1','entry','e1','upsert','{}',?)`, now)
+	}
+	mustExec(t, d, `DELETE FROM change_log`) // a pruned log: the counter must still not restart
+	if _, err := p.UpTo(ctx, 13); err != nil {
+		t.Fatal(err)
+	}
+	mustExec(t, d, `INSERT INTO change_log(user_id, entity, entity_id, op, payload, created_at) VALUES ('u1','health_record','h1','upsert','{}',?)`, now)
+	var seq int64
+	if err := d.QueryRow(`SELECT max(seq) FROM change_log`).Scan(&seq); err != nil {
+		t.Fatal(err)
+	}
+	if seq != 4 {
+		t.Fatalf("next seq = %d, want 4: the sequence restarted", seq)
+	}
+}
+
+func TestHealthRecordValuesAreChecked(t *testing.T) {
+	d := migrated(t)
+	seedUser(t, d)
+	ins := `INSERT INTO health_records(id, user_id, kind, recorded_on, recorded_at, value, medication, created_at, updated_at)
+		VALUES (?, 'u1', ?, '2026-11-13', ?, ?, ?, ?, ?)`
+	mustExec(t, d, ins, "w1", "weight", now, 82.4, "", now, now)
+	mustExec(t, d, ins, "d1", "dose", now, 2.5, "Mounjaro", now, now)
+	wantErr(t, d, "CHECK", ins, "w2", "weight", now, 5, "", now, now)
+	wantErr(t, d, "CHECK", ins, "d2", "dose", now, 2.5, "  ", now, now)
+	wantErr(t, d, "CHECK", ins, "a1", "appetite", now, 6, "", now, now)
+	wantErr(t, d, "CHECK", ins, "x1", "mood", now, 3, "", now, now)
+}
+
+func TestMeasurementsMigrationKeepsHealthRecords(t *testing.T) {
+	ctx := context.Background()
+	d := openTemp(t)
+	p, err := provider(d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := p.UpTo(ctx, 14); err != nil {
+		t.Fatal(err)
+	}
+	seedUser(t, d)
+	ins := `INSERT INTO health_records(id, user_id, kind, recorded_on, recorded_at, value, medication, created_at, updated_at)
+		VALUES (?, 'u1', ?, '2026-11-13', ?, ?, ?, ?, ?)`
+	mustExec(t, d, ins, "w1", "weight", now, 82.4, "", now, now)
+	mustExec(t, d, ins, "d1", "dose", now, 0.25, "Wegovy", now, now)
+	if _, err := p.UpTo(ctx, 15); err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	if err := d.QueryRow(`SELECT count(*) FROM health_records`).Scan(&n); err != nil || n != 2 {
+		t.Fatalf("rows after the rebuild = %d, %v", n, err)
+	}
+	mustExec(t, d, ins, "h1", "hips", now, 101, "", now, now)
+	wantErr(t, d, "CHECK", ins, "h2", "hips", now, 5, "", now, now)
 }

@@ -5,7 +5,16 @@ import { useDb } from "./context";
 import { entriesForDay } from "./entries";
 import { userFoods } from "./foods";
 import { getSettings } from "./settings";
-import type { Entry, Food, FoodPref, SavedMeal, Settings } from "./types";
+import type {
+  Entry,
+  Food,
+  FoodPref,
+  HealthKind,
+  HealthRecord,
+  SavedMeal,
+  SavedMealItem,
+  Settings,
+} from "./types";
 
 /** Live entries for one date; undefined until the first read finishes. */
 export function useDay(date: string): { entries: Entry[]; totals: DayTotals } | undefined {
@@ -67,8 +76,12 @@ export function useFavoriteIds(): Set<string> {
 
 export interface MealSummary {
   meal: SavedMeal;
+  items: SavedMealItem[];
   count: number;
+  /** Calories in the whole recipe. */
   kcal: number;
+  /** Calories in one portion. */
+  portionKcal: number;
 }
 
 export function useSavedMeals(): MealSummary[] | undefined {
@@ -77,15 +90,21 @@ export function useSavedMeals(): MealSummary[] | undefined {
     const meals = (await db.savedMeals.toArray()).filter((m) => !m.deletedAt);
     const out: MealSummary[] = [];
     for (const meal of meals) {
-      const items = await db.savedMealItems.where("savedMealId").equals(meal.id).toArray();
-      out.push({
-        meal,
-        count: items.length,
-        kcal: items.reduce((s, i) => s + (i.kcal * i.grams) / 100, 0),
-      });
+      const items = (await db.savedMealItems.where("savedMealId").equals(meal.id).toArray()).sort(
+        (a, b) => a.position - b.position,
+      );
+      const kcal = items.reduce((s, i) => s + (i.kcal * i.grams) / 100, 0);
+      out.push({ meal, items, count: items.length, kcal, portionKcal: kcal / meal.servings });
     }
     return out.sort((a, b) => a.meal.name.localeCompare(b.meal.name));
   }, [db]);
+}
+
+/** One recipe with its ingredients. Undefined while loading, null when it does not exist or was deleted. */
+export function useRecipe(id: string): MealSummary | null | undefined {
+  const all = useSavedMeals();
+  if (!all) return undefined;
+  return all.find((m) => m.meal.id === id) ?? null;
 }
 
 export function useCustomFoods(): Food[] | undefined {
@@ -123,4 +142,17 @@ export function useEntryRange(from: string, to: string): Entry[] | undefined {
         .toArray(),
     [db, from, to],
   );
+}
+
+/** Live health records of one kind (or all), oldest first. Deleted ones are left out. */
+export function useHealthRecords(kind?: HealthKind): HealthRecord[] | undefined {
+  const db = useDb();
+  return useLiveQuery(async () => {
+    const rows = await (kind
+      ? db.healthRecords.where("kind").equals(kind).toArray()
+      : db.healthRecords.toArray());
+    return rows
+      .filter((r) => r.deletedAt === null)
+      .sort((a, b) => a.recordedAt.localeCompare(b.recordedAt) || a.id.localeCompare(b.id));
+  }, [db, kind]);
 }

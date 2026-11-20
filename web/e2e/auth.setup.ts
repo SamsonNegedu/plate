@@ -1,9 +1,9 @@
 import { test as setup } from "@playwright/test";
-import { login } from "./helpers";
+import { signUp, usernameFor } from "./helpers";
 
-// One sign-in per project, saved and reused: the server allows 5 sign-in attempts a minute from one address.
-setup("sign in once", async ({ page }) => {
-  await login(page);
+// One signup per project, saved and reused, so the sign-in rate limit is never in the way.
+setup("sign up once", async ({ page }) => {
+  await signUp(page, usernameFor(setup.info().project.name.replace("setup-", "")));
   await page
     .context()
     .storageState({ path: `.auth/${setup.info().project.name.replace("setup-", "")}.json` });

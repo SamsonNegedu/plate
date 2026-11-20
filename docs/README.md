@@ -4,10 +4,12 @@ Each document describes what is built and points at the code that is its source 
 
 | Read this | When you want to |
 |---|---|
+| [features.md](features.md) | see what the app does, feature by feature |
 | [architecture.md](architecture.md) | see how the pieces fit, and follow a scan from camera to database |
 | [data-model.md](data-model.md) | know the tables, the invariants, and why nutrition is snapshotted |
 | [sync.md](sync.md) | understand offline writes, the outbox, push and pull, conflicts and tombstones |
 | [food-and-search.md](food-and-search.md) | see how a barcode or a search becomes a loggable food |
+| [accounts.md](accounts.md) | understand signup, recovery codes, account limits and deleting an account |
 | [security.md](security.md) | check authentication, sessions, CSRF, headers, limits and outbound calls |
 | [client.md](client.md) | work on the web app: structure, state machines, offline, styling, tests |
 | [api.md](api.md) | look up an endpoint (generated from the OpenAPI spec) |

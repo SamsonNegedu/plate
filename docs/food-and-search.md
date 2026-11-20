@@ -23,7 +23,7 @@ The browser never talks to Open Food Facts. The server does, with bounded concur
 4. **A recent miss.** A "not found" answer is remembered for 24 hours.
 5. **Open Food Facts.** The product is normalized and stored as an `off` row; a miss is remembered.
 
-The client calls this only after its own Dexie cache misses, and a barcode lookup is limited to 60 a minute per address.
+The client calls this only after its own Dexie cache misses, and a barcode lookup is limited to 60 a minute per user.
 
 Outcomes the client handles: found, not found (opens the manual form with the barcode filled in), not loggable (a product exists but has no usable calories, so it opens the manual form with its name and says why), offline, upstream unavailable, and invalid.
 
@@ -45,6 +45,8 @@ Outcomes the client handles: found, not found (opens the manual form with the ba
 3. If fewer than five local hits exist and the query is at least three characters, **Open Food Facts search** runs; its loggable hits are stored so the next query is local. A failure there just means the local results stand. Answers are cached for 24 hours (an empty answer for one hour).
 
 Results are ranked: favorite, recent, exact name, whole word before prefix-only, native match before substring, name starts with the query, then source, then bm25 order. Every result is loggable.
+
+Recipes are searched on the device, not by this endpoint: a recipe whose name matches the query is listed above the foods, with its calories a portion and its portions, and its **+** opens the portion picker. When the search sheet is opened to pick a recipe ingredient, recipes are left out and a chosen food is added to the recipe instead of being logged.
 
 The client also keeps a MiniSearch index over cached foods, so keystrokes show results at once; server queries are debounced 250 ms and aborted when the query changes. Server answers replace local duplicates, and local-only foods (not yet synced) stay below them.
 

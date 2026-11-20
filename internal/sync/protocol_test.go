@@ -306,7 +306,7 @@ func TestRetentionIsPerUser(t *testing.T) {
 	f := newFx(t)
 	ctx := context.Background()
 	other := nid()
-	if err := f.r.CreateUser(ctx, domain.User{ID: other, Email: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
+	if err := f.r.CreateUser(ctx, domain.User{ID: other, Username: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
 		t.Fatal(err)
 	}
 	f.push(t, upsert(EntityEntry, nid(), entryData(nil)))
@@ -357,7 +357,7 @@ func TestUsersNeverSeeEachOthersRows(t *testing.T) {
 	f := newFx(t)
 	ctx := context.Background()
 	other := nid()
-	if err := f.r.CreateUser(ctx, domain.User{ID: other, Email: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
+	if err := f.r.CreateUser(ctx, domain.User{ID: other, Username: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
 		t.Fatal(err)
 	}
 	mine := nid()
@@ -440,6 +440,45 @@ func TestSettingsAndSavedMealsRoundTripWithNestedItems(t *testing.T) {
 	}
 	if r := f.push(t, upsert(EntitySavedMeal, meal, raw(map[string]any{"name": "Back", "items": []any{}}))).Results[0]; r.Status != StatusTombstoned {
 		t.Fatalf("a deleted meal is not resurrected: %+v", r)
+	}
+}
+
+func TestRecipeServingsSyncDefaultToOneAndAreValidated(t *testing.T) {
+	f := newFx(t)
+	ctx := context.Background()
+	body := func(servings any) json.RawMessage {
+		item := map[string]any{"id": nid(), "food_id": nil, "name": "Oats", "brand": "", "amount": 40, "unit": "g", "grams": 40, "kcal": 370, "position": 0}
+		m := map[string]any{"name": "Porridge", "items": []any{item}}
+		if servings != nil {
+			m["servings"] = servings
+		}
+		return raw(m)
+	}
+
+	older, withServings := nid(), nid()
+	f.push(t, upsert(EntitySavedMeal, older, body(nil)))
+	f.push(t, upsert(EntitySavedMeal, withServings, body(4)))
+	if m, err := f.r.SavedMeal(ctx, uid, older); err != nil || m.Servings != 1 {
+		t.Fatalf("a body without servings is one portion: %+v, %v", m, err)
+	}
+	if m, _ := f.r.SavedMeal(ctx, uid, withServings); m.Servings != 4 {
+		t.Fatalf("servings = %v, want 4", m.Servings)
+	}
+	for _, bad := range []any{-1, 1001} {
+		if r := f.push(t, upsert(EntitySavedMeal, nid(), body(bad))).Results[0]; r.Status != StatusRejected {
+			t.Fatalf("servings %v must be rejected: %+v", bad, r)
+		}
+	}
+	var doc SavedMealDoc
+	for _, c := range f.pull(t, 0, 100).Changes {
+		if c.Entity == EntitySavedMeal && c.ID == withServings {
+			if err := json.Unmarshal(c.Data, &doc); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if doc.Servings != 4 {
+		t.Fatalf("the change payload carries servings: %+v", doc)
 	}
 }
 
@@ -747,3 +786,120 @@ func TestTwoClientsConvergeUnderRandomOfflineSequences(t *testing.T) {
 }
 
 var _ = store.Pending
+
+func TestHealthRecordsValidateTombstoneAndReplay(t *testing.T) {
+	f := newFx(t)
+	ctx := context.Background()
+	body := func(kind string, value any, extra map[string]any) json.RawMessage {
+		m := map[string]any{"kind": kind, "recorded_on": "2026-11-13", "recorded_at": "2026-11-13T08:00:00Z", "value": value}
+		for k, v := range extra {
+			m[k] = v
+		}
+		return raw(m)
+	}
+
+	weight, dose := nid(), nid()
+	if r := f.push(t, upsert(EntityHealth, weight, body("weight", 82.4, nil))).Results[0]; r.Status != StatusApplied {
+		t.Fatalf("weight = %+v", r)
+	}
+	for _, kind := range []string{"waist", "hips", "chest", "arm", "thigh", "neck"} {
+		if r := f.push(t, upsert(EntityHealth, nid(), body(kind, 40, nil))).Results[0]; r.Status != StatusApplied {
+			t.Fatalf("%s = %+v", kind, r)
+		}
+	}
+	if r := f.push(t, upsert(EntityHealth, nid(), body("hips", 5, nil))).Results[0]; r.Status != StatusRejected {
+		t.Fatalf("a hip measurement of 5 cm must be rejected: %+v", r)
+	}
+	if r := f.push(t, upsert(EntityHealth, dose, body("dose", 2.5, map[string]any{"medication": "Mounjaro", "site": "left thigh"}))).Results[0]; r.Status != StatusApplied {
+		t.Fatalf("dose = %+v", r)
+	}
+	h, err := f.r.HealthRecord(ctx, uid, dose)
+	if err != nil || h.Medication != "Mounjaro" || h.Site != "left thigh" || h.Value != 2.5 {
+		t.Fatalf("dose row = %+v, %v", h, err)
+	}
+
+	for name, in := range map[string]json.RawMessage{
+		"a weight that is not a person's": body("weight", 5, nil),
+		"a dose without a medication":     body("dose", 2.5, nil),
+		"a rating above 5":                body("appetite", 6, nil),
+		"a fractional rating":             body("nausea", 2.5, nil),
+		"a medication on a weight":        body("weight", 80, map[string]any{"medication": "x"}),
+		"an unknown kind":                 body("mood", 3, nil),
+		"a dose far beyond any real pen":  body("dose", 500, map[string]any{"medication": "x"}),
+		"a date that does not exist":      raw(map[string]any{"kind": "weight", "recorded_on": "2026-02-31", "recorded_at": "2026-11-13T08:00:00Z", "value": 80}),
+	} {
+		if r := f.push(t, upsert(EntityHealth, nid(), in)).Results[0]; r.Status != StatusRejected {
+			t.Fatalf("%s must be rejected: %+v", name, r)
+		}
+	}
+
+	op := upsert(EntityHealth, nid(), body("waist", 91, nil))
+	first := f.push(t, op).Results[0]
+	if again := f.push(t, op).Results[0]; again.Status != StatusDuplicate || first.ServerSeq == nil || *again.ServerSeq != *first.ServerSeq {
+		t.Fatalf("a replayed op must not add a row: %+v then %+v", first, again)
+	}
+
+	if r := f.push(t, del(EntityHealth, weight)).Results[0]; r.Status != StatusApplied {
+		t.Fatalf("delete = %+v", r)
+	}
+	if r := f.push(t, upsert(EntityHealth, weight, body("weight", 81, nil))).Results[0]; r.Status != StatusTombstoned {
+		t.Fatalf("a deleted record is not resurrected: %+v", r)
+	}
+	var live int
+	for _, c := range f.pull(t, 0, 100).Changes {
+		if c.Entity == EntityHealth && c.Op == "upsert" {
+			live++
+		}
+	}
+	if live < 3 {
+		t.Fatalf("the change stream carries health records: %d", live)
+	}
+	snap, err := f.svc.Snapshot(ctx, uid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snap.HealthRecords) != 8 { // the dose, the waist and six more circumferences; the weight is deleted
+		t.Fatalf("snapshot health records = %d, want 8", len(snap.HealthRecords))
+	}
+}
+
+func TestMedicationPlanAndWeightGoalSyncWithSettings(t *testing.T) {
+	f := newFx(t)
+	ctx := context.Background()
+	base := map[string]any{"goal_kcal": 2000, "protein_g": 120, "carbs_g": 0, "fat_g": 0, "fiber_g": 30, "day_start_hour": 0, "theme": "auto"}
+	plan := map[string]any{"weight_goal_kg": 78.5, "med_name": "Mounjaro", "med_interval_days": 7, "med_started_on": "2026-10-01", "med_supply_doses": 4, "med_supply_as_of": "2026-11-01T08:00:00Z"}
+	with := func(extra map[string]any) json.RawMessage {
+		m := map[string]any{}
+		for k, v := range base {
+			m[k] = v
+		}
+		for k, v := range extra {
+			m[k] = v
+		}
+		return raw(m)
+	}
+	if r := f.push(t, upsert(EntitySettings, uid, with(plan))).Results[0]; r.Status != StatusApplied {
+		t.Fatalf("settings with a plan = %+v", r)
+	}
+	s, err := f.r.Settings(ctx, uid)
+	if err != nil || s.MedName == nil || *s.MedName != "Mounjaro" || s.MedIntervalDays == nil || *s.MedIntervalDays != 7 ||
+		s.WeightGoalKg == nil || *s.WeightGoalKg != 78.5 || s.MedSupplyDoses == nil || *s.MedSupplyDoses != 4 || s.FiberG != 30 {
+		t.Fatalf("plan not stored: %+v, %v", s, err)
+	}
+	for name, extra := range map[string]map[string]any{
+		"a weight goal below any real weight": {"weight_goal_kg": 5},
+		"an interval of zero days":            {"med_name": "x", "med_interval_days": 0},
+		"an empty medication name":            {"med_name": "  "},
+		"a fibre target above any real need":  {"fiber_g": 201},
+		"a start date that does not exist":    {"med_started_on": "2026-13-01"},
+	} {
+		if r := f.push(t, upsert(EntitySettings, uid, with(extra))).Results[0]; r.Status != StatusRejected {
+			t.Fatalf("%s must be rejected: %+v", name, r)
+		}
+	}
+	// stopping the medication is saving settings without the plan
+	f.push(t, upsert(EntitySettings, uid, with(nil)))
+	if s, _ := f.r.Settings(ctx, uid); s.MedName != nil || s.WeightGoalKg != nil {
+		t.Fatalf("a plan left out of settings is cleared: %+v", s)
+	}
+}

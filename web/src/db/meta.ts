@@ -16,6 +16,6 @@ export const META = {
   resyncedAt: "resyncedAt",
   leaderUntil: "leaderUntil",
   userId: "userId",
-  email: "email",
+  username: "username",
   seeded: "seeded",
 } as const;

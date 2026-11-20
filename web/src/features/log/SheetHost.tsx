@@ -1,6 +1,8 @@
 import { topSheet, useUi } from "@/lib/ui";
 import { EntryEditSheet } from "./EntryEditSheet";
+import { LogRecipeSheet } from "./LogRecipeSheet";
 import { ManualFoodSheet } from "./ManualFoodSheet";
+import { NutrientsSheet } from "./NutrientsSheet";
 import { ProductSheet } from "./ProductSheet";
 import { QuickAddSheet } from "./QuickAddSheet";
 import { SaveMealSheet } from "./SaveMealSheet";
@@ -21,10 +23,15 @@ export function SheetHost() {
           meal={sheet.meal}
           date={sheet.date}
           notice={sheet.notice}
+          pick={sheet.pick}
         />
       );
     case "search":
-      return <SearchSheet key={key} meal={sheet.meal} date={sheet.date} />;
+      return <SearchSheet key={key} meal={sheet.meal} date={sheet.date} pick={sheet.pick} />;
+    case "logRecipe":
+      return (
+        <LogRecipeSheet key={key} recipeId={sheet.recipeId} meal={sheet.meal} date={sheet.date} />
+      );
     case "quick":
       return <QuickAddSheet key={key} meal={sheet.meal} date={sheet.date} />;
     case "entry":
@@ -41,6 +48,8 @@ export function SheetHost() {
           notLoggable={sheet.notLoggable}
         />
       );
+    case "nutrients":
+      return <NutrientsSheet key={key} date={sheet.date} scope={sheet.scope} />;
     case "saveMeal":
       return <SaveMealSheet key={key} entries={sheet.entries} />;
   }

@@ -65,15 +65,61 @@ export interface Settings {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  /** Fibre target in grams. 0 means not tracked, like the macro targets. */
+  fiberG: number;
   dayStartHour: number;
   theme: Theme;
+  /** Optional: the weight to work towards, and the medication being tracked. Null means not set. */
+  weightGoalKg: number | null;
+  medName: string | null;
+  /** Days between doses. */
+  medIntervalDays: number | null;
+  medStartedOn: string | null;
+  /** Doses on hand as of `medSupplyAsOf`. */
+  medSupplyDoses: number | null;
+  medSupplyAsOf: string | null;
   updatedAt: string;
   serverSeq: number;
 }
 
+export type HealthKind =
+  | "weight"
+  | "waist"
+  | "hips"
+  | "chest"
+  | "arm"
+  | "thigh"
+  | "neck"
+  | "appetite"
+  | "nausea"
+  | "dose";
+
+/** The kinds that are a length in cm around the body. */
+export type CircumferenceKind = "waist" | "hips" | "chest" | "arm" | "thigh" | "neck";
+
+/** One dated number the person logs: kg, cm, a 0 to 5 rating, or a dose in mg. Medication and site are for doses. */
+export interface HealthRecord {
+  id: string;
+  kind: HealthKind;
+  /** The local calendar day, assigned once by the client like an entry's eatenOn. */
+  recordedOn: string;
+  /** When it happened, as an ISO time. */
+  recordedAt: string;
+  value: number;
+  medication: string;
+  site: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  serverSeq: number;
+}
+
+/** A recipe (stored as a saved meal): ingredients plus the portions it makes. */
 export interface SavedMeal {
   id: string;
   name: string;
+  servings: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -116,7 +162,13 @@ export interface FoodMiss {
   createdAt: string;
 }
 
-export type SyncEntity = "entry" | "food" | "settings" | "saved_meal" | "favorite";
+export type SyncEntity =
+  | "entry"
+  | "food"
+  | "settings"
+  | "saved_meal"
+  | "favorite"
+  | "health_record";
 export type OutboxStatus = "pending" | "inflight" | "failed";
 
 export interface OutboxOp {

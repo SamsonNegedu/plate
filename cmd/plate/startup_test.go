@@ -15,7 +15,7 @@ import (
 	"plate/internal/store"
 )
 
-func TestStartupBootstrapsAndImportsTheCatalog(t *testing.T) {
+func TestStartupImportsTheCatalogAndCreatesNoAccount(t *testing.T) {
 	ctx := context.Background()
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	db, err := store.Open(filepath.Join(t.TempDir(), "plate.db"))
@@ -33,14 +33,14 @@ func TestStartupBootstrapsAndImportsTheCatalog(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := config.Config{
-		IntegrityCheck: true, AdminEmail: "a@example.com", AdminPassword: "correct horse battery", ImportCatalog: seed,
+		IntegrityCheck: true, ImportCatalog: seed,
 	}
 	if err := startupActions(ctx, cfg, log, db, auth.NewSessionStore(db)); err != nil {
 		t.Fatal(err)
 	}
 	r := store.NewRepo(db)
-	if n, _ := r.CountUsers(ctx); n != 1 {
-		t.Fatalf("users = %d", n)
+	if n, _ := r.CountUsers(ctx); n != 0 {
+		t.Fatalf("users = %d: startup must not create an account", n)
 	}
 	if c, err := r.CatalogByBarcode(ctx, "3017620422003"); err != nil || c.Name != "Nutella" {
 		t.Fatalf("catalog = %+v, %v", c, err)
@@ -63,7 +63,7 @@ func TestStartupFindsTheBundledCatalog(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := config.Config{
-		IntegrityCheck: true, AdminEmail: "a@example.com", AdminPassword: "correct horse battery", DataDir: dataDir,
+		IntegrityCheck: true, DataDir: dataDir,
 	}
 	if err := startupActions(ctx, cfg, log, db, auth.NewSessionStore(db)); err != nil {
 		t.Fatal(err)
@@ -88,7 +88,7 @@ func TestStartupSkipsAnExistingCatalog(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := config.Config{
-		IntegrityCheck: true, AdminEmail: "a@example.com", AdminPassword: "correct horse battery", ImportCatalog: seed,
+		IntegrityCheck: true, ImportCatalog: seed,
 	}
 	if err := startupActions(ctx, cfg, log, db, auth.NewSessionStore(db)); err != nil {
 		t.Fatal(err)
@@ -112,7 +112,7 @@ func TestStartupRefusesABadCatalogWithoutTouchingTheOldOne(t *testing.T) {
 	if err := store.Migrate(ctx, db, ""); err != nil {
 		t.Fatal(err)
 	}
-	cfg := config.Config{AdminEmail: "a@example.com", AdminPassword: "correct horse battery", ImportCatalog: filepath.Join(t.TempDir(), "missing.db")}
+	cfg := config.Config{ImportCatalog: filepath.Join(t.TempDir(), "missing.db")}
 	if err := startupActions(ctx, cfg, log, db, auth.NewSessionStore(db)); err == nil {
 		t.Fatal("a missing seed must stop startup, not be ignored")
 	}

@@ -1,6 +1,7 @@
 import type {
   Entry,
   Food,
+  HealthRecord,
   Meal,
   Nutrients,
   SavedMeal,
@@ -59,14 +60,34 @@ export function settingsBody(s: Settings) {
     protein_g: s.proteinG,
     carbs_g: s.carbsG,
     fat_g: s.fatG,
+    fiber_g: s.fiberG ?? 0,
     day_start_hour: s.dayStartHour,
     theme: s.theme,
+    weight_goal_kg: s.weightGoalKg ?? null,
+    med_name: s.medName ?? null,
+    med_interval_days: s.medIntervalDays ?? null,
+    med_started_on: s.medStartedOn ?? null,
+    med_supply_doses: s.medSupplyDoses ?? null,
+    med_supply_as_of: s.medSupplyAsOf ?? null,
+  };
+}
+
+export function healthBody(h: HealthRecord) {
+  return {
+    kind: h.kind,
+    recorded_on: h.recordedOn,
+    recorded_at: h.recordedAt,
+    value: h.value,
+    medication: h.medication,
+    site: h.site,
+    note: h.note,
   };
 }
 
 export function mealBody(meal: SavedMeal, items: SavedMealItem[]) {
   return {
     name: meal.name,
+    servings: meal.servings,
     items: items.map((i) => ({
       id: i.id,
       food_id: i.foodId,

@@ -2,7 +2,13 @@ import { useState } from "react";
 import type { Entry } from "@/db/types";
 import { formatKcal } from "@/lib/numbers";
 import { amountLabel, entryKcal } from "@/lib/nutrition";
+import { isRecipeEntry, portionLabel } from "@/lib/recipe";
 import { Icon } from "./Icon";
+
+const rowIcon = (foodId: string | null, recipe: boolean) => {
+  if (recipe) return "recipes";
+  return foodId ? "bottle" : "lines";
+};
 
 export function EntryRow({
   entry,
@@ -14,7 +20,14 @@ export function EntryRow({
   onOpen: () => void;
 }) {
   const [broken, setBroken] = useState(false);
-  const meta = [entry.brand, amountLabel(entry.amount, entry.unit)].filter(Boolean).join(" · ");
+  const recipe = isRecipeEntry(entry);
+  const meta = (
+    recipe
+      ? [entry.brand, portionLabel(entry.amount), `${Math.round(entry.grams)} g`]
+      : [entry.brand, amountLabel(entry.amount, entry.unit)]
+  )
+    .filter(Boolean)
+    .join(" · ");
   return (
     <button
       type="button"
@@ -34,7 +47,7 @@ export function EntryRow({
             onError={() => setBroken(true)}
           />
         ) : (
-          <Icon name={entry.foodId ? "bottle" : "lines"} size={17} />
+          <Icon name={rowIcon(entry.foodId, recipe)} size={17} />
         )}
       </span>
       <span className="grid min-w-0 flex-1 gap-px">

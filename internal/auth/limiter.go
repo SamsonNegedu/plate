@@ -7,6 +7,7 @@ import (
 )
 
 // LoginLimits bundles the three login buckets: per IP, per account, and one global bucket against many-IP floods.
+// Behind a proxy every client shares one address, so the IP bucket is sized for all users together.
 type LoginLimits struct {
 	IP      *ratelimit.Limiter
 	Account *ratelimit.Limiter
@@ -15,9 +16,9 @@ type LoginLimits struct {
 
 func NewLoginLimits() *LoginLimits {
 	return &LoginLimits{
-		IP:      ratelimit.NewLimiter(5, time.Minute),
+		IP:      ratelimit.NewLimiter(30, time.Minute),
 		Account: ratelimit.NewLimiter(10, 15*time.Minute),
-		Global:  ratelimit.NewLimiter(60, time.Minute),
+		Global:  ratelimit.NewLimiter(120, time.Minute),
 	}
 }
 

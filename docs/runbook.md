@@ -25,13 +25,13 @@ Expose the app over HTTPS only. Keep the database port and files off the network
    chmod 600 .env
    ```
 
-   Required: `PLATE_BASE_URL=https://<host>` and a 12+ character `PLATE_ADMIN_PASSWORD` with `PLATE_ADMIN_EMAIL` for the first boot.
+   Required: `PLATE_BASE_URL=https://<host>`. Nobody is created at boot: people sign up in the app. Set `PLATE_SIGNUP_ENABLED=false` if only existing accounts should work.
 
 2. Set a real OFF contact in `PLATE_OFF_USER_AGENT`, for example `Plate/1.0 (you@example.com)`.
 
 3. The image already contains the catalog seed at `/seed/off-catalog.db`. It is imported automatically when the catalog is empty, so the first boot takes a little longer and needs no extra setting. Confirm the log line `catalog import finished`.
 
-4. Put the app behind an HTTPS proxy or tunnel. The app never trusts forwarded headers, so every request appears to come from the proxy: the 5-per-minute login limit by address is shared, and the per-account limit still applies.
+4. Put the app behind an HTTPS proxy or tunnel. The app never trusts forwarded headers, so every request appears to come from the proxy: the per-address limits are shared by everyone, and the per-account limits still apply.
 
 5. Start and check:
 
@@ -42,9 +42,9 @@ Expose the app over HTTPS only. Keep the database port and files off the network
    curl -fsS https://<host>/readyz
    ```
 
-6. Once the user exists, the bootstrap variables are ignored. You can remove `PLATE_ADMIN_PASSWORD` and `PLATE_ADMIN_EMAIL` from `.env` the next time you edit it; there is no need to restart or redeploy just for that. The app logs a warning if they are still present.
+6. Open the site and create the first account. It is an ordinary account like every later one. Save its recovery codes.
 
-7. Verify login, a scan, and an entry over HTTPS from a phone.
+7. Verify signup, a scan, and an entry over HTTPS from a phone.
 
 ## Status and logs
 
@@ -61,7 +61,7 @@ Logs are JSON on stdout. Request logs contain method, path, status, duration, an
 
 Two things protect the data, and neither is a scheduled job: you run them.
 
-- **Export a backup** (Settings, "Export a backup") downloads a complete JSON copy of your entries, foods, saved meals and goals. It works from any device and restores with "Import a backup", which replaces the account's data after taking a server snapshot first. Do this regularly and keep the file off the host.
+- **Export a backup** (Settings, "Export a backup") downloads a complete JSON copy of your entries, foods, recipes, health records (weights, measurements, doses and ratings) and goals, including the weight goal, fibre target and medication plan. It works from any device and restores with "Import a backup", which replaces the account's data after taking a server snapshot first. Do this regularly and keep the file off the host.
 - **A copy of the database file.** Stop the app, copy `plate.db` from the volume, start it again. Do not copy it while the app runs.
 
 ```
@@ -92,14 +92,7 @@ Verify `/readyz`, login, the known entry, and an export. To restore from an expo
 
 ## Password reset and session revoke
 
-One-shot startup flags. Set both, restart, confirm, then remove:
-
-```
-PLATE_ADMIN_RESET_PASSWORD=true
-PLATE_ADMIN_PASSWORD=<new 12+ character password>
-```
-
-The reset revokes sessions. Every device must sign in again.
+People reset their own password with a recovery code (Sign in, "Forgot your password?"); nobody on the host acts. There is no operator reset: someone who lost their password and every code cannot be helped from the host. "Log out all devices" in Settings, Account revokes a person's sessions.
 
 ## Pause sync for all clients
 

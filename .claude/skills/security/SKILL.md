@@ -8,17 +8,18 @@ description: Use when touching authentication, sessions, cookies, CSRF, security
 ## Authentication
 
 - Argon2id only. Never SHA/MD5/bcrypt for passwords.
-- Compare against a dummy hash when the email is unknown; do not leak account existence.
+- Compare against a dummy hash when the username is unknown; sign-in and reset must not leak account existence.
 - Rate limit per IP and per account. Return 429 with `Retry-After`.
 - Session ID rotates on login. Logout deletes the server row.
 - No password or session token in logs, URLs, or client storage.
 
-## Password reset flag
+## Signup and recovery codes
 
-- Applies only when `PLATE_ADMIN_PASSWORD` and `PLATE_ADMIN_RESET_PASSWORD=true` are both set.
-- Refuses a short password or a missing user, and never creates a user.
-- Revokes every session, logs one line, and tells the operator to remove both variables.
-- A reset flag left in the environment is a configuration bug; the runbook calls it out.
+- Signup verifies the proof of work before hashing the password. The challenge is signed, expires and is single-use; difficulty is read from the signed challenge, never from the client.
+- Recovery codes are random, shown once, stored only as a hash, single-use, and a reset ends every session. Unknown user, wrong code and spent code return the same error.
+- Regenerating codes and deleting the account need the current password and are rate limited.
+- Every query touching user data is scoped by the session's user id; add an isolation test for each new endpoint.
+- There is no operator or admin password reset and none may be added; a reset always needs a recovery code.
 
 ## Sessions
 

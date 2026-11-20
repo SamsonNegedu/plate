@@ -19,6 +19,7 @@ const (
 	ChangeEntry     ChangeEntity = "entry"
 	ChangeSavedMeal ChangeEntity = "saved_meal"
 	ChangeFavorite  ChangeEntity = "favorite"
+	ChangeHealth    ChangeEntity = "health_record"
 )
 
 // AppendChange reserves the next change-log sequence for the user. The payload is filled in by SetChangePayload
@@ -121,7 +122,7 @@ func (r *Repo) withItems(ctx context.Context, m sqlc.SavedMeal) (domain.SavedMea
 		return domain.SavedMeal{}, fmt.Errorf("listing saved meal items: %w", err)
 	}
 	sm := domain.SavedMeal{
-		ID: m.ID, UserID: m.UserID, Name: m.Name, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
+		ID: m.ID, UserID: m.UserID, Name: m.Name, Servings: m.Servings, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
 		DeletedAt: m.DeletedAt, ServerSeq: m.ServerSeq, Items: make([]domain.SavedMealItem, 0, len(items)),
 	}
 	for _, it := range items {
@@ -140,7 +141,7 @@ func (r *Repo) withItems(ctx context.Context, m sqlc.SavedMeal) (domain.SavedMea
 // PutSavedMeal replaces the meal and its nested items. Items are not syncable rows of their own.
 func (r *Repo) PutSavedMeal(ctx context.Context, m domain.SavedMeal) error {
 	n, err := r.q.UpsertSavedMeal(ctx, sqlc.UpsertSavedMealParams{
-		ID: m.ID, UserID: m.UserID, Name: m.Name, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
+		ID: m.ID, UserID: m.UserID, Name: m.Name, Servings: m.Servings, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt,
 		DeletedAt: m.DeletedAt, ServerSeq: m.ServerSeq,
 	})
 	if err != nil {
@@ -325,4 +326,55 @@ func (r *Repo) PruneSyncOps(ctx context.Context, cutoff string) (int64, error) {
 		return 0, fmt.Errorf("pruning sync ops: %w", err)
 	}
 	return n, nil
+}
+
+func (r *Repo) HealthRecord(ctx context.Context, userID, id string) (domain.HealthRecord, error) {
+	h, err := r.q.GetHealthRecord(ctx, sqlc.GetHealthRecordParams{ID: id, UserID: userID})
+	if err != nil {
+		return domain.HealthRecord{}, notFound(err, "health record")
+	}
+	return toHealthRecord(h), nil
+}
+
+func (r *Repo) AllHealthRecords(ctx context.Context, userID string) ([]domain.HealthRecord, error) {
+	rows, err := r.q.ListAllHealthRecords(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("listing health records: %w", err)
+	}
+	out := make([]domain.HealthRecord, 0, len(rows))
+	for _, h := range rows {
+		out = append(out, toHealthRecord(h))
+	}
+	return out, nil
+}
+
+func (r *Repo) CountLiveHealthRecords(ctx context.Context, userID string) (int64, error) {
+	n, err := r.q.CountLiveHealthRecords(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("counting health records: %w", err)
+	}
+	return n, nil
+}
+
+func (r *Repo) PutHealthRecord(ctx context.Context, h domain.HealthRecord) error {
+	n, err := r.q.UpsertHealthRecord(ctx, sqlc.UpsertHealthRecordParams{
+		ID: h.ID, UserID: h.UserID, Kind: string(h.Kind), RecordedOn: h.RecordedOn, RecordedAt: h.RecordedAt,
+		Value: h.Value, Medication: h.Medication, Site: h.Site, Note: h.Note, CreatedAt: h.CreatedAt,
+		UpdatedAt: h.UpdatedAt, DeletedAt: h.DeletedAt, ServerSeq: h.ServerSeq,
+	})
+	if err != nil {
+		return fmt.Errorf("saving health record: %w", err)
+	}
+	if n == 0 {
+		return fmt.Errorf("health record %s belongs to another user: %w", h.ID, domain.ErrConflict)
+	}
+	return nil
+}
+
+func toHealthRecord(h sqlc.HealthRecord) domain.HealthRecord {
+	return domain.HealthRecord{
+		ID: h.ID, UserID: h.UserID, Kind: domain.HealthKind(h.Kind), RecordedOn: h.RecordedOn, RecordedAt: h.RecordedAt,
+		Value: h.Value, Medication: h.Medication, Site: h.Site, Note: h.Note, CreatedAt: h.CreatedAt,
+		UpdatedAt: h.UpdatedAt, DeletedAt: h.DeletedAt, ServerSeq: h.ServerSeq,
+	}
 }

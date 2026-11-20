@@ -1,10 +1,23 @@
 import { create } from "zustand";
+import type { ItemInput } from "@/db/savedMeals";
 import type { Entry, Food, Meal } from "@/db/types";
+import type { DraftItem } from "@/features/recipes/draft";
 
 /** Ephemeral UI state only: which sheet is open and which toasts are showing. Never persisted rows. */
+/** Called with a food and its amount when a sheet was opened to pick a recipe ingredient instead of logging. */
+export type PickIngredient = (item: ItemInput) => void;
+
 export type Sheet =
-  | { kind: "product"; food: Food; meal: Meal; date: string; notice?: string }
-  | { kind: "search"; meal: Meal; date: string }
+  | {
+      kind: "product";
+      food: Food;
+      meal: Meal;
+      date: string;
+      notice?: string;
+      pick?: PickIngredient;
+    }
+  | { kind: "search"; meal: Meal; date: string; pick?: PickIngredient }
+  | { kind: "logRecipe"; recipeId: string; meal: Meal; date: string }
   | { kind: "quick"; meal: Meal; date: string }
   | { kind: "entry"; entryId: string }
   | {
@@ -17,7 +30,17 @@ export type Sheet =
       notLoggable?: boolean;
       logOnSave?: boolean;
     }
-  | { kind: "saveMeal"; entries: Entry[] };
+  | { kind: "saveMeal"; entries: Entry[] }
+  | { kind: "nutrients"; date: string; scope: Meal | "day" };
+
+/** A recipe being edited, parked while the scanner finds an ingredient. Unsaved work only: it is gone after a reload. */
+export interface RecipeDraft {
+  /** The recipe id, or "new". */
+  key: string;
+  name: string;
+  servings: string;
+  items: DraftItem[];
+}
 
 export interface ToastItem {
   id: number;
@@ -35,6 +58,8 @@ interface UiState {
   applyUpdate: () => Promise<void>;
   /** A write failed because the device is out of storage. */
   quotaExceeded: boolean;
+  recipeDraft: RecipeDraft | null;
+  setRecipeDraft(d: RecipeDraft | null): void;
   open(sheet: Sheet): void;
   replace(sheet: Sheet): void;
   close(): void;
@@ -56,6 +81,8 @@ export const useUi = create<UiState>((set) => ({
   updateReady: false,
   applyUpdate: async () => undefined,
   quotaExceeded: false,
+  recipeDraft: null,
+  setRecipeDraft: (recipeDraft) => set({ recipeDraft }),
   open: (sheet) => set((s) => ({ sheets: [...s.sheets, sheet] })),
   replace: (sheet) => set((s) => ({ sheets: [...s.sheets.slice(0, -1), sheet] })),
   close: () => set((s) => ({ sheets: s.sheets.slice(0, -1) })),

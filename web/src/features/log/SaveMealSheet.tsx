@@ -6,6 +6,7 @@ import { useDb } from "@/db/context";
 import { saveMeal } from "@/db/savedMeals";
 import type { Entry } from "@/db/types";
 import { copy } from "@/lib/copy";
+import { parseDecimal } from "@/lib/numbers";
 import { useUi } from "@/lib/ui";
 import { cls } from "./forms";
 
@@ -14,16 +15,24 @@ export function SaveMealSheet({ entries }: { entries: Entry[] }) {
   const db = useDb();
   const ui = useUi();
   const [name, setName] = useState("");
+  const [servings, setServings] = useState("1");
   const [error, setError] = useState<string | undefined>();
+  const [servingsError, setServingsError] = useState<string | undefined>();
 
   const save = async () => {
     if (name.trim() === "") {
       setError("Give the meal a name.");
       return;
     }
+    const portions = parseDecimal(servings);
+    if (portions === null || portions <= 0 || portions > 1000) {
+      setServingsError("Enter how many portions it makes, like 4.");
+      return;
+    }
     await saveMeal(
       db,
       name,
+      portions,
       entries.map((e) => ({
         foodId: e.foodId,
         name: e.name,
@@ -42,12 +51,12 @@ export function SaveMealSheet({ entries }: { entries: Entry[] }) {
       })),
     );
     ui.close();
-    ui.toast({ message: `Saved ${name.trim()}` });
+    ui.toast({ message: `Saved ${name.trim()} as a recipe` });
   };
 
   return (
     <Sheet
-      title="Save as meal"
+      title="Save as recipe"
       description={`${entries.length} ${entries.length === 1 ? "item" : "items"} will be saved with their amounts.`}
       onClose={ui.close}
       footer={
@@ -66,6 +75,16 @@ export function SaveMealSheet({ entries }: { entries: Entry[] }) {
           onChange={(e) => {
             setName(e.target.value);
             setError(undefined);
+          }}
+        />
+        <Field
+          label="Makes (portions)"
+          inputMode="decimal"
+          value={servings}
+          error={servingsError}
+          onChange={(e) => {
+            setServings(e.target.value);
+            setServingsError(undefined);
           }}
         />
         <ul className={cls.muted}>

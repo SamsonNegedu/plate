@@ -1,4 +1,4 @@
-import { useReducer, useRef } from "react";
+import { lazy, Suspense, useReducer, useRef } from "react";
 import { useAuth } from "@/app/auth";
 import { useSyncEngine } from "@/app/sync";
 import { Button } from "@/components/Button";
@@ -16,6 +16,9 @@ import {
   wipeLocal,
 } from "./dataTools";
 import { cls, panel } from "./ui";
+
+// Development only. The branch is a build-time constant, so a production build drops the panel and the sample data with it.
+const SampleDataPanel = import.meta.env.DEV ? lazy(() => import("./SampleDataPanel")) : null;
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
@@ -221,6 +224,11 @@ export function DataPanel() {
           </div>
         )}
       </div>
+      {SampleDataPanel ? (
+        <Suspense fallback={null}>
+          <SampleDataPanel />
+        </Suspense>
+      ) : null}
     </section>
   );
 }

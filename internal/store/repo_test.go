@@ -16,7 +16,7 @@ func repoWithUser(t *testing.T) (*Repo, context.Context) {
 	d := migrated(t)
 	r := NewRepo(d)
 	ctx := context.Background()
-	if err := r.CreateUser(ctx, domain.User{ID: "u1", Email: "a@b.c", PasswordHash: "h", CreatedAt: now, UpdatedAt: now}); err != nil {
+	if err := r.CreateUser(ctx, domain.User{ID: "u1", Username: "a@b.c", PasswordHash: "h", CreatedAt: now, UpdatedAt: now}); err != nil {
 		t.Fatal(err)
 	}
 	return r, ctx
@@ -24,11 +24,11 @@ func repoWithUser(t *testing.T) (*Repo, context.Context) {
 
 func TestUserRoundTripAndNotFound(t *testing.T) {
 	r, ctx := repoWithUser(t)
-	u, err := r.UserByEmail(ctx, "a@b.c")
+	u, err := r.UserByUsername(ctx, "a@b.c")
 	if err != nil || u.ID != "u1" {
 		t.Fatalf("got %+v, %v", u, err)
 	}
-	if _, err := r.UserByEmail(ctx, "nobody@x.y"); !errors.Is(err, domain.ErrNotFound) {
+	if _, err := r.UserByUsername(ctx, "nobody@x.y"); !errors.Is(err, domain.ErrNotFound) {
 		t.Fatalf("err = %v, want ErrNotFound", err)
 	}
 	if err := r.SetPassword(ctx, "ghost", "h2", now); !errors.Is(err, domain.ErrNotFound) {
@@ -104,7 +104,7 @@ func TestInTxRollsBackWholeUnit(t *testing.T) {
 	ctx := context.Background()
 	boom := errors.New("boom")
 	err := InTx(ctx, d, func(r *Repo) error {
-		if err := r.CreateUser(ctx, domain.User{ID: "u9", Email: "x@y.z", PasswordHash: "h", CreatedAt: now, UpdatedAt: now}); err != nil {
+		if err := r.CreateUser(ctx, domain.User{ID: "u9", Username: "x@y.z", PasswordHash: "h", CreatedAt: now, UpdatedAt: now}); err != nil {
 			return err
 		}
 		return boom

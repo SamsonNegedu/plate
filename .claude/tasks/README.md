@@ -4,7 +4,7 @@ Planning only. No application code lives here; this directory is the execution m
 
 ## What we are building
 
-A single-user, offline-first PWA for logging calories by barcode, backed by a Go service and SQLite. German retail products come from Open Food Facts (ODbL); generic foods come from BLS 4.0. The approved visual direction is `../../mockups.html`.
+An offline-first PWA for logging calories by barcode, backed by a Go service and SQLite. German retail products come from Open Food Facts (ODbL); generic foods come from BLS 4.0. The approved visual direction is `../../mockups.html`.
 
 The product loop: scan or search a food, choose grams or a portion, assign a meal, log it, see the day, review history. Repeat foods, saved meals, quick add, and a no-match path are v1 requirements, not later polish.
 
@@ -22,7 +22,7 @@ The catalog seed is our own filtered OFF subset, so it carries the nutrition nee
 
 - Barcode-first, never barcode-only: search, quick add, manual label entry, and a typed barcode all work.
 - Logging works offline for cached foods. Writes queue locally and sync after reconnect.
-- No accounts, analytics, or third-party runtime services. Food data is the only external dependency.
+- No analytics or third-party runtime services. Accounts are open signup with no administrator (ADR-016). Food data is the only external dependency.
 - One static Go binary serves the API and the built SPA. SQLite is the only datastore.
 - The client is optimistic; the server is authoritative for sync order.
 - Every logged entry stores a nutrition snapshot, so later data changes never rewrite history.
@@ -98,7 +98,7 @@ Carried over from Phases 8 to 10, still to verify on a real phone: the design-pa
 
 ## Assumptions (locked unless the user says otherwise)
 
-- Single user, multiple devices. No sharing, households, or social features.
+- Many accounts, each with multiple devices. Open signup, no admin, no email (ADR-016). No sharing, households, or social features.
 - Self-hosted behind Cloudflare Tunnel with Cloudflare Access in front, always over HTTPS. The origin has no inbound ports; only cloudflared reaches the app.
 - English UI with en-GB dates and numbers. German product search and umlaut folding are required. German UI is out of scope; English copy lives in one module so a translation can be added later.
 - v1 includes recents, favorites, saved meals, quick add, and label corrections.
@@ -119,6 +119,7 @@ Update in place. This is the single source of truth for phase state.
 - [ ] Phase 0 — Spikes and decisions (B, C, D, F done; A and E need a phone)
 - [x] Phases 1 to 7 — foundation, data model, auth, core API, food and search, sync, frontend foundation
 - [x] Phases 8 to 10 — logging UI, history and settings, PWA and offline (built; device verification carried over to Phase 11)
+- [x] Accounts — open signup, proof of work, recovery codes, per-account limits (ADR-016, `docs/accounts.md`)
 - [ ] Phase 11 — Testing and QA
 - [ ] Phase 12 — Deploy and launch
 - [ ] Design parity sign-off after Phases 8, 9, and 10

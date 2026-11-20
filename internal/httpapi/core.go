@@ -37,6 +37,8 @@ func (d Deps) toAPIError(ctx context.Context, err error) error {
 		return Err(http.StatusUnprocessableEntity, "unsupported_version", "This backup was made by a newer version of Plate.")
 	case errors.Is(err, domain.ErrTombstoned):
 		return Err(http.StatusConflict, "tombstoned", "This entry was deleted. Create a new entry instead.")
+	case errors.Is(err, domain.ErrLimitReached):
+		return Err(http.StatusUnprocessableEntity, "limit_reached", "This account has reached its storage limit. Delete something before adding more.")
 	case errors.Is(err, domain.ErrConflict):
 		return Err(http.StatusConflict, "conflict", "That ID is already in use.")
 	case errors.Is(err, domain.ErrNotFound):
@@ -136,11 +138,12 @@ type importIn struct {
 
 type importOut struct {
 	Body struct {
-		Entries    int `json:"entries"`
-		Foods      int `json:"foods"`
-		SavedMeals int `json:"saved_meals"`
-		Favorites  int `json:"favorites"`
-		Removed    int `json:"removed"`
+		Entries       int `json:"entries"`
+		Foods         int `json:"foods"`
+		SavedMeals    int `json:"saved_meals"`
+		Favorites     int `json:"favorites"`
+		HealthRecords int `json:"health_records"`
+		Removed       int `json:"removed"`
 	}
 }
 
@@ -350,6 +353,7 @@ func (d Deps) registerCore(api huma.API, sv *psync.Service) {
 		out := &importOut{}
 		out.Body.Entries, out.Body.Foods, out.Body.SavedMeals = res.Entries, res.Foods, res.SavedMeals
 		out.Body.Favorites, out.Body.Removed = res.Favorites, res.Removed
+		out.Body.HealthRecords = res.HealthRecords
 		return out, nil
 	})
 }

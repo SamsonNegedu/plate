@@ -1,16 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { z } from "zod";
 import { ApiError, useAuth } from "@/app/auth";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { copy } from "@/lib/copy";
 import { NetworkError } from "@/sync/errors";
+import { AuthShell } from "./AuthShell";
 
 const schema = z.object({
-  email: z.string().trim().min(1, "Enter your email.").email("Enter a valid email."),
+  username: z.string().trim().min(1, "Enter your username."),
   password: z.string().min(1, "Enter your password."),
 });
 
@@ -23,7 +24,7 @@ export function LoginPage() {
   const [problem, setProblem] = useState<string | null>(null);
   const form = useForm<Form>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { username: "", password: "" },
     mode: "onSubmit",
   });
   const { errors, isSubmitting } = form.formState;
@@ -35,12 +36,20 @@ export function LoginPage() {
       ? location.state.from
       : "/today";
 
+  const notice =
+    typeof location.state === "object" &&
+    location.state !== null &&
+    "notice" in location.state &&
+    typeof location.state.notice === "string"
+      ? location.state.notice
+      : null;
+
   if (auth.status === "authed") return <Navigate to={from} replace />;
 
   const submit = form.handleSubmit(async (v) => {
     setProblem(null);
     try {
-      await auth.login(v.email, v.password);
+      await auth.login(v.username, v.password);
       navigate(from, { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) setProblem(copy.login.rateLimited);
@@ -51,22 +60,25 @@ export function LoginPage() {
   });
 
   return (
-    <main className="mx-auto max-w-[420px] px-4 pt-[max(48px,env(safe-area-inset-top,0px))] pb-12">
-      <h1 className="font-display text-display leading-display font-semibold">{copy.app.name}</h1>
-      <p className="mt-3 mb-8 text-body text-ink-2">{copy.app.tagline}</p>
+    <AuthShell>
       <form
         className="grid gap-3.5 rounded-card border border-line bg-surface p-5"
         onSubmit={submit}
         noValidate
       >
         <h2 className="text-section font-semibold">{copy.login.title}</h2>
+        {notice ? (
+          <p className="text-label text-ink-2" role="status">
+            {notice}
+          </p>
+        ) : null}
         <Field
-          label={copy.login.email}
-          type="email"
+          label={copy.login.username}
           autoComplete="username"
-          inputMode="email"
-          error={errors.email?.message}
-          {...form.register("email")}
+          autoCapitalize="none"
+          spellCheck={false}
+          error={errors.username?.message}
+          {...form.register("username")}
         />
         <Field
           label={copy.login.password}
@@ -84,6 +96,14 @@ export function LoginPage() {
           {copy.login.submit}
         </Button>
       </form>
-    </main>
+      <nav className="mt-3 grid gap-3 text-center text-label" aria-label="Account">
+        <Link className="inline-flex min-h-11 items-center justify-center text-accent" to="/signup">
+          {copy.login.create}
+        </Link>
+        <Link className="inline-flex min-h-11 items-center justify-center text-ink-2" to="/reset">
+          {copy.login.forgot}
+        </Link>
+      </nav>
+    </AuthShell>
   );
 }

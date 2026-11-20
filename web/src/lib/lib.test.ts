@@ -1,7 +1,16 @@
 import { describe, expect, test } from "vitest";
 import { addDays, dateRange, defaultMeal, isValidDate, localDate, logicalDate } from "./dates";
-import { formatOptional, parseDecimal } from "./numbers";
-import { amountLabel, dayTotals, gramsFor, meterFill, portionOf, unitsFor } from "./nutrition";
+import { gramsFromPercent, macroKcal, macroSplit, percentFromGrams, reconcile } from "./macros";
+import { formatMg, formatOptional, parseDecimal } from "./numbers";
+import {
+  amountLabel,
+  dayTotals,
+  gramsFor,
+  meterFill,
+  nutrientTotals,
+  portionOf,
+  unitsFor,
+} from "./nutrition";
 
 const at = (h: number, m = 0) => new Date(2026, 10, 13, h, m);
 
@@ -152,5 +161,81 @@ describe("meter", () => {
     expect(meterFill(1500, 2000)).toEqual({ fill: 0.75, over: false, left: 500 });
     expect(meterFill(2400, 2000)).toEqual({ fill: 1, over: true, left: 400 });
     expect(meterFill(0, 0)).toEqual({ fill: 0, over: false, left: 0 });
+  });
+});
+
+describe("medication doses", () => {
+  test("pen steps are never rounded to one decimal", () => {
+    expect(formatMg(0.25)).toBe("0.25");
+    expect(formatMg(0.5)).toBe("0.5");
+    expect(formatMg(2.5)).toBe("2.5");
+    expect(formatMg(12)).toBe("12");
+  });
+});
+
+describe("nutrient totals", () => {
+  const e = (kcal: number, grams: number, over: Record<string, number | null> = {}) => ({
+    kcal,
+    grams,
+    deletedAt: null,
+    protein: null,
+    carbs: null,
+    fat: null,
+    sugar: null,
+    satfat: null,
+    fiber: null,
+    salt: null,
+    ...over,
+  });
+
+  test("sums eaten amounts of every nutrient across entries", () => {
+    const t = nutrientTotals([e(200, 50, { fiber: 10, salt: 1 }), e(100, 200, { fiber: 2 })]);
+    expect(t.kcal).toBe(300); // 100 + 200
+    expect(t.fiber).toBe(9); // 5 + 4
+    expect(t.salt).toBe(0.5);
+    expect(t.count).toBe(2);
+  });
+
+  test("a nutrient nothing reports stays null, and one only some report is flagged as a minimum", () => {
+    const t = nutrientTotals([e(100, 100, { protein: 20 }), e(100, 100)]);
+    expect(t.sugar).toBeNull();
+    expect(t.protein).toBe(20);
+    expect(t.partial).toEqual(["protein"]);
+  });
+
+  test("deleted entries do not count", () => {
+    const t = nutrientTotals([e(100, 100), { ...e(900, 100), deletedAt: "x" }]);
+    expect(t.kcal).toBe(100);
+    expect(t.count).toBe(1);
+  });
+});
+
+describe("macro targets", () => {
+  const g = { protein: 150, carbs: 200, fat: 67 };
+
+  test("calories come from 4 per gram of protein and carbs and 9 of fat", () => {
+    expect(macroKcal({ protein: 100, carbs: 100, fat: 100 })).toBe(1700);
+    expect(macroKcal(g)).toBe(150 * 4 + 200 * 4 + 67 * 9);
+  });
+
+  test("the split is each macro's share of the macro calories and adds up to one", () => {
+    const s = macroSplit({ protein: 100, carbs: 100, fat: 100 });
+    expect(s.fat).toBeCloseTo(900 / 1700);
+    expect(s.protein + s.carbs + s.fat).toBeCloseTo(1);
+    expect(macroSplit({ protein: 0, carbs: 0, fat: 0 })).toEqual({ protein: 0, carbs: 0, fat: 0 });
+  });
+
+  test("percent and grams convert both ways", () => {
+    expect(gramsFromPercent(2000, 30, "protein")).toBe(150);
+    expect(gramsFromPercent(2000, 30, "fat")).toBeCloseTo(66.7);
+    expect(percentFromGrams(2000, 150, "protein")).toBe(30);
+    expect(percentFromGrams(0, 150, "protein")).toBe(0);
+  });
+
+  test("the macros are compared with the calorie goal, within 5% counts as matching", () => {
+    expect(reconcile(2000, { protein: 150, carbs: 200, fat: 67 }).matches).toBe(true); // 2003 kcal
+    const under = reconcile(2000, { protein: 100, carbs: 100, fat: 50 }); // 1250 kcal
+    expect(under.matches).toBe(false);
+    expect(under.diff).toBe(-750);
   });
 });

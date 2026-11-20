@@ -1,8 +1,8 @@
 -- name: UpsertSavedMeal :execrows
-INSERT INTO saved_meals (id, user_id, name, created_at, updated_at, deleted_at, server_seq)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO saved_meals (id, user_id, name, servings, created_at, updated_at, deleted_at, server_seq)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (id) DO UPDATE SET
-    name = excluded.name, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
+    name = excluded.name, servings = excluded.servings, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
 WHERE saved_meals.user_id = excluded.user_id;
 
 -- name: GetSavedMeal :one

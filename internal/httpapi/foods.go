@@ -228,7 +228,7 @@ func (d Deps) registerFoods(api huma.API) {
 		Security:    sessionSecurity,
 		Errors:      []int{http.StatusNotFound, http.StatusUnprocessableEntity, http.StatusTooManyRequests, http.StatusServiceUnavailable},
 	}, func(ctx context.Context, in *barcodeIn) (*foodOut, error) {
-		if ok, wait := d.Auth.Lookups.Allow(clientIP(ctx)); !ok {
+		if ok, wait := d.Auth.Lookups.Allow(UserID(ctx)); !ok {
 			h := http.Header{}
 			h.Set("Retry-After", strconv.Itoa(int(wait.Seconds())+1))
 			return nil, huma.ErrorWithHeaders(Err(http.StatusTooManyRequests, "rate_limited", "Too many barcode lookups. Try again shortly."), h)

@@ -14,6 +14,7 @@ var (
 	ErrInvalid      = errors.New("invalid")
 	ErrNotLoggable  = errors.New("food has no kcal and cannot be logged")
 	ErrTombstoned   = errors.New("row was deleted")
+	ErrLimitReached = errors.New("account limit reached")
 	ErrUnauthorized = errors.New("unauthorized")
 )
 
@@ -82,7 +83,7 @@ type Nutrients struct {
 
 type User struct {
 	ID           string
-	Email        string
+	Username     string
 	PasswordHash string
 	CreatedAt    string
 	UpdatedAt    string
@@ -95,11 +96,61 @@ type Settings struct {
 	ProteinG     int64
 	CarbsG       int64
 	FatG         int64
+	FiberG       int64
 	DayStartHour int64
 	Theme        string
-	CreatedAt    string
-	UpdatedAt    string
-	ServerSeq    int64
+	// WeightGoalKg and the medication plan are optional: nil means not set.
+	WeightGoalKg    *float64
+	MedName         *string
+	MedIntervalDays *int64
+	MedStartedOn    *string
+	MedSupplyDoses  *int64
+	MedSupplyAsOf   *string
+	CreatedAt       string
+	UpdatedAt       string
+	ServerSeq       int64
+}
+
+// HealthKind is what a health record measures.
+type HealthKind string
+
+const (
+	HealthWeight   HealthKind = "weight"
+	HealthWaist    HealthKind = "waist"
+	HealthHips     HealthKind = "hips"
+	HealthChest    HealthKind = "chest"
+	HealthArm      HealthKind = "arm"
+	HealthThigh    HealthKind = "thigh"
+	HealthNeck     HealthKind = "neck"
+	HealthAppetite HealthKind = "appetite"
+	HealthNausea   HealthKind = "nausea"
+	HealthDose     HealthKind = "dose"
+)
+
+func (k HealthKind) Valid() bool {
+	switch k {
+	case HealthWeight, HealthWaist, HealthHips, HealthChest, HealthArm, HealthThigh, HealthNeck, HealthAppetite, HealthNausea, HealthDose:
+		return true
+	}
+	return false
+}
+
+// HealthRecord is one dated number the person logs: a weight in kg, a body measurement in cm (waist, hips, chest, arm, thigh or neck), an appetite or nausea rating from
+// 0 to 5, or a medication dose in mg.
+type HealthRecord struct {
+	ID         string
+	UserID     string
+	Kind       HealthKind
+	RecordedOn string
+	RecordedAt string
+	Value      float64
+	Medication string
+	Site       string
+	Note       string
+	CreatedAt  string
+	UpdatedAt  string
+	DeletedAt  *string
+	ServerSeq  int64
 }
 
 type Food struct {
@@ -167,6 +218,9 @@ func SearchName(s string) string {
 	}, s))
 }
 
+// MaxServings is the most portions a recipe can make.
+const MaxServings = 1000
+
 type SavedMealItem struct {
 	ID          string
 	SavedMealID string
@@ -184,6 +238,7 @@ type SavedMeal struct {
 	ID        string
 	UserID    string
 	Name      string
+	Servings  float64
 	CreatedAt string
 	UpdatedAt string
 	DeletedAt *string

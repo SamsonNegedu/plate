@@ -21,13 +21,14 @@ const (
 	EntitySettings  = "settings"
 	EntitySavedMeal = "saved_meal"
 	EntityFavorite  = "favorite"
+	EntityHealth    = "health_record"
 )
 
 // Op is one client mutation. For a favorite, "upsert" adds and "delete" removes; the id is the food id.
 // For settings the id is the user id. data holds the entity body (see EntryBody, FoodBody, SettingsBody, SavedMealBody).
 type Op struct {
 	OpID     string          `json:"op_id" format:"uuid" doc:"UUIDv7 created with the mutation. Replaying it is safe."`
-	Entity   string          `json:"entity" enum:"entry,food,settings,saved_meal,favorite"`
+	Entity   string          `json:"entity" enum:"entry,food,settings,saved_meal,favorite,health_record"`
 	Type     string          `json:"type" enum:"upsert,delete"`
 	ID       string          `json:"id"`
 	BaseSeq  *int64          `json:"base_seq,omitempty" required:"false" doc:"Optional. Only used to report a conflict; it never blocks a write."`
@@ -75,7 +76,7 @@ type PushResponse struct {
 
 type PullChange struct {
 	Seq    int64           `json:"seq"`
-	Entity string          `json:"entity" enum:"entry,food,settings,saved_meal,favorite"`
+	Entity string          `json:"entity" enum:"entry,food,settings,saved_meal,favorite,health_record"`
 	ID     string          `json:"id"`
 	Op     string          `json:"op" enum:"upsert,delete"`
 	Data   json.RawMessage `json:"data" doc:"The full row for an upsert; {deleted_at} for a delete."`
@@ -87,10 +88,11 @@ type PullResponse struct {
 	HasMore bool         `json:"has_more"`
 }
 
-// SavedMealBody is a saved meal with its items, replaced atomically.
+// SavedMealBody is a recipe (the wire name stays saved_meal): its ingredients and the portions it makes, replaced atomically.
 type SavedMealBody struct {
-	Name  string             `json:"name" minLength:"1" maxLength:"200"`
-	Items []SavedMealItemDoc `json:"items" maxItems:"100"`
+	Name     string             `json:"name" minLength:"1" maxLength:"200"`
+	Servings float64            `json:"servings" required:"false" exclusiveMinimum:"0" maximum:"1000" doc:"Portions the recipe makes. Absent means 1."`
+	Items    []SavedMealItemDoc `json:"items" maxItems:"100"`
 }
 
 // FoodBody is a custom food or a correction. kcal per 100 g is mandatory.
@@ -114,13 +116,14 @@ type FoodBody struct {
 
 // Snapshot is every live syncable row plus the cursor to continue pulling from.
 type Snapshot struct {
-	Cursor     int64          `json:"cursor"`
-	MinSeq     int64          `json:"min_seq"`
-	Settings   *SettingsDoc   `json:"settings,omitempty" required:"false"`
-	Foods      []FoodDoc      `json:"foods"`
-	Entries    []EntryDoc     `json:"entries"`
-	SavedMeals []SavedMealDoc `json:"saved_meals"`
-	Favorites  []FavoriteDoc  `json:"favorites"`
+	Cursor        int64             `json:"cursor"`
+	MinSeq        int64             `json:"min_seq"`
+	Settings      *SettingsDoc      `json:"settings,omitempty" required:"false"`
+	Foods         []FoodDoc         `json:"foods"`
+	Entries       []EntryDoc        `json:"entries"`
+	SavedMeals    []SavedMealDoc    `json:"saved_meals"`
+	Favorites     []FavoriteDoc     `json:"favorites"`
+	HealthRecords []HealthRecordDoc `json:"health_records"`
 }
 
 // Meta lets a client detect a retention gap, show "last synced" and tell a kill switch from a network failure.

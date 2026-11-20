@@ -87,6 +87,9 @@ func ApplyEntry(ctx context.Context, r *store.Repo, userID string, e domain.Entr
 	existing, err := r.Entry(ctx, userID, e.ID)
 	switch {
 	case errors.Is(err, domain.ErrNotFound):
+		if err := checkEntryRoom(ctx, r, userID); err != nil {
+			return domain.Entry{}, err
+		}
 		e.CreatedAt = stamp(now)
 	case err != nil:
 		return domain.Entry{}, err
@@ -140,6 +143,61 @@ func writeEntry(ctx context.Context, r *store.Repo, e domain.Entry, op string, n
 		return domain.Entry{}, err
 	}
 	return e, nil
+}
+
+// ApplyHealthRecord writes a health record inside the caller's transaction and records the change. A deleted record
+// returns ErrTombstoned (with the stored row).
+func ApplyHealthRecord(ctx context.Context, r *store.Repo, userID string, h domain.HealthRecord, now time.Time) (domain.HealthRecord, error) {
+	existing, err := r.HealthRecord(ctx, userID, h.ID)
+	switch {
+	case errors.Is(err, domain.ErrNotFound):
+		if err := checkHealthRoom(ctx, r, userID); err != nil {
+			return domain.HealthRecord{}, err
+		}
+		h.CreatedAt = stamp(now)
+	case err != nil:
+		return domain.HealthRecord{}, err
+	case existing.DeletedAt != nil:
+		return existing, fmt.Errorf("health record %s: %w", h.ID, domain.ErrTombstoned)
+	default:
+		h.CreatedAt = existing.CreatedAt
+	}
+	h.UserID = userID
+	h.UpdatedAt = stamp(now)
+	h.DeletedAt = nil
+	return writeHealth(ctx, r, h, "upsert", now)
+}
+
+// ApplyHealthDelete tombstones a health record. changed is false when it was already deleted.
+func ApplyHealthDelete(ctx context.Context, r *store.Repo, userID, id string, now time.Time) (changed bool, err error) {
+	h, err := r.HealthRecord(ctx, userID, id)
+	if err != nil {
+		return false, err
+	}
+	if h.DeletedAt != nil {
+		return false, nil
+	}
+	t := stamp(now)
+	h.DeletedAt, h.UpdatedAt = &t, t
+	if _, err := writeHealth(ctx, r, h, "delete", now); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func writeHealth(ctx context.Context, r *store.Repo, h domain.HealthRecord, op string, now time.Time) (domain.HealthRecord, error) {
+	seq, err := r.AppendChange(ctx, h.UserID, store.ChangeHealth, h.ID, op, stamp(now))
+	if err != nil {
+		return domain.HealthRecord{}, err
+	}
+	h.ServerSeq = seq
+	if err := r.PutHealthRecord(ctx, h); err != nil {
+		return domain.HealthRecord{}, err
+	}
+	if err := storePayload(ctx, r, h.UserID, seq, HealthToDoc(h)); err != nil {
+		return domain.HealthRecord{}, err
+	}
+	return h, nil
 }
 
 // ApplySettings replaces the settings row inside the caller's transaction.

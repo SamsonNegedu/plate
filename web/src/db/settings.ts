@@ -10,8 +10,15 @@ export const DEFAULT_SETTINGS: Omit<Settings, "userId"> = {
   proteinG: 0,
   carbsG: 0,
   fatG: 0,
+  fiberG: 0,
   dayStartHour: 0,
   theme: "auto",
+  weightGoalKg: null,
+  medName: null,
+  medIntervalDays: null,
+  medStartedOn: null,
+  medSupplyDoses: null,
+  medSupplyAsOf: null,
   updatedAt: "",
   serverSeq: 0,
 };
@@ -27,14 +34,15 @@ export async function getSettings(db: PlateDB): Promise<Settings> {
 
 export async function saveSettings(
   db: PlateDB,
-  next: Omit<Settings, "userId" | "updatedAt" | "serverSeq">,
+  patch: Partial<Omit<Settings, "userId" | "updatedAt" | "serverSeq">>,
   now: number = Date.now(),
 ): Promise<Settings> {
   const userId = await currentUserId(db);
   const saved = await db.transaction("rw", [db.settings, db.outbox], async () => {
     const existing = await db.settings.get(userId);
     const s: Settings = {
-      ...next,
+      ...(existing ?? { ...DEFAULT_SETTINGS, userId }),
+      ...patch,
       userId,
       updatedAt: new Date(now).toISOString(),
       serverSeq: existing?.serverSeq ?? 0,

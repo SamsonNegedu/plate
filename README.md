@@ -1,8 +1,8 @@
 # Plate
 
-Single-user, offline-first PWA for logging calories by barcode. React 19 + TypeScript + Vite client, Go + SQLite server, one static binary that serves the API and the built SPA.
+Offline-first PWA for logging calories by barcode. React 19 + TypeScript + Vite client, Go + SQLite server, one static binary that serves the API and the built SPA.
 
-Documentation: [`docs/`](docs/README.md) (architecture, data model, sync, security, client, API, configuration, runbook). Plan and progress: `.claude/tasks/README.md`. Locked decisions: `.claude/tasks/00-architecture.md`. Visual direction: `mockups.html`.
+Documentation: [`docs/`](docs/README.md) (architecture, data model, sync, accounts, security, client, API, configuration, runbook). Plan and progress: `.claude/tasks/README.md`. Locked decisions: `.claude/tasks/00-architecture.md`. Visual direction: `mockups.html`.
 
 ## Run it
 
@@ -15,7 +15,7 @@ make build        # bin/plate with the SPA embedded
 make verify       # lint, tests, build, generated-file checks
 ```
 
-Open http://localhost:5173 in development. `make build` produces one binary:
+Open http://localhost:5173 in development and create an account on the sign-in screen (the proof of work takes about a second). `make build` produces one binary:
 
 ```
 PLATE_DATA_DIR=./data ./bin/plate
@@ -24,7 +24,7 @@ PLATE_DATA_DIR=./data ./bin/plate
 ## Deploy
 
 ```
-cp .env.example .env     # set PLATE_BASE_URL (https) and the first-boot admin
+cp .env.example .env     # set PLATE_BASE_URL (https); people sign up in the app
 docker compose up -d     # pulls ghcr.io/samsonnegedu/plate:latest
 # or build from this checkout:
 # docker compose -f compose.yaml -f compose.build.yaml up -d --build

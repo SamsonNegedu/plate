@@ -1,6 +1,6 @@
 # Architecture
 
-Plate is a single-user, offline-first PWA for logging calories by barcode. A React client keeps its own database and works without a network; a Go server is the authority that orders writes, holds the food data, and serves the app.
+Plate is an offline-first PWA for logging calories by barcode. A React client keeps its own database and works without a network; a Go server is the authority that orders writes, holds the food data, and serves the app.
 
 ```
  phone or browser (installed PWA)                         one Go binary + one SQLite file
@@ -24,6 +24,8 @@ Plate is a single-user, offline-first PWA for logging calories by barcode. A Rea
 - **Missing is not zero.** An unknown nutrient is `NULL`. A food without calories cannot be logged. A per-serving value is never treated as per-100 g.
 - **Deletes are tombstones.** Syncable rows are never hard-deleted, so a delete reaches every device and a stale edit cannot resurrect a row.
 - **The browser never calls Open Food Facts.** All food and image traffic goes through the server, which also caches it.
+- **Records, not advice.** Weight, body measurements and medication doses are logged and reported back as the person entered them. The app never suggests, changes or judges a dose, and its insights are the person's own data.
+- **Accounts stay isolated.** Sharing a recipe moves a copy by file or text; nothing is linked or hosted, and one account never reads another's rows.
 - **One binary, one file.** No queue, no cache server, no second database.
 
 ## A scan, end to end
@@ -51,10 +53,12 @@ Plate is a single-user, offline-first PWA for logging calories by barcode. A Rea
 | `web/src` | the client ([client.md](client.md)) |
 | `tools/` | catalog builder, coverage corpus, e2e seed |
 
+For what the app does feature by feature, see [features.md](features.md).
+
 ## Runtime shape
 
 - The server listens on `PLATE_ADDR` (default `:8080`) and serves the API under `/api/v1`, the built app at every other path, and `/healthz` (process up) and `/readyz` (migrations done and the database writable).
-- Startup order: open the database; snapshot it if migrations are pending, then migrate; run the integrity check (`PRAGMA quick_check`); create the admin on first boot (or reset the password when asked); prune expired sessions; run the one-shot imports (BLS, FTS rebuild) when requested; import the catalog seed if the catalog is empty; then listen.
+- Startup order: open the database; snapshot it if migrations are pending, then migrate; run the integrity check (`PRAGMA quick_check`); prune expired sessions; run the one-shot imports (BLS, FTS rebuild) when requested; import the catalog seed if the catalog is empty; then listen.
 - A daily in-process job (`PLATE_MAINTENANCE_HOUR`, default 3) runs `PRAGMA optimize`, truncates the WAL, expires the search cache, and prunes old change-log rows and applied-op records. The image cache is bounded when images are written: least-recently-used files are evicted past `PLATE_IMAGE_CACHE_MB`. It never blocks requests and a failure is logged and retried the next day.
 - Pre-migration snapshots (`VACUUM INTO`) are written automatically. There is no scheduled backup job yet: copy snapshots off the host yourself ([runbook.md](runbook.md)).
 - The container is a minimal Alpine image with only the binary, running non-root, runs read-only with all capabilities dropped, and publishes no port. HTTPS comes from a proxy or tunnel the operator runs in front.

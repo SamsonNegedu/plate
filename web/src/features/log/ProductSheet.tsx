@@ -13,7 +13,7 @@ import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
 import { formatKcal, formatOptional, parseDecimal } from "@/lib/numbers";
 import { amountLabel, gramsFor, MAX_GRAMS, portionOf } from "@/lib/nutrition";
-import { useUi } from "@/lib/ui";
+import { type PickIngredient, useUi } from "@/lib/ui";
 import { isLiquid, packSize, startingPortion, stepFor } from "./portion";
 import { useLog } from "./useLog";
 
@@ -22,6 +22,8 @@ interface Props {
   meal: Meal;
   date: string;
   notice?: string | undefined;
+  /** Set when the sheet picks a recipe ingredient: it then adds the amount to the recipe instead of logging. */
+  pick?: PickIngredient | undefined;
 }
 
 const sourceNotes: Partial<Record<Food["source"], string>> = {
@@ -44,7 +46,7 @@ const scoreBorder: Record<string, string> = {
   e: "[&_b]:border-red",
 };
 
-export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
+export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Props) {
   const db = useDb();
   const { logFood } = useLog();
   const ui = useUi();
@@ -98,7 +100,27 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
   };
 
   const add = async () => {
-    if (amount === null || error) return;
+    if (amount === null || grams === null || error) return;
+    if (pick) {
+      pick({
+        foodId: food.id,
+        name: food.name,
+        brand: food.brand,
+        amount,
+        unit,
+        grams,
+        kcal: food.kcal,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        sugar: food.sugar,
+        satfat: food.satfat,
+        fiber: food.fiber,
+        salt: food.salt,
+      });
+      ui.closeAll();
+      return;
+    }
     setBusy(true);
     try {
       await logFood(food, { amount, unit, meal, date, goToday: true });
@@ -124,7 +146,7 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
           busy={busy}
           disabled={Boolean(error)}
         >
-          {`Add to ${mealLabel}`}
+          {pick ? "Add to recipe" : `Add to ${mealLabel}`}
         </Button>
       }
     >
@@ -254,14 +276,16 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
         ) : null}
       </p>
 
-      <div className="mt-3.5">
-        <Segmented
-          label={copy.sheet.meal}
-          value={meal}
-          options={MEALS.map((m) => ({ value: m, label: copy.meals[m] }))}
-          onChange={setMeal}
-        />
-      </div>
+      {pick ? null : (
+        <div className="mt-3.5">
+          <Segmented
+            label={copy.sheet.meal}
+            value={meal}
+            options={MEALS.map((m) => ({ value: m, label: copy.meals[m] }))}
+            onChange={setMeal}
+          />
+        </div>
+      )}
 
       <table className="mt-4.5 w-full border-collapse text-label [&_caption]:border-b-[1.5px] [&_caption]:border-ink [&_caption]:pb-1.5 [&_caption]:text-left [&_caption]:font-semibold [&_td]:border-b [&_td]:border-line [&_td]:py-1.75 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-1.75 [&_th]:text-left [&_th]:font-normal">
         <caption>{copy.sheet.nutrition}</caption>
@@ -311,12 +335,14 @@ export function ProductSheet({ food, meal: initialMeal, date, notice }: Props) {
             {food.stale ? ` ${copy.sheet.stale}` : ""}
           </p>
         ) : null}
-        <Button
-          variant="ghost"
-          onClick={() => ui.replace({ kind: "manual", meal, date, barcode: food.barcode, food })}
-        >
-          {copy.sheet.editNutrition}
-        </Button>
+        {pick ? null : (
+          <Button
+            variant="ghost"
+            onClick={() => ui.replace({ kind: "manual", meal, date, barcode: food.barcode, food })}
+          >
+            {copy.sheet.editNutrition}
+          </Button>
+        )}
         {food.barcode && food.source !== "user" ? (
           <a
             className="inline-flex min-h-11 items-center text-label text-ink-2"

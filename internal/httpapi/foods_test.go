@@ -124,28 +124,6 @@ func TestBarcodeMissNotLoggableAndUpstreamProblems(t *testing.T) {
 	}
 }
 
-func TestBarcodeLookupsAreRateLimitedPerIP(t *testing.T) {
-	e := newEnv(t, opts{})
-	c := e.login(t)
-	// 60 lookups per minute per IP, but the per-user API limit is also 60: use two users' worth by
-	// resetting the user limiter between calls.
-	var last *httptest.ResponseRecorder
-	for i := range 61 {
-		e.reset()
-		last = e.do("GET", "/api/v1/foods/barcode/4000000000000", "", cookie(c), remote("198.51.100.9:1"))
-		if i < 60 && last.Code == 429 {
-			t.Fatalf("limited at %d", i)
-		}
-	}
-	if last.Code != 429 || last.Header().Get("Retry-After") == "" || decode[map[string]any](t, last)["code"] != "rate_limited" {
-		t.Fatalf("61st = %d %s", last.Code, last.Body)
-	}
-	e.reset()
-	if rec := e.do("GET", "/api/v1/foods/barcode/4000000000000", "", cookie(c), remote("203.0.113.5:1")); rec.Code == 429 {
-		t.Fatal("another IP must not be limited")
-	}
-}
-
 func TestSearchEndpoint(t *testing.T) {
 	e := newEnv(t, opts{})
 	c := e.login(t)

@@ -136,6 +136,58 @@ func validBarcode(s string) bool {
 	return true
 }
 
+// ValidateHealthRecord checks a health record at the boundary. Doses need a medication; ratings are whole numbers.
+func ValidateHealthRecord(h HealthRecord, now time.Time) error {
+	var v validator
+	if _, err := uuid.Parse(h.ID); err != nil {
+		v.add("id", "must be a UUID")
+	}
+	if !h.Kind.Valid() {
+		v.add("kind", "must be weight, waist, hips, chest, arm, thigh, neck, appetite, nausea or dose")
+	}
+	if day, err := ParseDay(h.RecordedOn); err != nil {
+		v.add("recorded_on", "must be a real date (YYYY-MM-DD)")
+	} else {
+		latest := time.Date(now.UTC().Year(), now.UTC().Month(), now.UTC().Day(), 0, 0, 0, 0, time.UTC).AddDate(0, 0, 1)
+		if day.After(latest) {
+			v.add("recorded_on", "cannot be more than one day in the future")
+		}
+	}
+	if _, err := time.Parse(time.RFC3339, h.RecordedAt); err != nil {
+		v.add("recorded_at", "must be an RFC 3339 time")
+	}
+	if math.IsNaN(h.Value) || math.IsInf(h.Value, 0) {
+		v.add("value", "must be a number")
+	} else {
+		switch h.Kind {
+		case HealthWeight:
+			if h.Value < 20 || h.Value > 500 {
+				v.add("value", "weight must be between 20 and 500 kg")
+			}
+		case HealthWaist, HealthHips, HealthChest, HealthArm, HealthThigh, HealthNeck:
+			if h.Value < 10 || h.Value > 300 {
+				v.add("value", "a body measurement must be between 10 and 300 cm")
+			}
+		case HealthAppetite, HealthNausea:
+			if h.Value < 0 || h.Value > 5 || h.Value != math.Trunc(h.Value) {
+				v.add("value", "must be a whole number from 0 to 5")
+			}
+		case HealthDose:
+			if !(h.Value > 0) || h.Value > 100 {
+				v.add("value", "dose must be above 0 and at most 100 mg")
+			}
+		}
+	}
+	if h.Kind == HealthDose {
+		v.text("medication", h.Medication, 100, true)
+	} else if strings.TrimSpace(h.Medication) != "" {
+		v.add("medication", "is only for doses")
+	}
+	v.text("site", h.Site, 60, false)
+	v.text("note", h.Note, 500, false)
+	return v.err()
+}
+
 // ValidateSettings checks goals. A macro target of 0 means "not tracked".
 func ValidateSettings(s Settings) error {
 	var v validator
@@ -147,6 +199,9 @@ func ValidateSettings(s Settings) error {
 			v.add(field, "must be between 0 and 500")
 		}
 	}
+	if s.FiberG < 0 || s.FiberG > 200 {
+		v.add("fiber_g", "must be between 0 and 200")
+	}
 	if s.DayStartHour < 0 || s.DayStartHour > 23 {
 		v.add("day_start_hour", "must be between 0 and 23")
 	}
@@ -154,6 +209,28 @@ func ValidateSettings(s Settings) error {
 	case "auto", "light", "dark":
 	default:
 		v.add("theme", "must be auto, light or dark")
+	}
+	if s.WeightGoalKg != nil && (math.IsNaN(*s.WeightGoalKg) || *s.WeightGoalKg < 20 || *s.WeightGoalKg > 500) {
+		v.add("weight_goal_kg", "must be between 20 and 500, or null")
+	}
+	if s.MedName != nil {
+		v.text("med_name", *s.MedName, 100, true)
+	}
+	if s.MedIntervalDays != nil && (*s.MedIntervalDays < 1 || *s.MedIntervalDays > 90) {
+		v.add("med_interval_days", "must be between 1 and 90, or null")
+	}
+	if s.MedStartedOn != nil {
+		if _, err := ParseDay(*s.MedStartedOn); err != nil {
+			v.add("med_started_on", "must be a real date (YYYY-MM-DD), or null")
+		}
+	}
+	if s.MedSupplyDoses != nil && (*s.MedSupplyDoses < 0 || *s.MedSupplyDoses > 1000) {
+		v.add("med_supply_doses", "must be between 0 and 1000, or null")
+	}
+	if s.MedSupplyAsOf != nil {
+		if _, err := time.Parse(time.RFC3339, *s.MedSupplyAsOf); err != nil {
+			v.add("med_supply_as_of", "must be an RFC 3339 time, or null")
+		}
 	}
 	return v.err()
 }

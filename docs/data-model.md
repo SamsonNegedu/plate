@@ -13,13 +13,15 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 
 | Table | Holds | Synced |
 |---|---|---|
-| `users` | the single account: email, Argon2id hash, last login | no |
+| `users` | one row per account: username, Argon2id hash, last login, whether the recovery codes were confirmed saved | no |
+| `recovery_codes` | an account's single-use reset codes; only a SHA-256 of each is stored | no |
 | `sessions` | server-side sessions; only the SHA-256 of the cookie token is stored | no |
-| `settings` | calorie goal, macro targets, day start hour, theme | yes |
+| `settings` | calorie goal, macro and fibre targets, day start hour, theme, and the optional weight goal and medication plan (name, days between doses, start date, doses on hand) | yes |
 | `foods` | the user's food cache and custom foods (sources `off`, `bls`, `user`, `catalog`) | yes |
 | `entries` | one logged portion, with the full per-100 g nutrition snapshot | yes |
-| `saved_meals` | a named meal template | yes |
-| `saved_meal_items` | the template's items, replaced atomically with their meal | yes (inside `saved_meals`) |
+| `saved_meals` | a recipe: a name, the portions it makes (`servings`, 1 for meals saved before recipes) and its ingredients | yes |
+| `saved_meal_items` | the recipe's ingredients with their nutrition snapshot, replaced atomically with the recipe | yes (inside `saved_meals`) |
+| `health_records` | one dated number the person logs: a weight (kg), a body measurement (cm: waist, hips, chest, arm, thigh or neck), an appetite or nausea rating (0 to 5) or a medication dose (mg, with the medication and injection site) | yes |
 | `favorites` | a relation between the user and a food; removal is a tombstone | yes |
 | `catalog_foods` | the bundled Open Food Facts German seed, with nutrition; reference data | no |
 | `catalog_meta` | the seed's dataset version and import time | no |
@@ -40,6 +42,11 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 - **Retention.** Change-log rows and `sync_ops` older than 180 days are pruned, and each affected user's `min_seq` moves up. A device whose cursor falls below `min_seq` must take a fresh snapshot ([sync.md](sync.md)). Tombstones in the entity tables stay.
 - **Search names.** `foods.search_name` holds a folded form (case, umlauts, punctuation) used for exact and prefix comparison.
 
+- **Recipes are saved meals.** `saved_meals.servings` is the portions a recipe makes (1 for meals saved before recipes). Its items keep a nutrition snapshot like an entry, so a recipe never changes when a food does. Logging a recipe writes one entry named after it, with `brand` set to "Recipe" and the recipe's nutrition per 100 g of ingredients as the snapshot, so any number of portions is exact.
+- **Health records** share one table: `kind` is `weight` (kg), `waist`, `hips`, `chest`, `arm`, `thigh` or `neck` (cm), `appetite` or `nausea` (a whole number 0 to 5), or `dose` (mg, with `medication` and `site`). The kind decides the allowed range, which is enforced in the database as well as the API. `recorded_on` is the local calendar day the client assigned; `recorded_at` is the moment. Doses of a medication are matched by name, ignoring case.
+- **Plan and goals live on `settings`.** `weight_goal_kg`, `med_name`, `med_interval_days`, `med_started_on`, `med_supply_doses` and `med_supply_as_of` describe the optional weight goal and medication plan, and `fiber_g` is the fibre target. Null (or 0 for a target) means not set; saving settings replaces the whole object, so leaving the plan out clears it.
+- **Two migrations rebuild a table.** SQLite cannot change a `CHECK`, so `00013` rebuilds `change_log` (adding the `health_record` entity, carrying the sequence counter over) and `00015` rebuilds `health_records` (adding the measurement kinds). Both keep every row.
+
 ## Client-side tables (Dexie)
 
-The browser keeps its own IndexedDB (`web/src/db/schema.ts`): `entries`, `foods`, `settings`, `savedMeals`, `savedMealItems`, `favorites`, plus device-only `foodPrefs` (last portion per food), `foodMisses` (barcodes that were not found), `outbox` (pending writes), `meta` (cursor, backoff, leader lease) and `conflicts` (writes the server flagged as overwriting a newer row).
+The browser keeps its own IndexedDB (`web/src/db/schema.ts`): `entries`, `foods`, `settings`, `savedMeals`, `savedMealItems`, `healthRecords`, `favorites`, plus device-only `foodPrefs` (last portion per food), `foodMisses` (barcodes that were not found), `outbox` (pending writes), `meta` (cursor, backoff, leader lease) and `conflicts` (writes the server flagged as overwriting a newer row).

@@ -30,6 +30,7 @@ func (s *Service) Push(ctx context.Context, userID string, req PushRequest) (Pus
 		return PushResponse{}, bad("client_id", "must be a UUID")
 	}
 	var resp PushResponse
+	ctx = withRoom(ctx)
 	err := store.WithTx(ctx, s.db, func(conn *sql.Conn) error {
 		resp = PushResponse{Results: make([]OpResult, 0, len(req.Ops))}
 		repo := store.NewRepo(conn)
@@ -82,6 +83,8 @@ func rejectErr(op Op, err error) (OpResult, bool, error) {
 		return reject(op, "validation_failed", "Some fields are invalid.", ve.Fields...), false, nil
 	case errors.Is(err, domain.ErrNotFound):
 		return reject(op, "not_found", "The row does not exist."), false, nil
+	case errors.Is(err, domain.ErrLimitReached):
+		return reject(op, "limit_reached", "This account has reached its storage limit. Delete something before adding more."), false, nil
 	case errors.Is(err, domain.ErrConflict):
 		return reject(op, "conflict", err.Error()), false, nil
 	case errors.Is(err, domain.ErrInvalid):
@@ -127,6 +130,8 @@ func (s *Service) applyOp(ctx context.Context, r *store.Repo, userID, clientID s
 		seq, conflict, res, err = s.opSavedMeal(ctx, r, userID, op, now)
 	case EntityFavorite:
 		seq, conflict, res, err = s.opFavorite(ctx, r, userID, op, now)
+	case EntityHealth:
+		seq, conflict, res, err = s.opHealth(ctx, r, userID, op, now)
 	default:
 		return reject(op, "validation_failed", "unknown entity"), false, nil
 	}
@@ -205,6 +210,49 @@ func (s *Service) opEntry(ctx context.Context, r *store.Repo, userID string, op 
 	return out.ServerSeq, conflict, nil, nil
 }
 
+func (s *Service) opHealth(ctx context.Context, r *store.Repo, userID string, op Op, now time.Time) (int64, bool, *OpResult, error) {
+	if _, err := uuid.Parse(op.ID); err != nil {
+		return 0, false, nil, bad("id", "must be a UUID")
+	}
+	if op.Type == "delete" {
+		existing, err := r.HealthRecord(ctx, userID, op.ID)
+		if err != nil {
+			return 0, false, nil, err
+		}
+		changed, err := ApplyHealthDelete(ctx, r, userID, op.ID, now)
+		if err != nil {
+			return 0, false, nil, err
+		}
+		seq := existing.ServerSeq
+		if changed {
+			if h, err := r.HealthRecord(ctx, userID, op.ID); err == nil {
+				seq = h.ServerSeq
+			}
+		}
+		return seq, false, nil, nil
+	}
+	var body HealthRecordBody
+	if err := decode(op, &body); err != nil {
+		return 0, false, nil, err
+	}
+	h := healthFromBody(body, op.ID, userID)
+	if err := domain.ValidateHealthRecord(h, now); err != nil {
+		return 0, false, nil, err
+	}
+	conflict := false
+	if existing, err := r.HealthRecord(ctx, userID, op.ID); err == nil {
+		conflict = newer(existing.ServerSeq, op.BaseSeq)
+	}
+	out, err := ApplyHealthRecord(ctx, r, userID, h, now)
+	if errors.Is(err, domain.ErrTombstoned) {
+		return 0, false, tombstoned(op, HealthToDoc(out)), nil
+	}
+	if err != nil {
+		return 0, false, nil, err
+	}
+	return out.ServerSeq, conflict, nil, nil
+}
+
 func (s *Service) opFood(ctx context.Context, r *store.Repo, userID string, op Op, now time.Time) (int64, bool, *OpResult, error) {
 	if _, err := uuid.Parse(op.ID); err != nil {
 		return 0, false, nil, bad("id", "must be a UUID")
@@ -246,6 +294,9 @@ func (s *Service) opFood(ctx context.Context, r *store.Repo, userID string, op O
 	}
 	f := existing
 	if !found {
+		if err := checkFoodRoom(ctx, r, userID); err != nil {
+			return 0, false, nil, err
+		}
 		f = domain.Food{ID: op.ID, UserID: userID, CreatedAt: stamp(now)}
 	}
 	f.Name, f.Brand, f.Quantity, f.ServingSize = trim(body.Name), trim(body.Brand), body.Quantity, body.ServingSize
@@ -344,7 +395,7 @@ func (s *Service) opSavedMeal(ctx context.Context, r *store.Repo, userID string,
 	if err := validateMeal(ctx, r, userID, body); err != nil {
 		return 0, false, nil, err
 	}
-	m := DocToMeal(SavedMealDoc{ID: op.ID, Name: trim(body.Name), Items: body.Items}, userID)
+	m := DocToMeal(SavedMealDoc{ID: op.ID, Name: trim(body.Name), Servings: body.Servings, Items: body.Items}, userID)
 	m.CreatedAt = stamp(now)
 	if found {
 		m.CreatedAt = existing.CreatedAt
@@ -366,6 +417,9 @@ func validateMeal(ctx context.Context, r *store.Repo, userID string, b SavedMeal
 	var fields []domain.FieldError
 	if trim(b.Name) == "" {
 		fields = append(fields, domain.FieldError{Field: "name", Message: "is required"})
+	}
+	if b.Servings != 0 && !(b.Servings > 0 && b.Servings <= domain.MaxServings) {
+		fields = append(fields, domain.FieldError{Field: "servings", Message: "must be above 0 and at most 1000"})
 	}
 	seen := map[string]bool{}
 	for i, it := range b.Items {

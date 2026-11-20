@@ -1,5 +1,11 @@
 /** What the engine needs from the network. The real implementation is in api.ts; tests use a fake server. */
-export type WireEntity = "entry" | "food" | "settings" | "saved_meal" | "favorite";
+export type WireEntity =
+  | "entry"
+  | "food"
+  | "settings"
+  | "saved_meal"
+  | "favorite"
+  | "health_record";
 
 export interface PushOp {
   op_id: string;
@@ -47,6 +53,7 @@ export interface SnapshotResponse {
   entries: unknown[];
   saved_meals: unknown[];
   favorites: unknown[];
+  health_records: unknown[];
 }
 
 export interface MetaResponse {

@@ -10,7 +10,8 @@ import {
   setPref,
 } from "./foods";
 import { META, setMeta } from "./meta";
-import { logMeal, saveMeal } from "./savedMeals";
+import { loadSampleData, removeSampleData } from "./sampleData";
+import { logRecipe, saveMeal } from "./savedMeals";
 import { PlateDB } from "./schema";
 import { DEFAULT_SETTINGS, getSettings, saveSettings } from "./settings";
 import type { Food } from "./types";
@@ -313,15 +314,63 @@ describe("settings, favorites and saved meals", () => {
       fiber: null,
       salt: null,
     });
-    const meal = await saveMeal(db, "Breakfast", [item("Oats"), item("Milk")]);
-    const ids = await logMeal(db, meal.id, "2026-11-13", "breakfast");
-    expect(ids).toHaveLength(2);
-    expect((await entriesForDay(db, "2026-11-13")).map((e) => e.name).sort()).toEqual([
-      "Milk",
-      "Oats",
-    ]);
+    const meal = await saveMeal(db, "Breakfast", 2, [item("Oats"), item("Milk")]);
+    const id = await logRecipe(db, meal.id, "2026-11-13", "breakfast", 1.5);
+    expect(id).not.toBeNull();
+    const [logged] = await entriesForDay(db, "2026-11-13");
+    expect(logged?.name).toBe("Breakfast");
+    expect(logged?.unit).toBe("serving");
+    // two 40 g items at 370 kcal/100 g make 296 kcal; two portions of 148 kcal, and 1.5 of them is 222 kcal
+    expect(((logged?.kcal ?? 0) * (logged?.grams ?? 0)) / 100).toBeCloseTo(222);
     const mealOps = await db.outbox.where("entity").equals("saved_meal").toArray();
     expect(mealOps).toHaveLength(1);
     expect((mealOps[0]?.data as { items: unknown[] } | undefined)?.items).toHaveLength(2);
+  });
+});
+
+describe("sample data", () => {
+  test("loads recipes and a month of history once, and removes only what it wrote", async () => {
+    const db = fresh();
+    const real = buildEntry({
+      ...base,
+      eatenOn: "2026-11-19",
+      name: "My own lunch",
+      kcal: 100,
+      protein: null,
+      carbs: null,
+      fat: null,
+      sugar: null,
+      satfat: null,
+      fiber: null,
+      salt: null,
+    });
+    await saveEntry(db, real);
+
+    const first = await loadSampleData(db, "2026-11-20");
+    expect(first.recipes).toBe(6);
+    expect(first.foods).toBeGreaterThan(20);
+    expect(first.entries).toBeGreaterThan(40);
+    expect(first.health).toBeGreaterThan(20);
+    expect(await loadSampleData(db, "2026-11-20")).toEqual({
+      foods: first.foods,
+      recipes: 6,
+      entries: 0,
+      health: 0,
+    });
+    expect((await getSettings(db)).medName).toBe("Wegovy");
+    expect((await db.savedMeals.toArray()).filter((m) => !m.deletedAt)).toHaveLength(6);
+
+    const removed = await removeSampleData(db);
+    expect(removed).toEqual({
+      foods: first.foods,
+      recipes: 6,
+      entries: first.entries,
+      health: first.health,
+    });
+    expect((await getSettings(db)).medName).toBeNull();
+    expect(await db.healthRecords.filter((h) => !h.deletedAt).toArray()).toHaveLength(0);
+    expect(await db.foods.filter((f) => !f.deletedAt).toArray()).toHaveLength(0);
+    const live = await db.entries.filter((e) => !e.deletedAt).toArray();
+    expect(live.map((e) => e.name)).toEqual(["My own lunch"]);
   });
 });

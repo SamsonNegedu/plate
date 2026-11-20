@@ -73,3 +73,6 @@ JOIN foods f ON f.rowid = foods_trgm.rowid
 WHERE foods_trgm MATCH sqlc.arg(match) AND f.user_id = sqlc.arg(user_id) AND f.deleted_at IS NULL
 ORDER BY bm25(foods_trgm, 10.0, 5.0)
 LIMIT sqlc.arg(max_rows);
+
+-- name: CountLiveUserFoods :one
+SELECT count(*) FROM foods WHERE user_id = ? AND source = 'user' AND deleted_at IS NULL;

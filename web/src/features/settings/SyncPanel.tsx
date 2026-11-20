@@ -1,13 +1,10 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { useStore } from "zustand";
-import { useAuth } from "@/app/auth";
 import { useSyncEngine, useSyncStore } from "@/app/sync";
 import { Button } from "@/components/Button";
 import { useDb } from "@/db/context";
 import { discardFailed, retryFailed } from "@/db/outbox";
-import { api } from "@/lib/api";
-import { useUi } from "@/lib/ui";
 import { badgeLabel } from "@/sync/status";
 import { cls, panel, smallBtn } from "./ui";
 
@@ -15,8 +12,6 @@ export function SyncPanel() {
   const db = useDb();
   const engine = useSyncEngine();
   const status = useStore(useSyncStore());
-  const auth = useAuth();
-  const toast = useUi((s) => s.toast);
   const [busy, setBusy] = useState(false);
   const failed =
     useLiveQuery(() => db.outbox.where("status").equals("failed").toArray(), [db]) ?? [];
@@ -32,38 +27,10 @@ export function SyncPanel() {
     }
   };
 
-  const logoutAll = async () => {
-    try {
-      const res = await api.POST("/auth/logout-all");
-      if (res.response.status === 204 || res.response.ok) {
-        toast({ message: "Signed out everywhere" });
-        auth.expire();
-      }
-    } catch {
-      toast({
-        message: "Could not reach the server. Try again when you are online.",
-        tone: "error",
-      });
-    }
-  };
-
   return (
     <section className={cls.section} aria-labelledby="sync-h">
       <h2 id="sync-h">Sync</h2>
-      <dl className={cls.facts}>
-        <div>
-          <dt>Status</dt>
-          <dd>{badgeLabel(status)}</dd>
-        </div>
-        <div>
-          <dt>Waiting to send</dt>
-          <dd>{status.pending}</dd>
-        </div>
-        <div>
-          <dt>Conflicts</dt>
-          <dd>{status.conflicts}</dd>
-        </div>
-      </dl>
+      <p className="text-body font-medium">{badgeLabel(status)}</p>
       {status.state === "paused" ? (
         <p className={cls.muted}>
           Sync is paused by the server. You can keep logging; everything is kept on this device and
@@ -84,10 +51,20 @@ export function SyncPanel() {
         <Button onClick={() => void syncNow()} busy={busy}>
           Sync now
         </Button>
-        <Button variant="danger" onClick={() => void logoutAll()}>
-          Log out all devices
-        </Button>
       </div>
+      <details className={cls.advanced}>
+        <summary>Details</summary>
+        <dl className={cls.facts}>
+          <div>
+            <dt>Waiting to send</dt>
+            <dd>{status.pending}</dd>
+          </div>
+          <div>
+            <dt>Conflicts</dt>
+            <dd>{status.conflicts}</dd>
+          </div>
+        </dl>
+      </details>
 
       {failed.length > 0 ? (
         <div className={panel(true)}>

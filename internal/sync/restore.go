@@ -244,3 +244,39 @@ func writeFavorite(ctx context.Context, r *store.Repo, f domain.Favorite, op str
 	}
 	return storePayload(ctx, r, f.UserID, seq, FavoriteToDoc(f))
 }
+
+func restoreHealth(ctx context.Context, r *store.Repo, userID string, docs []HealthRecordDoc, now time.Time, res *ImportResult) error {
+	inDoc := make(map[string]bool, len(docs))
+	for _, d := range docs {
+		inDoc[d.ID] = true
+	}
+	existing, err := r.AllHealthRecords(ctx, userID)
+	if err != nil {
+		return err
+	}
+	for _, h := range existing {
+		if inDoc[h.ID] || h.DeletedAt != nil {
+			continue
+		}
+		t := stamp(now)
+		h.DeletedAt, h.UpdatedAt = &t, t
+		if _, err := writeHealth(ctx, r, h, "delete", now); err != nil {
+			return err
+		}
+		res.Removed++
+	}
+	for _, d := range docs {
+		h := DocToHealth(d, userID)
+		h.CreatedAt = orNow(h.CreatedAt, now)
+		h.UpdatedAt = stamp(now)
+		op := "upsert"
+		if h.DeletedAt != nil {
+			op = "delete"
+		}
+		if _, err := writeHealth(ctx, r, h, op, now); err != nil {
+			return err
+		}
+		res.HealthRecords++
+	}
+	return nil
+}

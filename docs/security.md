@@ -4,13 +4,16 @@ What the code does today. Code: `internal/auth`, `internal/httpapi/middleware.go
 
 ## Model
 
-One user, on their own devices, behind HTTPS that the operator provides (a proxy or tunnel in front of the container). The app's own session is the only authentication gate. The app never reads forwarded identity or address headers (`X-Forwarded-For`, `CF-Connecting-IP`, `Cf-Access-*`), so nothing a proxy or a client sets can change who is signed in or whose address a limit counts.
+Any number of accounts, each on its own devices, behind HTTPS that the operator provides (a proxy or tunnel in front of the container). The app's own session is the only authentication gate. The app never reads forwarded identity or address headers (`X-Forwarded-For`, `CF-Connecting-IP`, `Cf-Access-*`), so nothing a proxy or a client sets can change who is signed in or whose address a limit counts.
 
-## Passwords and the first user
+## Accounts and passwords
 
-- The first boot creates the admin from `PLATE_ADMIN_EMAIL` and `PLATE_ADMIN_PASSWORD` (12 or more characters). The password is hashed with Argon2id (19 MiB, 2 iterations, 1 lane, the OWASP minimum) and the environment value is never stored. Once the user exists the variables are ignored; remove them.
-- `PLATE_ADMIN_RESET_PASSWORD=true` with a new `PLATE_ADMIN_PASSWORD` resets the password and revokes every session; it never creates a user.
-- Signing in with an unknown email does the same hashing work as a wrong password, and the error message is the same, so accounts cannot be enumerated.
+- Anyone can create an account ([accounts.md](accounts.md)); there is no admin role. Signup needs a solved proof-of-work challenge, and the server checks it before it spends time hashing the password.
+- Passwords are 12 or more characters and not on a short deny list. They are hashed with Argon2id (19 MiB, 2 iterations, 1 lane, the OWASP minimum).
+- Signing in with an unknown username does the same hashing work as a wrong password, and the error message is the same, so a sign-in cannot be used to find accounts. Signup does reveal that a username is taken; that is unavoidable when anyone can register.
+- A forgotten password is reset with a single-use recovery code (`POST /auth/reset`), which ends every session. Recovery codes, regenerating them and deleting the account all need either the code or the current password.
+- There is no operator reset. Nobody, including whoever runs the host, can set or read another person's password; a person who loses their password and every recovery code loses the account.
+- Every query is scoped by the signed-in user's id. A row id that belongs to another account is treated as absent.
 
 ## Sessions
 
@@ -23,8 +26,8 @@ One user, on their own devices, behind HTTPS that the operator provides (a proxy
 ## Request checks
 
 - **CSRF.** A state-changing request must be JSON when it has a body, must be same-origin (`Sec-Fetch-Site: same-origin`, or an `Origin` matching `PLATE_BASE_URL`), and must not be a top-level navigation. A request with neither header is not from a browser page and passes. There is no CSRF token; `SameSite=Lax` plus these checks cover the same-origin app.
-- **Auth is default-deny.** Everything under `/api/v1` requires a session except sign-in, sign-out and the OpenAPI document.
-- **Limits.** Sign-in: 5 a minute per address, 10 per 15 minutes per account, 60 a minute overall; a 429 carries `Retry-After`. Signed-in requests: 300 a minute for the general API and 600 a minute for sync, per user. Barcode lookups: 60 a minute per address. Behind a proxy every request shares the proxy's address, so the per-address limits are effectively shared and the per-account limit still applies.
+- **Auth is default-deny.** Everything under `/api/v1` requires a session except sign-in, sign-out, the signup challenge, signup, password reset and the OpenAPI document.
+- **Limits.** Sign-in and password reset: 30 a minute per address, 10 per 15 minutes per account, 120 a minute overall; a 429 carries `Retry-After`. Signup: a proof of work whose difficulty rises under load, and 200 an hour overall. Signed-in requests: 300 a minute for the general API and 600 a minute for sync, per user. Barcode lookups: 60 a minute per user. Behind a proxy every request shares the proxy's address, so the per-address limits are sized for all users together and the per-account limits are what stop guessing. Storage caps per account are in [accounts.md](accounts.md).
 - **Bodies.** 1 MB for JSON, 32 MB for a backup import, 100 ops and 256 KB per op for sync. Unknown JSON fields are rejected.
 - **SQL.** Parameterized queries only (sqlc). Search text is tokenized and bound, never concatenated.
 - **Errors** are RFC 9457 problems with a code and a request id, never a stack trace, SQL, or a filesystem path. Panics become a generic 500.
@@ -41,6 +44,12 @@ The server contacts only the configured Open Food Facts hosts and `images.openfo
 ## Imported data
 
 The catalog seed and backups are treated as untrusted input: the seed is opened read-only and structurally checked, and a backup is validated in full before anything is written (and a snapshot is taken first).
+
+A shared recipe is untrusted too. Import reads it only on the device, rejects anything over 200 KB, and validates every field with the limits the server enforces (calories up to 1,000 per 100 g, nutrients up to 100 g, 1 to 100 ingredients, a known unit) before it can become a recipe. It carries no ids, so it cannot point at another account's rows.
+
+## Health data
+
+Weight, measurements, doses and ratings are as private as the rest of an account's rows: every query is scoped by `user_id`, deleting an account removes them, and they appear only in that person's own backup. Nothing is sent to a third party, and there are no analytics. The app does not give medical advice, and its insights only restate what the person logged.
 
 ## Container
 

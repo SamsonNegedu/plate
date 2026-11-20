@@ -27,6 +27,17 @@ func (q *Queries) CountFoodUsesSince(ctx context.Context, arg CountFoodUsesSince
 	return count, err
 }
 
+const countLiveUserFoods = `-- name: CountLiveUserFoods :one
+SELECT count(*) FROM foods WHERE user_id = ? AND source = 'user' AND deleted_at IS NULL
+`
+
+func (q *Queries) CountLiveUserFoods(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countLiveUserFoods, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const foodExists = `-- name: FoodExists :one
 SELECT count(*) FROM foods WHERE id = ? AND user_id = ?
 `

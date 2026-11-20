@@ -19,11 +19,13 @@ import {
   entryDoc,
   favoriteDoc,
   foodDoc,
+  healthDoc,
   savedMealDoc,
   settingsDoc,
   toEntry,
   toFavorite,
   toFood,
+  toHealth,
   toMeal,
   toSettings,
 } from "./wire";
@@ -254,7 +256,14 @@ export class SyncEngine {
   ): Promise<void> {
     await this.db.transaction(
       "rw",
-      [this.db.outbox, this.db.conflicts, this.db.entries, this.db.foods, this.db.savedMeals],
+      [
+        this.db.outbox,
+        this.db.conflicts,
+        this.db.entries,
+        this.db.foods,
+        this.db.savedMeals,
+        this.db.healthRecords,
+      ],
       async () => {
         for (const [i, op] of batch.entries()) {
           const r = results[i];
@@ -298,6 +307,8 @@ export class SyncEngine {
     if (op.entity === "food")
       await this.db.foods.update(op.entityId, { deletedAt: at, barcode: null });
     if (op.entity === "saved_meal") await this.db.savedMeals.update(op.entityId, { deletedAt: at });
+    if (op.entity === "health_record")
+      await this.db.healthRecords.update(op.entityId, { deletedAt: at });
   }
 
   // ---- pull ----
@@ -320,6 +331,7 @@ export class SyncEngine {
       this.db.savedMeals,
       this.db.savedMealItems,
       this.db.favorites,
+      this.db.healthRecords,
       this.db.outbox,
       this.db.meta,
     ];
@@ -403,6 +415,12 @@ export class SyncEngine {
         await this.db.favorites.put(toFavorite(p.data));
         return;
       }
+      case "health_record": {
+        const p = healthDoc.safeParse(change.data);
+        if (!p.success) return bad("health_record", p.error);
+        await this.db.healthRecords.put(toHealth(p.data));
+        return;
+      }
       default:
         throw new ProtocolError(`Unknown entity ${change.entity}`);
     }
@@ -427,6 +445,9 @@ export class SyncEngine {
       case "favorite":
         await this.db.favorites.delete(change.id);
         return;
+      case "health_record":
+        await this.db.healthRecords.update(change.id, { deletedAt: at, serverSeq: change.seq });
+        return;
       case "settings":
         return;
       default:
@@ -446,6 +467,9 @@ export class SyncEngine {
     const foods = snap.foods.map((f) => parse(foodDoc, f, "food")).map(toFood);
     const meals = snap.saved_meals.map((m) => toMeal(parse(savedMealDoc, m, "saved meal")));
     const favorites = snap.favorites.map((f) => toFavorite(parse(favoriteDoc, f, "favorite")));
+    const health = (snap.health_records ?? []).map((h) =>
+      toHealth(parse(healthDoc, h, "health record")),
+    );
     const userId = (await getMeta<string>(this.db, META.userId)) ?? "";
     const settings =
       snap.settings === undefined
@@ -459,6 +483,7 @@ export class SyncEngine {
       this.db.savedMeals,
       this.db.savedMealItems,
       this.db.favorites,
+      this.db.healthRecords,
       this.db.outbox,
       this.db.meta,
     ];
@@ -480,6 +505,8 @@ export class SyncEngine {
       }
       await this.db.favorites.filter((f) => !held.has(`favorite:${f.foodId}`)).delete();
       await this.db.favorites.bulkPut(favorites.filter((f) => !held.has(`favorite:${f.foodId}`)));
+      await this.db.healthRecords.filter((h) => !held.has(`health_record:${h.id}`)).delete();
+      await this.db.healthRecords.bulkPut(health.filter((h) => !held.has(`health_record:${h.id}`)));
       if (settings && !held.has(`settings:${settings.userId}`))
         await this.db.settings.put(settings);
 

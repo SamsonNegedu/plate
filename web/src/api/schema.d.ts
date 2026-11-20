@@ -21,6 +21,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a proof-of-work challenge for signup */
+        get: operations["signup-challenge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/delete-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete this account and all of its data
+         * @description Needs the current password. This cannot be undone.
+         */
+        post: operations["delete-account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -30,7 +67,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Sign in with email and password */
+        /** Sign in with username and password */
         post: operations["login"];
         delete?: never;
         options?: never;
@@ -83,6 +120,83 @@ export interface paths {
         get: operations["me"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace the recovery codes
+         * @description Needs the current password. Every earlier code stops working.
+         */
+        post: operations["new-recovery-codes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/recovery-codes/ack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the recovery codes were saved */
+        post: operations["ack-recovery-codes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a new password with a recovery code
+         * @description Spends the code and signs the account out everywhere.
+         */
+        post: operations["reset-password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an account and sign in
+         * @description Needs a solved challenge from `/auth/challenge`. The recovery codes in the response are shown once.
+         */
+        post: operations["signup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -410,6 +524,17 @@ export interface components {
             /** Format: int64 */
             rows: number;
         };
+        ChallengeBody: {
+            /** Format: int64 */
+            bits: number;
+            /** Format: int64 */
+            expires_at: number;
+            salt: string;
+            signature: string;
+        };
+        CodesOutputBody: {
+            recovery_codes: string[];
+        };
         DayBody: {
             date: string;
             entries: components["schemas"]["EntryDoc"][] | null;
@@ -532,6 +657,8 @@ export interface components {
             foods: components["schemas"]["FoodDoc"][] | null;
             /** Format: int64 */
             format_version: number;
+            /** @description Weight, waist, appetite, nausea and dose records. Absent in older backups. */
+            health_records?: components["schemas"]["HealthRecordDoc"][] | null;
             saved_meals: components["schemas"]["SavedMealDoc"][] | null;
             /** Format: int64 */
             schema_version: number;
@@ -675,6 +802,30 @@ export interface components {
             /** Format: int64 */
             protein_g: number;
         };
+        HealthRecordDoc: {
+            created_at: string;
+            deleted_at: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "weight" | "waist" | "hips" | "chest" | "arm" | "thigh" | "neck" | "appetite" | "nausea" | "dose";
+            /** @description Required for a dose, empty otherwise. */
+            medication?: string;
+            note?: string;
+            /** Format: date-time */
+            recorded_at: string;
+            /** @description Local calendar date the client assigned. */
+            recorded_on: string;
+            /** Format: int64 */
+            server_seq: number;
+            site?: string;
+            updated_at: string;
+            /**
+             * Format: double
+             * @description kg, cm, a 0 to 5 rating, or mg, by kind.
+             */
+            value: number;
+        };
         ImportOutBody: {
             /** Format: int64 */
             entries: number;
@@ -683,15 +834,21 @@ export interface components {
             /** Format: int64 */
             foods: number;
             /** Format: int64 */
+            health_records: number;
+            /** Format: int64 */
             removed: number;
             /** Format: int64 */
             saved_meals: number;
         };
         LoginInputBody: {
-            email: string;
             password: string;
+            username: string;
         };
         MeOutputBody: {
+            /** Format: int64 */
+            recovery_codes_remaining: number;
+            /** @description False until the person confirms they saved the codes shown at signup or after making new ones. */
+            recovery_codes_saved: boolean;
             user: components["schemas"]["UserBody"];
         };
         Meta: {
@@ -712,7 +869,7 @@ export interface components {
             /** @description The entity body. Required for upsert, absent for delete. */
             data?: unknown;
             /** @enum {string} */
-            entity: "entry" | "food" | "settings" | "saved_meal" | "favorite";
+            entity: "entry" | "food" | "settings" | "saved_meal" | "favorite" | "health_record";
             id: string;
             /**
              * Format: uuid
@@ -739,6 +896,9 @@ export interface components {
             /** @description The deleted row, when status is tombstoned. */
             tombstone?: unknown;
         };
+        PasswordInputBody: {
+            password: string;
+        };
         Problem: {
             can_add_manually?: boolean;
             code: string;
@@ -764,7 +924,7 @@ export interface components {
             /** @description The full row for an upsert; {deleted_at} for a delete. */
             data: unknown;
             /** @enum {string} */
-            entity: "entry" | "food" | "settings" | "saved_meal" | "favorite";
+            entity: "entry" | "food" | "settings" | "saved_meal" | "favorite" | "health_record";
             id: string;
             /** @enum {string} */
             op: "upsert" | "delete";
@@ -803,6 +963,11 @@ export interface components {
         RecentOutBody: {
             foods: components["schemas"]["FoodView"][] | null;
         };
+        ResetInputBody: {
+            new_password: string;
+            recovery_code: string;
+            username: string;
+        };
         SavedMealDoc: {
             created_at: string;
             deleted_at: string | null;
@@ -812,6 +977,11 @@ export interface components {
             name: string;
             /** Format: int64 */
             server_seq: number;
+            /**
+             * Format: double
+             * @description Portions the recipe makes. Absent in older backups, which means 1.
+             */
+            servings?: number;
             updated_at: string;
         };
         SavedMealItemDoc: {
@@ -873,12 +1043,34 @@ export interface components {
             day_start_hour: number;
             /** Format: int64 */
             fat_g: number;
+            /**
+             * Format: int64
+             * @description Fibre target in grams. 0 or absent means not tracked.
+             */
+            fiber_g?: number;
             /** Format: int64 */
             goal_kcal: number;
+            /**
+             * Format: int64
+             * @description Days between doses.
+             */
+            med_interval_days?: number | null;
+            /** @description The medication being tracked. */
+            med_name?: string | null;
+            med_started_on?: string | null;
+            /** Format: date-time */
+            med_supply_as_of?: string | null;
+            /**
+             * Format: int64
+             * @description Doses on hand as of med_supply_as_of.
+             */
+            med_supply_doses?: number | null;
             /** Format: int64 */
             protein_g: number;
             /** @enum {string} */
             theme: "auto" | "light" | "dark";
+            /** Format: double */
+            weight_goal_kg?: number | null;
         };
         SettingsDoc: {
             /** Format: int64 */
@@ -888,8 +1080,28 @@ export interface components {
             day_start_hour: number;
             /** Format: int64 */
             fat_g: number;
+            /**
+             * Format: int64
+             * @description Fibre target in grams. 0 or absent means not tracked.
+             */
+            fiber_g?: number;
             /** Format: int64 */
             goal_kcal: number;
+            /**
+             * Format: int64
+             * @description Days between doses.
+             */
+            med_interval_days?: number | null;
+            /** @description The medication being tracked. */
+            med_name?: string | null;
+            med_started_on?: string | null;
+            /** Format: date-time */
+            med_supply_as_of?: string | null;
+            /**
+             * Format: int64
+             * @description Doses on hand as of med_supply_as_of.
+             */
+            med_supply_doses?: number | null;
             /** Format: int64 */
             protein_g: number;
             /** Format: int64 */
@@ -897,6 +1109,8 @@ export interface components {
             /** @enum {string} */
             theme: "auto" | "light" | "dark";
             updated_at: string;
+            /** Format: double */
+            weight_goal_kg?: number | null;
         };
         SettingsView: {
             /** Format: int64 */
@@ -905,9 +1119,29 @@ export interface components {
             day_start_hour: number;
             /** Format: int64 */
             fat_g: number;
+            /**
+             * Format: int64
+             * @description Fibre target in grams. 0 or absent means not tracked.
+             */
+            fiber_g?: number;
             /** Format: int64 */
             goal_kcal: number;
             last_login_at: string | null;
+            /**
+             * Format: int64
+             * @description Days between doses.
+             */
+            med_interval_days?: number | null;
+            /** @description The medication being tracked. */
+            med_name?: string | null;
+            med_started_on?: string | null;
+            /** Format: date-time */
+            med_supply_as_of?: string | null;
+            /**
+             * Format: int64
+             * @description Doses on hand as of med_supply_as_of.
+             */
+            med_supply_doses?: number | null;
             /** Format: int64 */
             protein_g: number;
             /** @description The server's current UTC date. The client never uses it to assign eaten_on. */
@@ -917,6 +1151,23 @@ export interface components {
             /** @enum {string} */
             theme: "auto" | "light" | "dark";
             updated_at: string;
+            /** Format: double */
+            weight_goal_kg?: number | null;
+        };
+        SignupInputBody: {
+            challenge: components["schemas"]["ChallengeBody"];
+            /**
+             * Format: int64
+             * @description The number that makes SHA-256(salt + ':' + counter) start with challenge.bits zero bits.
+             */
+            counter: number;
+            password: string;
+            username: string;
+        };
+        SignupOutputBody: {
+            /** @description Shown once. Each resets the password one time. */
+            recovery_codes: string[];
+            user: components["schemas"]["UserBody"];
         };
         Snapshot: {
             /** Format: int64 */
@@ -924,6 +1175,7 @@ export interface components {
             entries: components["schemas"]["EntryDoc"][] | null;
             favorites: components["schemas"]["FavoriteDoc"][] | null;
             foods: components["schemas"]["FoodDoc"][] | null;
+            health_records: components["schemas"]["HealthRecordDoc"][] | null;
             /** Format: int64 */
             min_seq: number;
             saved_meals: components["schemas"]["SavedMealDoc"][] | null;
@@ -950,9 +1202,9 @@ export interface components {
             protein: number | null;
         };
         UserBody: {
-            email: string;
             id: string;
             last_login_at: string | null;
+            username: string;
         };
     };
     responses: never;
@@ -983,6 +1235,102 @@ export interface operations {
             };
             /** @description Error */
             default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "signup-challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "delete-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordInputBody"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1099,6 +1447,220 @@ export interface operations {
             };
             /** @description Error */
             default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "new-recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CodesOutputBody"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "ack-recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetInputBody"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    signup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignupInputBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignupOutputBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

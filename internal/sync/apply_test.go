@@ -45,7 +45,7 @@ func newFx(t *testing.T) *fx {
 		t.Fatal(err)
 	}
 	r := store.NewRepo(d)
-	if err := r.CreateUser(ctx, domain.User{ID: uid, Email: "a@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
+	if err := r.CreateUser(ctx, domain.User{ID: uid, Username: "a@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
 		t.Fatal(err)
 	}
 	f := &fx{db: d, svc: NewService(d), r: r, now: t0}
@@ -261,7 +261,7 @@ func TestAnotherUsersEntryIsNeverOverwritten(t *testing.T) {
 	f := newFx(t)
 	ctx := context.Background()
 	other := "0190a1b2-0000-7000-8000-000000000002"
-	if err := f.r.CreateUser(ctx, domain.User{ID: other, Email: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
+	if err := f.r.CreateUser(ctx, domain.User{ID: other, Username: "o@b.c", PasswordHash: "h", CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := f.svc.PutEntry(ctx, other, eid, body()); err != nil {

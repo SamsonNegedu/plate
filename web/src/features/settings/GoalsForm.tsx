@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
@@ -9,6 +9,7 @@ import { saveSettings } from "@/db/settings";
 import type { Settings } from "@/db/types";
 import { optionalNumber, requiredNumber } from "@/features/log/schemas";
 import { useUi } from "@/lib/ui";
+import { MacroTargets } from "./MacroTargets";
 import { cls } from "./ui";
 
 const schema = z.object({
@@ -16,6 +17,7 @@ const schema = z.object({
   proteinG: optionalNumber("protein", 0, 500),
   carbsG: optionalNumber("carbs", 0, 500),
   fatG: optionalNumber("fat", 0, 500),
+  fiberG: optionalNumber("fibre", 0, 200),
   dayStartHour: requiredNumber("an hour", 0, 23),
 });
 
@@ -27,6 +29,7 @@ const toForm = (s: Settings): In => ({
   proteinG: s.proteinG ? String(s.proteinG) : "",
   carbsG: s.carbsG ? String(s.carbsG) : "",
   fatG: s.fatG ? String(s.fatG) : "",
+  fiberG: s.fiberG ? String(s.fiberG) : "",
   dayStartHour: String(s.dayStartHour),
 });
 
@@ -40,6 +43,7 @@ export function GoalsForm({ settings }: { settings: Settings }) {
   });
   const { errors, isDirty, isSubmitting } = form.formState;
   const formRef = useRef<HTMLFormElement>(null);
+  const values = useWatch({ control: form.control });
 
   useEffect(() => {
     // A sync pull must not rewrite a field the user is about to type in; the digits would append to the reset value.
@@ -53,6 +57,7 @@ export function GoalsForm({ settings }: { settings: Settings }) {
       proteinG: v.proteinG ?? 0,
       carbsG: v.carbsG ?? 0,
       fatG: v.fatG ?? 0,
+      fiberG: v.fiberG ?? 0,
       dayStartHour: v.dayStartHour,
       theme: settings.theme,
     });
@@ -69,32 +74,24 @@ export function GoalsForm({ settings }: { settings: Settings }) {
         error={errors.goalKcal?.message}
         {...form.register("goalKcal")}
       />
-      <p className={cls.hint}>
-        Calories are the only required target. Leave a macro blank to leave it untracked.
-      </p>
-      <div className={cls.three}>
-        <Field
-          label="Protein"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.proteinG?.message}
-          {...form.register("proteinG")}
-        />
-        <Field
-          label="Carbs"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.carbsG?.message}
-          {...form.register("carbsG")}
-        />
-        <Field
-          label="Fat"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.fatG?.message}
-          {...form.register("fatG")}
-        />
-      </div>
+      <MacroTargets
+        values={values}
+        register={(name) => form.register(name)}
+        setGrams={(name, grams) => form.setValue(name, grams, { shouldDirty: true })}
+        errors={{
+          proteinG: errors.proteinG?.message,
+          carbsG: errors.carbsG?.message,
+          fatG: errors.fatG?.message,
+        }}
+      />
+      <Field
+        label="Fibre"
+        inputMode="decimal"
+        suffix="g"
+        hint="Optional. Leave it blank to leave fibre untracked."
+        error={errors.fiberG?.message}
+        {...form.register("fiberG")}
+      />
       <Field
         label="Day starts at"
         inputMode="numeric"

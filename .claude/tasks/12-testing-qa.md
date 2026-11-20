@@ -87,7 +87,10 @@ Prove the product end to end on the devices and failure modes that matter, and l
 
 ### Auth
 
-- Bootstrap creates one user; restart does not duplicate.
+- Signup creates an account and eight recovery codes; a restart creates nothing.
+- A recovery code resets a password once; unknown user, wrong code and spent code look the same.
+- Two accounts never see, overwrite or sync each other's rows; deleting one leaves the other intact.
+- Signing in as a different account on one device clears the previous account's local rows.
 - Login, logout, expired session, rate limit, foreign Origin, forwarded identity headers ignored.
 - Cookie flags and `__Host-` prefix.
 - Session survives restart.

@@ -23,7 +23,7 @@ func SpecJSON() ([]byte, error) {
 	_, api := New(Deps{
 		Config: config.Config{BaseURL: base},
 		Log:    log,
-		Auth:   NewAuth(auth.NewSessionStore(nil)),
+		Auth:   NewAuth(auth.NewSessionStore(nil), nil),
 		Food:   food.NewService(nil, nil, log),
 		Images: food.NewImages(nil, food.ImagesConfig{}),
 	})

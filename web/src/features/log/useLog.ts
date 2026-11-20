@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useDb } from "@/db/context";
 import { buildEntry, deleteEntry, saveEntry, undoAdd, undoDelete } from "@/db/entries";
 import { setPref } from "@/db/foods";
-import { logMeal } from "@/db/savedMeals";
+import { logRecipe } from "@/db/savedMeals";
 import type { Entry, Food, Meal, Unit } from "@/db/types";
 import { copy } from "@/lib/copy";
 import { gramsFor } from "@/lib/nutrition";
@@ -80,22 +80,19 @@ export function useLog() {
     [db, toast],
   );
 
-  const logSavedMeal = useCallback(
-    async (mealId: string, name: string, date: string, slot: Meal) => {
-      const ids = await logMeal(db, mealId, date, slot);
+  const logPortions = useCallback(
+    async (mealId: string, name: string, date: string, slot: Meal, portions: number) => {
+      const id = await logRecipe(db, mealId, date, slot, portions);
+      if (id === null) return false;
       buzz();
       toast({
         message: `Added ${name} to ${copy.mealsSingular[slot]}`,
-        action: {
-          label: copy.common.undo,
-          run: async () => {
-            for (const id of ids) await undoAdd(db, id);
-          },
-        },
+        action: { label: copy.common.undo, run: () => undoAdd(db, id) },
       });
+      return true;
     },
     [db, toast],
   );
 
-  return { logFood, removeEntry, logSavedMeal };
+  return { logFood, removeEntry, logPortions };
 }

@@ -7,21 +7,20 @@ The server reads environment variables (`internal/config/config.go`) and refuses
 | Variable | Default | Purpose |
 |---|---|---|
 | `PLATE_BASE_URL` | `http://localhost:8080` | **Required in production.** The public URL. Must be `https` except on localhost. Used for cookie scope and same-origin checks |
-| `PLATE_ADMIN_EMAIL`, `PLATE_ADMIN_PASSWORD` | none | **First boot.** Creates the admin; the password must be 12 or more characters. Ignored once the user exists, so remove them |
+| `PLATE_SIGNUP_ENABLED` | `true` | `false` closes signup; existing accounts keep working. There is no first-boot account to create |
 | `PLATE_OFF_USER_AGENT` | `Plate/1.0 (self-hosted)` | Identifies this server to Open Food Facts. Put a real contact |
 | `PLATE_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 | `PLATE_SYNC_ENABLED` | `true` | `false` pauses sync for every client; they keep logging locally |
 
-## One-shot admin actions
+## One-shot host actions
 
-Set, restart, confirm in the log, then remove. A restart with the flag still set repeats the action.
+Set, restart, confirm in the log, then remove. A restart with the flag still set repeats the action. None of them is needed to run the app or to add people, and none can reach into an account.
 
 | Variable | Action |
 |---|---|
-| `PLATE_ADMIN_RESET_PASSWORD` | With a new `PLATE_ADMIN_PASSWORD`: reset the password and revoke every session. Never creates a user |
 | `PLATE_CATALOG_REIMPORT` | Replace the catalog with the seed again |
 | `PLATE_REINDEX_FTS` | Rebuild the search indexes |
-| `PLATE_IMPORT_BLS_PATH` | Import BLS generic foods from this file |
+| `PLATE_IMPORT_BLS_PATH`, `PLATE_IMPORT_BLS_USERNAME` | Import BLS generic foods from this file into that account |
 | `PLATE_IMPORT_CATALOG_PATH` | Import the catalog from this file instead of the bundled seed |
 
 ## Tuning and paths
@@ -34,6 +33,7 @@ Set, restart, confirm in the log, then remove. A restart with the flag still set
 | `PLATE_INTEGRITY_CHECK` | `true` | Run `PRAGMA quick_check` at startup; the server refuses to start if it fails |
 | `PLATE_MAINTENANCE_HOUR` | `3` | Hour (0 to 23) for the daily maintenance job |
 | `PLATE_IMAGE_CACHE_MB` | `256` | Bound on the product image cache |
+| `PLATE_SIGNUP_POW_BITS` | `17` | Base proof-of-work difficulty for signup (0 to 28 zero bits). Each extra bit doubles the work; 0 turns it off, which tests use |
 | `PLATE_OFF_BASE_URL`, `PLATE_OFF_SEARCH_URL` | the Open Food Facts hosts | Overrides, used by tests |
 | `PLATE_HEALTHCHECK_URL` | the local `/readyz` | Read only by `plate -healthcheck`, the container health probe |
 
@@ -41,4 +41,4 @@ Test-only variables (`PLATE_COVERAGE_SEED`, `PLATE_COVERAGE_REPORT`, `PLATE_TEST
 
 ## What compose sets
 
-`compose.yaml` passes the first table, `PLATE_ADMIN_RESET_PASSWORD` and `PLATE_CATALOG_REIMPORT` from `.env`, mounts the `plate-data` volume at `/data`, and runs the image read-only with no published port. See [runbook.md](runbook.md).
+`compose.yaml` passes the first table, `PLATE_CATALOG_REIMPORT` from `.env`, mounts the `plate-data` volume at `/data`, and runs the image read-only with no published port. See [runbook.md](runbook.md).

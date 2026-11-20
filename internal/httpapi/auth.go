@@ -27,19 +27,24 @@ type Auth struct {
 	Sessions *scs.SessionManager
 	Store    *auth.SessionStore
 	Limits   *auth.LoginLimits
+	PoW      *auth.PoW
+	// Signups is a generous global backstop; the proof of work is the real cost.
+	Signups *ratelimit.Limiter
 	// Reads and Sync cap requests per user per minute: 60 for the general API, 120 for /sync.
 	Reads *ratelimit.Limiter
 	Sync  *ratelimit.Limiter
-	// Lookups caps barcode lookups per client IP: 60 a minute.
+	// Lookups caps barcode lookups per user: 60 a minute. The address is not used: behind a proxy it is shared.
 	Lookups *ratelimit.Limiter
 }
 
 // NewAuth builds the production auth wiring from the database.
-func NewAuth(sessions *auth.SessionStore) *Auth {
+func NewAuth(sessions *auth.SessionStore, pow *auth.PoW) *Auth {
 	return &Auth{
 		Sessions: auth.NewSessionManager(sessions),
 		Store:    sessions,
 		Limits:   auth.NewLoginLimits(),
+		PoW:      pow,
+		Signups:  ratelimit.NewLimiter(200, time.Hour),
 		Reads:    ratelimit.NewLimiter(300, time.Minute),
 		Sync:     ratelimit.NewLimiter(600, time.Minute),
 		Lookups:  ratelimit.NewLimiter(60, time.Minute),
@@ -126,7 +131,7 @@ func (a *Auth) clientInfo(next http.Handler) http.Handler {
 func isPublic(r *http.Request) bool {
 	p := strings.TrimPrefix(r.URL.Path, APIPrefix)
 	switch p {
-	case "/auth/login", "/auth/logout", "/openapi.json", "/openapi.yaml", "/openapi-3.0.json", "/openapi-3.0.yaml":
+	case "/auth/login", "/auth/logout", "/auth/challenge", "/auth/signup", "/auth/reset", "/openapi.json", "/openapi.yaml", "/openapi-3.0.json", "/openapi-3.0.yaml":
 		return true
 	}
 	return strings.HasPrefix(p, "/schemas/")
@@ -153,14 +158,14 @@ func (a *Auth) require() func(http.Handler) http.Handler {
 
 type loginInput struct {
 	Body struct {
-		Email    string `json:"email" minLength:"3" maxLength:"254"`
+		Username string `json:"username" minLength:"1" maxLength:"254"`
 		Password string `json:"password" minLength:"1" maxLength:"1024"`
 	}
 }
 
 type UserBody struct {
 	ID          string  `json:"id"`
-	Email       string  `json:"email"`
+	Username    string  `json:"username"`
 	LastLoginAt *string `json:"last_login_at"`
 }
 
@@ -168,7 +173,9 @@ type userOutput struct{ Body UserBody }
 
 type meOutput struct {
 	Body struct {
-		User UserBody `json:"user"`
+		User                   UserBody `json:"user"`
+		RecoveryCodesRemaining int64    `json:"recovery_codes_remaining"`
+		RecoveryCodesSaved     bool     `json:"recovery_codes_saved" doc:"False until the person confirms they saved the codes shown at signup or after making new ones."`
 	}
 }
 
@@ -185,7 +192,7 @@ func (d Deps) registerAuth(api huma.API) {
 		OperationID: "login",
 		Method:      http.MethodPost,
 		Path:        "/auth/login",
-		Summary:     "Sign in with email and password",
+		Summary:     "Sign in with username and password",
 		Tags:        []string{"auth"},
 	}, func(ctx context.Context, in *loginInput) (*userOutput, error) {
 		return d.login(ctx, a, repo, in)
@@ -239,18 +246,25 @@ func (d Deps) registerAuth(api huma.API) {
 			return nil, Err(http.StatusUnauthorized, "unauthorized", "Sign in to continue.")
 		}
 		out := &meOutput{}
-		out.Body.User = UserBody{ID: u.ID, Email: u.Email, LastLoginAt: u.LastLoginAt}
+		out.Body.User = UserBody{ID: u.ID, Username: u.Username, LastLoginAt: u.LastLoginAt}
+		if out.Body.RecoveryCodesRemaining, err = repo.CountRecoveryCodes(ctx, u.ID); err != nil {
+			return nil, Err(http.StatusInternalServerError, "internal", "Could not load the account.")
+		}
+		if out.Body.RecoveryCodesSaved, err = repo.CodesAcknowledged(ctx, u.ID); err != nil {
+			return nil, Err(http.StatusInternalServerError, "internal", "Could not load the account.")
+		}
 		return out, nil
 	})
+	d.registerAccounts(api)
 }
 
-var errBadLogin = Err(http.StatusUnauthorized, "invalid_credentials", "Email or password is incorrect.")
+var errBadLogin = Err(http.StatusUnauthorized, "invalid_credentials", "Username or password is incorrect.")
 
 func (d Deps) login(ctx context.Context, a *Auth, repo *store.Repo, in *loginInput) (*userOutput, error) {
 	ip := clientIP(ctx)
-	email := strings.ToLower(strings.TrimSpace(in.Body.Email))
+	username := strings.ToLower(strings.TrimSpace(in.Body.Username))
 
-	if ok, wait := a.Limits.Check(ip, email); !ok {
+	if ok, wait := a.Limits.Check(ip, username); !ok {
 		secs := int(wait.Seconds()) + 1
 		d.Log.WarnContext(ctx, "login rate limited", slog.String("ip", hashIP(ip)), slog.String("request_id", RequestID(ctx)))
 		h := http.Header{}
@@ -259,7 +273,7 @@ func (d Deps) login(ctx context.Context, a *Auth, repo *store.Repo, in *loginInp
 			Err(http.StatusTooManyRequests, "rate_limited", "Too many attempts. Try again later."), h)
 	}
 
-	user, err := repo.UserByEmail(ctx, email)
+	user, err := repo.UserByUsername(ctx, username)
 	switch {
 	case errors.Is(err, domain.ErrNotFound):
 		auth.BurnPasswordTime(in.Body.Password)
@@ -272,19 +286,14 @@ func (d Deps) login(ctx context.Context, a *Auth, repo *store.Repo, in *loginInp
 		return nil, d.loginFailed(ctx, ip)
 	}
 
-	if err := a.Sessions.RenewToken(ctx); err != nil {
-		return nil, Err(http.StatusInternalServerError, "internal", "Could not sign in.")
+	if err := d.startSession(ctx, repo, user.ID); err != nil {
+		return nil, err
 	}
-	a.Sessions.Put(ctx, auth.UserKey, user.ID)
-	now := time.Now().UTC().Format(time.RFC3339)
-	if err := repo.TouchLastLogin(ctx, user.ID, now); err != nil {
-		d.Log.ErrorContext(ctx, "recording last login failed", slog.String("error", err.Error()))
-	}
-	a.Limits.Succeeded(email)
+	a.Limits.Succeeded(username)
 	d.Log.InfoContext(ctx, "login ok", slog.String("ip", hashIP(ip)), slog.String("request_id", RequestID(ctx)))
 
 	out := &userOutput{}
-	out.Body = UserBody{ID: user.ID, Email: user.Email, LastLoginAt: user.LastLoginAt}
+	out.Body = UserBody{ID: user.ID, Username: user.Username, LastLoginAt: user.LastLoginAt}
 	return out, nil
 }
 

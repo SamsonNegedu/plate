@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import type {
+  HealthRecord,
   ConflictRow,
   Entry,
   Favorite,
@@ -19,6 +20,7 @@ export class PlateDB extends Dexie {
   settings!: Table<Settings, string>;
   savedMeals!: Table<SavedMeal, string>;
   savedMealItems!: Table<SavedMealItem, string>;
+  healthRecords!: Table<HealthRecord, string>;
   favorites!: Table<Favorite, string>;
   foodPrefs!: Table<FoodPref, string>;
   foodMisses!: Table<FoodMiss, number>;
@@ -41,5 +43,46 @@ export class PlateDB extends Dexie {
       meta: "key",
       conflicts: "++id, at, entity, entityId, serverSeq",
     });
+    // Weight, waist, appetite, nausea and doses, plus the optional medication plan on settings.
+    this.version(3)
+      .stores({ healthRecords: "id, kind, recordedOn, [kind+recordedOn], serverSeq, deletedAt" })
+      .upgrade((tx) =>
+        tx
+          .table("settings")
+          .toCollection()
+          .modify((s: Record<string, unknown>) => {
+            for (const k of [
+              "weightGoalKg",
+              "medName",
+              "medIntervalDays",
+              "medStartedOn",
+              "medSupplyDoses",
+              "medSupplyAsOf",
+            ])
+              s[k] ??= null;
+          }),
+      );
+    // A fibre target beside the macro targets; 0 means not tracked.
+    this.version(4)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table("settings")
+          .toCollection()
+          .modify((s: { fiberG?: number }) => {
+            s.fiberG ??= 0;
+          }),
+      );
+    // Saved meals became recipes: the ones saved before make one portion.
+    this.version(2)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table("savedMeals")
+          .toCollection()
+          .modify((m: { servings?: number }) => {
+            m.servings ??= 1;
+          }),
+      );
   }
 }

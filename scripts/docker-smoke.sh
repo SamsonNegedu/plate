@@ -18,7 +18,7 @@ start() {
   docker run -d --name "$NAME" -p "$PORT:8080" --read-only --cap-drop ALL \
     --security-opt no-new-privileges:true -v "$NAME-data:/data" \
     -e PLATE_BASE_URL="http://127.0.0.1:$PORT" \
-    -e PLATE_ADMIN_EMAIL=smoke@example.com -e PLATE_ADMIN_PASSWORD="$PASSWORD" \
+    -e PLATE_SIGNUP_POW_BITS=0 \
     "$IMAGE" >/dev/null
 }
 
@@ -39,8 +39,14 @@ docker exec "$NAME" /plate -healthcheck || fail "container healthcheck"; check "
 code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/api/v1/settings")
 [ "$code" = 401 ] || fail "unauthenticated API returned $code, want 401"; check "API requires a session"
 
+# With zero proof-of-work bits the counter 0 solves any challenge, so curl can sign up.
+CHALLENGE=$(curl -fs "http://127.0.0.1:$PORT/api/v1/auth/challenge") || fail "signup challenge"
 curl -fs -c "$JAR" -H 'Content-Type: application/json' \
-  -d "{\"email\":\"smoke@example.com\",\"password\":\"$PASSWORD\"}" \
+  -d "{\"username\":\"smoke\",\"password\":\"$PASSWORD\",\"counter\":0,\"challenge\":$CHALLENGE}" \
+  "http://127.0.0.1:$PORT/api/v1/auth/signup" | grep -q '"recovery_codes"' || fail "signup"; check "signup"
+
+curl -fs -H 'Content-Type: application/json' \
+  -d "{\"username\":\"smoke\",\"password\":\"$PASSWORD\"}" \
   "http://127.0.0.1:$PORT/api/v1/auth/login" >/dev/null || fail "login"; check "login"
 
 curl -fs -b "$JAR" "http://127.0.0.1:$PORT/api/v1/foods/search?q=nutella" | grep -q '"source":"catalog"' \

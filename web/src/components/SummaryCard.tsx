@@ -8,45 +8,29 @@ import { Meter } from "./Meter";
 interface Props {
   totals: DayTotals;
   goalKcal: number;
-  targets: { protein: number; carbs: number; fat: number };
+  targets: { protein: number; carbs: number; fat: number; fiber: number };
+  /** Opens the full nutrient table for the day. */
+  onDetails: () => void;
 }
 
-export function SummaryCard({ totals, goalKcal, targets }: Props) {
+/** The big number is what was eaten. What is left, or how far over, is one line under it and the meter shows the same. */
+export function SummaryCard({ totals, goalKcal, targets, onDetails }: Props) {
   const eaten = Math.round(totals.kcal);
   const { fill, over, left } = meterFill(eaten, goalKcal);
   return (
     <section className="rounded-card border border-line bg-surface p-4" aria-label="Day summary">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p
-            className={cn(
-              "font-display text-display leading-display font-semibold tracking-display",
-              over && "text-red",
-            )}
-          >
-            {formatKcal(left)}
-          </p>
-          <p className="mt-2 text-meta text-ink-2">
-            kcal {over ? copy.today.over : copy.today.left}
-            {over ? (
-              <span className="sr-only">{` of your ${formatKcal(goalKcal)} goal`}</span>
-            ) : null}
+      <div className="flex items-end gap-x-4 gap-y-1">
+        <p className="font-display text-display leading-display font-semibold tracking-display">
+          {formatKcal(eaten)}
+        </p>
+        <div className="grid min-w-0 gap-0.5 pb-1">
+          <p className="text-meta text-ink-2">kcal eaten</p>
+          <p className={cn("text-body", over ? "font-semibold text-red" : "text-ink")}>
+            {over
+              ? `${formatKcal(left)} over ${formatKcal(goalKcal)}`
+              : `${formatKcal(left)} left of ${formatKcal(goalKcal)}`}
           </p>
         </div>
-        <dl className="mt-1 flex gap-4">
-          <div className="text-right">
-            <dt className="text-micro text-ink-2">{copy.today.eaten}</dt>
-            <dd className="font-display text-stat leading-stat font-semibold">
-              {formatKcal(eaten)}
-            </dd>
-          </div>
-          <div className="text-right">
-            <dt className="text-micro text-ink-2">{copy.today.goal}</dt>
-            <dd className="font-display text-stat leading-stat font-semibold">
-              {formatKcal(goalKcal)}
-            </dd>
-          </div>
-        </dl>
       </div>
       <Meter
         fill={fill}
@@ -58,15 +42,24 @@ export function SummaryCard({ totals, goalKcal, targets }: Props) {
         }
       />
       {totals.count > 0 ? (
-        <div className="mt-3.5 grid grid-cols-2 gap-3 min-[421px]:grid-cols-4">
+        <div className="mt-3.5 grid grid-cols-4 gap-2.5">
           <MacroBar label="Protein" value={totals.protein} target={targets.protein} />
           <MacroBar label="Carbs" value={totals.carbs} target={targets.carbs} />
           <MacroBar label="Fat" value={totals.fat} target={targets.fat} />
-          <MacroBar label="Fibre" value={totals.fiber} target={0} />
+          <MacroBar label="Fibre" value={totals.fiber} target={targets.fiber} />
         </div>
       ) : null}
       {totals.missing.length > 0 ? (
         <p className="mt-2.5 text-caption text-ink-2">{copy.today.missingMacros}</p>
+      ) : null}
+      {totals.count > 0 ? (
+        <button
+          type="button"
+          className="mt-1 -mb-2 inline-flex min-h-11 items-center bg-transparent p-0 text-label font-medium text-accent"
+          onClick={onDetails}
+        >
+          All nutrients
+        </button>
       ) : null}
     </section>
   );

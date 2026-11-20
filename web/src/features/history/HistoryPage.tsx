@@ -1,17 +1,34 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
 import { Segmented } from "@/components/Segmented";
-import { useEntryRange, useSettings } from "@/db/hooks";
-import { cn } from "@/lib/cn";
+import { useEntryRange, useHealthRecords, useSettings } from "@/db/hooks";
+import type { Entry } from "@/db/types";
 import { addDays, logicalDate, shortLabel } from "@/lib/dates";
 import { formatKcal, formatOptional } from "@/lib/numbers";
 import { useNow } from "@/lib/useNow";
 import { BarChart } from "./BarChart";
-import { buildDays, summarize } from "./stats";
+import { DayList } from "./DayList";
+import { MetricPicker } from "./MetricPicker";
+import {
+  buildDays,
+  formatMetric,
+  goalFor,
+  METRICS,
+  type Metric,
+  movingAverage,
+  summarize,
+  topFoods,
+  weekdayInsight,
+} from "./stats";
+import { TopFoods } from "./TopFoods";
 
 type Range = "7" | "14" | "30";
 const KEY = "plate.historyRange";
+
+const asRange = (v: string | null): Range | null =>
+  v === "7" || v === "14" || v === "30" ? v : null;
+const asMetric = (v: string | null): Metric | null => METRICS.find((m) => m.key === v)?.key ?? null;
 
 function savedRange(): Range {
   try {
@@ -36,21 +53,50 @@ const tableCls =
 export default function HistoryPage() {
   const settings = useSettings();
   const navigate = useNavigate();
-  const [range, setRange] = useState<Range>(savedRange);
+  const [params, setParams] = useSearchParams();
+  // The range and the nutrient are in the address, so a view can be linked and survives a reload; the last range is the default.
+  const range = asRange(params.get("range")) ?? savedRange();
+  const metric = asMetric(params.get("metric")) ?? "kcal";
+  const setQuery = (key: "range" | "metric", value: string) =>
+    setParams(
+      (p) => {
+        const next = new URLSearchParams(p);
+        next.set(key, value);
+        return next;
+      },
+      { replace: true },
+    );
   const [table, setTable] = useState(false);
   const now = useNow();
   const today = logicalDate(now, settings?.dayStartHour ?? 0);
   const from = addDays(today, -(Number(range) - 1));
-  const entries = useEntryRange(from, today);
+  const warmUp = addDays(from, -6); // the first bars' 7-day average needs the week before them
+  const loaded = useEntryRange(warmUp, today);
+  const doses = useHealthRecords("dose");
 
-  if (!settings || !entries) return null;
+  if (!settings || !loaded) return null;
+  const entries = loaded.filter((e) => e.eatenOn >= from);
+  const entriesByDay = new Map<string, Entry[]>();
+  for (const e of entries) entriesByDay.set(e.eatenOn, [...(entriesByDay.get(e.eatenOn) ?? []), e]);
   const days = buildDays(entries, from, today);
-  const stats = summarize(days, settings.goalKcal);
+  const trend = movingAverage(buildDays(loaded, warmUp, today), metric).slice(6);
+  const goal = goalFor(metric, settings);
+  const name = METRICS.find((m) => m.key === metric)?.label ?? "";
+  const stats = summarize(days, goal, metric);
+  const insight = metric === "kcal" ? weekdayInsight(days) : null;
+  const top = topFoods(entries);
+  const topCoverage =
+    top.totalKcal > 0 ? top.foods.reduce((s, f) => s + f.kcal, 0) / top.totalKcal : 0;
   const logged = stats.daysLogged;
+  const doseDays = new Set(
+    (doses ?? []).filter((d) => d.recordedOn >= from).map((d) => d.recordedOn),
+  );
+  const unit = metric === "kcal" ? " kcal" : " g";
+  const fmt = (v: number | null) => (v === null ? "—" : formatMetric(v, metric));
   const open = (d: string) => navigate(d === today ? "/today" : `/today/${d}`);
 
   return (
-    <div className="grid gap-3.5 pb-2">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 pb-2">
       <h1 className="mt-1 text-title font-semibold">History</h1>
       <Segmented
         label="Range"
@@ -61,7 +107,7 @@ export default function HistoryPage() {
           { value: "30", label: "30 days" },
         ]}
         onChange={(r) => {
-          setRange(r);
+          setQuery("range", r);
           try {
             localStorage.setItem(KEY, r);
           } catch {
@@ -70,11 +116,21 @@ export default function HistoryPage() {
         }}
       />
 
+      <MetricPicker value={metric} onChange={(m) => setQuery("metric", m)} />
+
       <section
         className="relative rounded-card border border-line bg-surface px-3 pt-3.5 pb-2"
-        aria-label="Calories per day"
+        aria-label={`${name} per day`}
       >
-        <BarChart days={days} goal={settings.goalKcal} today={today} onOpen={open} />
+        <BarChart
+          days={days}
+          metric={metric}
+          trend={trend}
+          goal={goal}
+          doseDays={doseDays}
+          today={today}
+          onOpen={open}
+        />
         {logged === 0 ? (
           <div className="pt-1 pb-2 text-center [&_p]:mb-3 [&_p]:text-body [&_p]:text-ink-2">
             <p>No days logged yet. Start with today.</p>
@@ -85,24 +141,42 @@ export default function HistoryPage() {
         ) : null}
       </section>
 
+      {insight ? (
+        <p className="rounded-card border border-line bg-surface px-3.5 py-3 text-body">
+          {`You eat most on ${insight.weekdays.join(" and ")}, about ${formatKcal(insight.above)} kcal above your average.`}
+        </p>
+      ) : null}
+
       <p className="-mt-0.5 text-label text-ink-2">{`Logged ${logged} of ${days.length} days.`}</p>
       <dl className={statsCls}>
         <div>
           <dt>Daily average</dt>
           <dd>
-            {stats.averageKcal === null ? "—" : formatKcal(stats.averageKcal)}
-            <small> kcal</small>
+            {fmt(stats.average)}
+            <small>{unit}</small>
           </dd>
         </div>
         <div>
-          <dt>Days over goal</dt>
-          <dd>{stats.daysOver}</dd>
+          {stats.daysFlagged === null ? (
+            <>
+              <dt>Highest day</dt>
+              <dd>
+                {fmt(stats.peak)}
+                <small>{unit}</small>
+              </dd>
+            </>
+          ) : (
+            <>
+              <dt>{metric === "kcal" ? "Days over goal" : "Days goal reached"}</dt>
+              <dd>{stats.daysFlagged}</dd>
+            </>
+          )}
         </div>
         <div>
           <dt>7-day average</dt>
           <dd>
-            {stats.weekAverage === null ? "—" : formatKcal(stats.weekAverage)}
-            <small> kcal</small>
+            {fmt(stats.weekAverage)}
+            <small>{unit}</small>
           </dd>
         </div>
       </dl>
@@ -119,6 +193,10 @@ export default function HistoryPage() {
                 <th scope="col">Protein</th>
                 <th scope="col">Carbs</th>
                 <th scope="col">Fat</th>
+                <th scope="col">Fibre</th>
+                <th scope="col">Sugar</th>
+                <th scope="col">Sat. fat</th>
+                <th scope="col">Salt</th>
                 <th scope="col">Entries</th>
                 <th scope="col">Goal</th>
               </tr>
@@ -131,6 +209,10 @@ export default function HistoryPage() {
                   <td>{formatOptional(d.protein)}</td>
                   <td>{formatOptional(d.carbs)}</td>
                   <td>{formatOptional(d.fat)}</td>
+                  <td>{formatOptional(d.fiber)}</td>
+                  <td>{formatOptional(d.sugar)}</td>
+                  <td>{formatOptional(d.satfat)}</td>
+                  <td>{formatOptional(d.salt)}</td>
                   <td>{d.count}</td>
                   <td>{goalStatus(d.count, d.kcal, settings.goalKcal)}</td>
                 </tr>
@@ -140,34 +222,9 @@ export default function HistoryPage() {
         </div>
       ) : null}
 
-      <ul aria-label="Days">
-        {[...days]
-          .reverse()
-          .filter((d) => d.count > 0)
-          .map((d) => (
-            <li key={d.date}>
-              <Link
-                to={d.date === today ? "/today" : `/today/${d.date}`}
-                className="flex min-h-13 items-center gap-2.5 border-b border-line text-ink no-underline"
-              >
-                <span className="flex-1 text-body">{shortLabel(d.date)}</span>
-                <span className="text-meta text-ink-2">{`${d.count} ${d.count === 1 ? "entry" : "entries"}`}</span>
-                <span
-                  className={cn(
-                    "min-w-[84px] text-right text-body font-semibold",
-                    d.kcal > settings.goalKcal && "text-red",
-                  )}
-                >
-                  {formatKcal(d.kcal)} kcal
-                  {d.kcal > settings.goalKcal ? <span className="sr-only"> over goal</span> : null}
-                </span>
-                <span className="text-glyph text-ink-3" aria-hidden="true">
-                  ›
-                </span>
-              </Link>
-            </li>
-          ))}
-      </ul>
+      <TopFoods foods={top.foods} coverage={topCoverage} days={days.length} />
+
+      <DayList days={days} entriesByDay={entriesByDay} goal={settings.goalKcal} today={today} />
     </div>
   );
 }

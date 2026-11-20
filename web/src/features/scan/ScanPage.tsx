@@ -7,6 +7,8 @@ import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { useSettings } from "@/db/hooks";
 import { useScanFeedback } from "@/db/prefs";
+import type { ItemInput } from "@/db/savedMeals";
+import { draftOf } from "@/features/recipes/draft";
 import { createDetector, makeDeduper } from "@/food/barcode";
 import { type CameraState, useCamera } from "@/food/camera";
 import { digitsOnly, isBarcodeLength, resolveBarcode } from "@/food/lookup";
@@ -45,6 +47,9 @@ export default function ScanPage() {
   const date =
     requested && isValidDate(requested) ? requested : logicalDate(now, settings?.dayStartHour ?? 0);
   const meal = defaultMeal(now);
+  // Set when the scanner was opened from the recipe editor: a found food becomes an ingredient instead of an entry.
+  const recipeKey = params.get("recipe");
+  const recipePath = recipeKey === "new" || !recipeKey ? "/recipes/new" : `/recipes/${recipeKey}`;
 
   const active = !sheetOpen && cameraWanted(scan);
   const { videoRef, state: cameraState, torchAvailable, torchOn, toggleTorch } = useCamera(active);
@@ -59,15 +64,44 @@ export default function ScanPage() {
     };
   }, []);
 
+  const addToDraft = useCallback(
+    (item: ItemInput) => {
+      if (!recipeKey) return;
+      const d = useUi.getState().recipeDraft;
+      ui.setRecipeDraft({
+        key: recipeKey,
+        name: d?.name ?? "",
+        servings: d?.servings ?? "1",
+        items: [...(d?.items ?? []), draftOf(item)],
+      });
+      void navigate(recipePath);
+    },
+    [ui, recipeKey, recipePath, navigate],
+  );
+
   const handle = useCallback(
     async (raw: string) => {
       const code = digitsOnly(raw);
       dispatch({ type: "lookupStarted" });
       try {
         const r = await resolveBarcode(db, code, { online: navigator.onLine });
+        if (recipeKey && r.kind !== "found" && r.kind !== "invalid") {
+          ui.toast({
+            message:
+              "That barcode is not in the food bank. Search for it by name, or add it as a food first.",
+          });
+          setResume((n) => n + 1);
+          return;
+        }
         switch (r.kind) {
           case "found":
-            ui.open({ kind: "product", food: r.food, meal, date });
+            ui.open({
+              kind: "product",
+              food: r.food,
+              meal,
+              date,
+              ...(recipeKey ? { pick: addToDraft } : {}),
+            });
             break;
           case "not-found":
             ui.open({ kind: "manual", meal, date, barcode: code });
@@ -95,7 +129,7 @@ export default function ScanPage() {
         dispatch({ type: "lookupEnded" });
       }
     },
-    [db, ui, meal, date],
+    [db, ui, meal, date, recipeKey, addToDraft],
   );
 
   // Read frames from the video: requestVideoFrameCallback when available, otherwise a throttled animation frame loop.
@@ -179,7 +213,9 @@ export default function ScanPage() {
 
   return (
     <div className="grid gap-3 pb-2">
-      <h1 className="mt-1 text-title font-semibold">{copy.scan.title}</h1>
+      <h1 className="mt-1 text-title font-semibold">
+        {recipeKey ? "Scan ingredient" : copy.scan.title}
+      </h1>
       <div className="relative grid aspect-[4/5] max-h-[62dvh] place-items-center overflow-hidden rounded-card border border-frame-line bg-frame">
         {error ? (
           <div
@@ -227,13 +263,19 @@ export default function ScanPage() {
           {copy.scan.typeBarcode}
         </Button>
         <Button onClick={() => fileRef.current?.click()}>{copy.scan.upload}</Button>
-        <Button onClick={() => ui.open({ kind: "search", meal, date })}>
+        <Button
+          onClick={() =>
+            ui.open({ kind: "search", meal, date, ...(recipeKey ? { pick: addToDraft } : {}) })
+          }
+        >
           <Icon name="search" />
           {copy.today.search}
         </Button>
-        <Button onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
-          {copy.sheet.addManually}
-        </Button>
+        {recipeKey ? null : (
+          <Button onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
+            {copy.sheet.addManually}
+          </Button>
+        )}
       </div>
       <input
         ref={fileRef}
@@ -248,7 +290,7 @@ export default function ScanPage() {
           if (f) void readPhoto(f);
         }}
       />
-      <Button variant="ghost" onClick={() => navigate("/today")}>
+      <Button variant="ghost" onClick={() => navigate(recipeKey ? recipePath : "/today")}>
         {copy.common.back}
       </Button>
 

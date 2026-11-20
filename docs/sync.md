@@ -4,7 +4,7 @@ A device writes locally first and syncs in the background. The server is the aut
 
 ## What syncs
 
-Five entities: `entry`, `food` (custom foods and corrections), `settings`, `saved_meal` (with its items, replaced as one unit) and `favorite`. Foods that come from Open Food Facts, BLS or the catalog are server-managed and never travel as client writes.
+Six entities: `entry`, `food` (custom foods and corrections), `settings` (which also carries the optional weight goal and medication plan), `saved_meal` (a recipe with its ingredients and `servings`, replaced as one unit; the wire name predates recipes and stays), `favorite` and `health_record` (a weight, a body measurement, an appetite or nausea rating, or a medication dose). Foods that come from Open Food Facts, BLS or the catalog are server-managed and never travel as client writes.
 
 ## Writing on the device
 
@@ -58,6 +58,10 @@ A re-snapshot never loses unsynced work. In one transaction the client keeps eve
 | cursor below `min_seq` | (transient) | snapshot, then run the cycle again |
 
 The badge in the app bar (`SyncBadge`) always shows the real state: pending beats synced, errors beat pending.
+
+## Rows that refer to other rows
+
+The outbox drains in the order the ops were created, and the server rejects a row that refers to something it has not seen (a recipe or entry naming a food that has not arrived). Anything that writes a food and the rows that use it, such as the dev sample data, must stamp the food earlier than the rows that refer to it.
 
 ## Backup is separate
 

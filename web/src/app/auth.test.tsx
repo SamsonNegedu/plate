@@ -25,6 +25,7 @@ function Probe() {
     <p>
       {a.status}
       {a.offline ? " unverified" : ""}
+      {a.codesSaved === false ? " codes-unsaved" : ""}
     </p>
   );
 }
@@ -71,5 +72,63 @@ describe("auth check on start", () => {
   test("a server error on a device that never signed in shows the sign-in screen", async () => {
     mount(problem(500));
     expect(await screen.findByText("anon")).toBeInTheDocument();
+  });
+});
+
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+
+const me = (id: string, username: string) =>
+  json(200, { user: { id, username, last_login_at: null }, recovery_codes_remaining: 8 });
+
+describe("another account on the same device", () => {
+  test("never inherits the previous account's local rows", async () => {
+    await setMeta(db, META.userId, "u1");
+    await db.meta.put({ key: "cursor", value: 41 });
+    await db.entries.put({ id: "e1", name: "Sam's oats" } as never);
+    mount(me("u2", "kim"));
+    expect(await screen.findByText("authed")).toBeInTheDocument();
+    expect(await db.entries.count()).toBe(0);
+    expect(await db.meta.get("cursor")).toBeUndefined();
+    expect((await db.meta.get(META.userId))?.value).toBe("u2");
+  });
+
+  test("keeps the local rows when the same account comes back", async () => {
+    await setMeta(db, META.userId, "u1");
+    await db.entries.put({ id: "e1", name: "Sam's oats" } as never);
+    mount(me("u1", "sam"));
+    expect(await screen.findByText("authed")).toBeInTheDocument();
+    expect(await db.entries.count()).toBe(1);
+  });
+
+  test("a device that never signed in keeps its rows for the first account", async () => {
+    await db.entries.put({ id: "e1", name: "Logged before signing in" } as never);
+    mount(me("u1", "sam"));
+    expect(await screen.findByText("authed")).toBeInTheDocument();
+    expect(await db.entries.count()).toBe(1);
+  });
+});
+
+describe("recovery codes status", () => {
+  test("an account that has not confirmed its codes is reported as such", async () => {
+    mount(
+      json(200, {
+        user: { id: "u1", username: "sam", last_login_at: null },
+        recovery_codes_remaining: 8,
+        recovery_codes_saved: false,
+      }),
+    );
+    expect(await screen.findByText("authed codes-unsaved")).toBeInTheDocument();
+  });
+
+  test("a confirmed account shows nothing", async () => {
+    mount(
+      json(200, {
+        user: { id: "u1", username: "sam", last_login_at: null },
+        recovery_codes_remaining: 8,
+        recovery_codes_saved: true,
+      }),
+    );
+    expect(await screen.findByText("authed")).toBeInTheDocument();
   });
 });

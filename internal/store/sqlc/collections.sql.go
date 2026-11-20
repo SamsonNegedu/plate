@@ -42,7 +42,7 @@ func (q *Queries) GetFavorite(ctx context.Context, arg GetFavoriteParams) (Favor
 }
 
 const getSavedMeal = `-- name: GetSavedMeal :one
-SELECT id, user_id, name, created_at, updated_at, deleted_at, server_seq FROM saved_meals WHERE id = ? AND user_id = ?
+SELECT id, user_id, name, created_at, updated_at, deleted_at, server_seq, servings FROM saved_meals WHERE id = ? AND user_id = ?
 `
 
 type GetSavedMealParams struct {
@@ -61,6 +61,7 @@ func (q *Queries) GetSavedMeal(ctx context.Context, arg GetSavedMealParams) (Sav
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ServerSeq,
+		&i.Servings,
 	)
 	return i, err
 }
@@ -150,7 +151,7 @@ func (q *Queries) ListAllFavorites(ctx context.Context, userID string) ([]Favori
 }
 
 const listAllSavedMeals = `-- name: ListAllSavedMeals :many
-SELECT id, user_id, name, created_at, updated_at, deleted_at, server_seq FROM saved_meals WHERE user_id = ? ORDER BY created_at, id
+SELECT id, user_id, name, created_at, updated_at, deleted_at, server_seq, servings FROM saved_meals WHERE user_id = ? ORDER BY created_at, id
 `
 
 func (q *Queries) ListAllSavedMeals(ctx context.Context, userID string) ([]SavedMeal, error) {
@@ -170,6 +171,7 @@ func (q *Queries) ListAllSavedMeals(ctx context.Context, userID string) ([]Saved
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.Servings,
 		); err != nil {
 			return nil, err
 		}
@@ -258,10 +260,10 @@ func (q *Queries) UpsertFavorite(ctx context.Context, arg UpsertFavoriteParams) 
 }
 
 const upsertSavedMeal = `-- name: UpsertSavedMeal :execrows
-INSERT INTO saved_meals (id, user_id, name, created_at, updated_at, deleted_at, server_seq)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO saved_meals (id, user_id, name, servings, created_at, updated_at, deleted_at, server_seq)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (id) DO UPDATE SET
-    name = excluded.name, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
+    name = excluded.name, servings = excluded.servings, updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
 WHERE saved_meals.user_id = excluded.user_id
 `
 
@@ -269,6 +271,7 @@ type UpsertSavedMealParams struct {
 	ID        string
 	UserID    string
 	Name      string
+	Servings  float64
 	CreatedAt string
 	UpdatedAt string
 	DeletedAt *string
@@ -280,6 +283,7 @@ func (q *Queries) UpsertSavedMeal(ctx context.Context, arg UpsertSavedMealParams
 		arg.ID,
 		arg.UserID,
 		arg.Name,
+		arg.Servings,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.DeletedAt,

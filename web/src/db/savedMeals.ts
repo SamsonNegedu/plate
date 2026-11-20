@@ -1,3 +1,4 @@
+import { RECIPE_BRAND, recipeNutrition } from "@/lib/recipe";
 import { uuidv7 } from "@/lib/uuid";
 import { entryBody, mealBody } from "@/sync/bodies";
 import { buildEntry } from "./entries";
@@ -11,6 +12,7 @@ export type ItemInput = Omit<SavedMealItem, "id" | "savedMealId" | "position">;
 export async function saveMeal(
   db: PlateDB,
   name: string,
+  servings: number,
   items: ItemInput[],
   id?: string,
   now: number = Date.now(),
@@ -24,6 +26,7 @@ export async function saveMeal(
       const meal: SavedMeal = {
         id: id ?? uuidv7(now),
         name: name.trim(),
+        servings,
         createdAt: existing?.createdAt ?? ts,
         updatedAt: ts,
         deletedAt: null,
@@ -71,49 +74,44 @@ export async function mealItems(db: PlateDB, mealId: string): Promise<SavedMealI
   );
 }
 
-/** Log every item of a saved meal as its own entry. Returns the new ids so one Undo can remove them all. */
-export async function logMeal(
+/**
+ * Log a recipe as one entry named after it. The snapshot is the recipe's nutrition per 100 g of ingredients, and a portion is
+ * the recipe's weight over its servings, so any number of portions (or a fraction) comes out exact. Returns the new id for Undo.
+ */
+export async function logRecipe(
   db: PlateDB,
   mealId: string,
   eatenOn: string,
   slot: Meal,
-  now: number = Date.now(),
-): Promise<string[]> {
+  portions: number,
+  opts: { now?: number; note?: string } = {},
+): Promise<string | null> {
+  const now = opts.now ?? Date.now();
+  const recipe = await db.savedMeals.get(mealId);
+  if (!recipe || recipe.deletedAt) return null;
   const items = await mealItems(db, mealId);
-  const ids: string[] = [];
+  if (items.length === 0 || !(portions > 0)) return null;
+  const n = recipeNutrition(items, recipe.servings);
+  const e: Entry = buildEntry(
+    {
+      eatenOn,
+      meal: slot,
+      foodId: null,
+      name: recipe.name,
+      brand: RECIPE_BRAND,
+      barcode: null,
+      amount: portions,
+      unit: "serving",
+      grams: portions * n.portionGrams,
+      ...(opts.note ? { note: opts.note } : {}),
+      ...n.per100,
+    },
+    now,
+  );
   await db.transaction("rw", [db.entries, db.outbox], async () => {
-    for (const [i, it] of items.entries()) {
-      const e: Entry = buildEntry(
-        {
-          eatenOn,
-          meal: slot,
-          foodId: it.foodId,
-          name: it.name,
-          brand: it.brand,
-          barcode: null,
-          amount: it.amount,
-          unit: it.unit,
-          grams: it.grams,
-          kcal: it.kcal,
-          protein: it.protein,
-          carbs: it.carbs,
-          fat: it.fat,
-          sugar: it.sugar,
-          satfat: it.satfat,
-          fiber: it.fiber,
-          salt: it.salt,
-        },
-        now + i,
-      );
-      await db.entries.put(e);
-      await enqueue(
-        db,
-        { entity: "entry", entityId: e.id, type: "upsert", data: entryBody(e) },
-        now + i,
-      );
-      ids.push(e.id);
-    }
+    await db.entries.put(e);
+    await enqueue(db, { entity: "entry", entityId: e.id, type: "upsert", data: entryBody(e) }, now);
   });
-  if (ids.length) emitLocalWrite();
-  return ids;
+  emitLocalWrite();
+  return e.id;
 }

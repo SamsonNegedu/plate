@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -26,7 +27,7 @@ import (
 )
 
 const (
-	testEmail    = "admin@example.com"
+	testUsername = "sam"
 	testPassword = "correct horse battery"
 )
 
@@ -63,6 +64,8 @@ type opts struct {
 	register func(huma.API, chi.Router)
 	dataDir  string
 	syncOff  bool
+	// signupOff turns open signup off, as PLATE_SIGNUP_ENABLED=false does.
+	signupOff bool
 	// imageClient replaces the image proxy's HTTP client so tests never reach the internet.
 	imageClient *http.Client
 	imagesDir   string
@@ -86,8 +89,7 @@ func newEnv(t *testing.T, o opts) *env {
 		t.Fatal(err)
 	}
 	ss := auth.NewSessionStore(d)
-	cfg := config.Config{AdminEmail: testEmail, AdminPassword: testPassword}
-	if err := auth.Bootstrap(t.Context(), cfg, d, ss, slog.New(slog.NewTextHandler(io.Discard, nil))); err != nil {
+	if _, _, err := auth.Register(t.Context(), d, testUsername, testPassword); err != nil {
 		t.Fatal(err)
 	}
 	return build(t, d, ss, o)
@@ -100,9 +102,13 @@ func build(t *testing.T, d *sql.DB, ss *auth.SessionStore, o opts) *env {
 	log := slog.New(slog.NewJSONHandler(logs, nil))
 	off := &fakeOFF{products: map[string]food.OFFProduct{}}
 	images := food.NewImages(d, food.ImagesConfig{Dir: filepath.Join(o.imageDir(), "images"), Client: o.imageClient})
-	a := NewAuth(ss)
+	pow, err := auth.NewPoW(4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := NewAuth(ss, pow)
 	h, _ := New(Deps{
-		Config:   config.Config{BaseURL: base, DataDir: o.dataDir, SyncEnabled: !o.syncOff},
+		Config:   config.Config{BaseURL: base, DataDir: o.dataDir, SyncEnabled: !o.syncOff, SignupEnabled: !o.signupOff},
 		Log:      log,
 		DB:       d,
 		Auth:     a,
@@ -143,17 +149,8 @@ func (e *env) do(method, target, body string, opts ...reqOpt) *httptest.Response
 	return rec
 }
 
-// reset clears the per-user API limiter so a test can exercise another limit in isolation.
-func (e *env) reset() { e.auth.Reads.Reset(userIDForTests(e)) }
-
-func userIDForTests(e *env) string {
-	var id string
-	_ = e.db.QueryRow(`SELECT id FROM users LIMIT 1`).Scan(&id)
-	return id
-}
-
-func loginBody(email, pw string) string {
-	b, _ := json.Marshal(map[string]string{"email": email, "password": pw})
+func loginBody(username, pw string) string {
+	b, _ := json.Marshal(map[string]string{"username": username, "password": pw})
 	return string(b)
 }
 
@@ -168,7 +165,7 @@ func sessionCookie(rec *httptest.ResponseRecorder) *http.Cookie {
 
 func (e *env) login(t *testing.T, opts ...reqOpt) *http.Cookie {
 	t.Helper()
-	rec := e.do("POST", "/api/v1/auth/login", loginBody(testEmail, testPassword), opts...)
+	rec := e.do("POST", "/api/v1/auth/login", loginBody(testUsername, testPassword), opts...)
 	c := sessionCookie(rec)
 	if rec.Code != 200 || c == nil {
 		t.Fatalf("login = %d %s", rec.Code, rec.Body)
@@ -228,7 +225,7 @@ func TestEveryAPIRouteIsPrivateByDefault(t *testing.T) {
 
 func TestLoginSetsHardenedCookieAndRecordsLastLogin(t *testing.T) {
 	e := newEnv(t, opts{})
-	rec := e.do("POST", "/api/v1/auth/login", loginBody("  Admin@Example.com ", testPassword))
+	rec := e.do("POST", "/api/v1/auth/login", loginBody("  SAM ", testPassword))
 	c := sessionCookie(rec)
 	if rec.Code != 200 || c == nil {
 		t.Fatalf("login = %d %s", rec.Code, rec.Body)
@@ -240,12 +237,12 @@ func TestLoginSetsHardenedCookieAndRecordsLastLogin(t *testing.T) {
 	me := e.do("GET", "/api/v1/auth/me", "", cookie(c))
 	var body struct {
 		User struct {
-			Email       string  `json:"email"`
+			Username    string  `json:"username"`
 			LastLoginAt *string `json:"last_login_at"`
 		} `json:"user"`
 	}
 	_ = json.Unmarshal(me.Body.Bytes(), &body)
-	if me.Code != 200 || body.User.Email != testEmail || body.User.LastLoginAt == nil {
+	if me.Code != 200 || body.User.Username != testUsername || body.User.LastLoginAt == nil {
 		t.Fatalf("me = %d %s", me.Code, me.Body)
 	}
 	if strings.Contains(me.Body.String(), "argon2") {
@@ -253,9 +250,9 @@ func TestLoginSetsHardenedCookieAndRecordsLastLogin(t *testing.T) {
 	}
 }
 
-func TestWrongPasswordAndUnknownEmailLookAlike(t *testing.T) {
+func TestWrongPasswordAndUnknownUsernameLookAlike(t *testing.T) {
 	e := newEnv(t, opts{})
-	a := e.do("POST", "/api/v1/auth/login", loginBody(testEmail, "wrong wrong wrong"))
+	a := e.do("POST", "/api/v1/auth/login", loginBody(testUsername, "wrong wrong wrong"))
 	b := e.do("POST", "/api/v1/auth/login", loginBody("nobody@example.com", "wrong wrong wrong"))
 	if a.Code != 401 || b.Code != 401 {
 		t.Fatalf("codes = %d, %d", a.Code, b.Code)
@@ -331,7 +328,7 @@ func TestExpiredSessionIs401(t *testing.T) {
 func TestLoginRotatesSessionAndIgnoresPlantedCookie(t *testing.T) {
 	e := newEnv(t, opts{})
 	planted := &http.Cookie{Name: auth.CookieName, Value: "attacker-chosen-token"}
-	rec := e.do("POST", "/api/v1/auth/login", loginBody(testEmail, testPassword), cookie(planted))
+	rec := e.do("POST", "/api/v1/auth/login", loginBody(testUsername, testPassword), cookie(planted))
 	c := sessionCookie(rec)
 	if c == nil || c.Value == "attacker-chosen-token" {
 		t.Fatalf("login must issue a fresh token, got %+v", c)
@@ -347,36 +344,37 @@ func TestLoginRotatesSessionAndIgnoresPlantedCookie(t *testing.T) {
 func TestLoginRateLimit(t *testing.T) {
 	e := newEnv(t, opts{})
 	var last *httptest.ResponseRecorder
-	for range 6 {
-		last = e.do("POST", "/api/v1/auth/login", loginBody(testEmail, "wrong wrong wrong"), remote("198.51.100.7:1234"))
+	for range 11 {
+		last = e.do("POST", "/api/v1/auth/login", loginBody(testUsername, "wrong wrong wrong"), remote("198.51.100.7:1234"))
 	}
 	if last.Code != 429 || last.Header().Get("Retry-After") == "" {
-		t.Fatalf("6th attempt = %d, Retry-After %q", last.Code, last.Header().Get("Retry-After"))
+		t.Fatalf("11th attempt on one account = %d, Retry-After %q", last.Code, last.Header().Get("Retry-After"))
 	}
-	if strings.Contains(strings.ToLower(last.Body.String()), "email") && strings.Contains(strings.ToLower(last.Body.String()), "wrong") {
+	if strings.Contains(strings.ToLower(last.Body.String()), "username") && strings.Contains(strings.ToLower(last.Body.String()), "wrong") {
 		t.Fatal("the 429 must not say which field was wrong")
 	}
-	other := e.do("POST", "/api/v1/auth/login", loginBody(testEmail, testPassword), remote("203.0.113.1:1234"))
-	if other.Code != 200 {
-		t.Fatalf("a different IP is not limited yet: %d", other.Code)
+	other := e.do("POST", "/api/v1/auth/login", loginBody("kim", "wrong wrong wrong"), remote("203.0.113.1:1234"))
+	if other.Code != 401 {
+		t.Fatalf("another account from another IP is not limited: %d", other.Code)
 	}
 }
 
 func TestForgedForwardedIPDoesNotBypassTheLimit(t *testing.T) {
 	e := newEnv(t, opts{})
 	var last *httptest.ResponseRecorder
-	for i := range 6 {
-		last = e.do("POST", "/api/v1/auth/login", loginBody("nobody"+string(rune('a'+i))+"@example.com", "wrong wrong wrong"),
-			remote("198.51.100.7:1234"), header("CF-Connecting-IP", "10.9.9."+string(rune('1'+i))), header("X-Forwarded-For", "1.2.3."+string(rune('1'+i))))
+	for i := range 31 {
+		n := strconv.Itoa(i)
+		last = e.do("POST", "/api/v1/auth/login", loginBody("nobody"+n, "wrong wrong wrong"),
+			remote("198.51.100.7:1234"), header("CF-Connecting-IP", "10.9.9."+n), header("X-Forwarded-For", "1.2.3."+n))
 	}
 	if last.Code != 429 {
-		t.Fatalf("6th attempt with rotating spoofed headers = %d, want 429", last.Code)
+		t.Fatalf("31st attempt with rotating spoofed headers = %d, want 429", last.Code)
 	}
 }
 
 func TestMutationWithForeignOriginIs403(t *testing.T) {
 	e := newEnv(t, opts{})
-	rec := e.do("POST", "/api/v1/auth/login", loginBody(testEmail, testPassword), header("Origin", "https://evil.example"))
+	rec := e.do("POST", "/api/v1/auth/login", loginBody(testUsername, testPassword), header("Origin", "https://evil.example"))
 	if rec.Code != 403 || !strings.Contains(rec.Body.String(), "bad_origin") {
 		t.Fatalf("got %d %s", rec.Code, rec.Body)
 	}
@@ -404,7 +402,7 @@ func TestLogoutAllRevokesEveryDevice(t *testing.T) {
 
 func TestAccessHeaderNeverAuthenticates(t *testing.T) {
 	e := newEnv(t, opts{})
-	rec := e.do("GET", "/api/v1/auth/me", "", header("Cf-Access-Authenticated-User-Email", testEmail), remote("172.18.0.5:1"))
+	rec := e.do("GET", "/api/v1/auth/me", "", header("Cf-Access-Authenticated-User-Email", testUsername), remote("172.18.0.5:1"))
 	if rec.Code != 401 {
 		t.Fatalf("an identity header authenticated the request: %d", rec.Code)
 	}
@@ -414,7 +412,7 @@ func TestLogsNeverContainSecrets(t *testing.T) {
 	e := newEnv(t, opts{})
 	c := e.login(t)
 	e.do("GET", "/api/v1/auth/me?token=hunter2", "", cookie(c))
-	e.do("POST", "/api/v1/auth/login", loginBody(testEmail, "my-secret-wrong-pw"))
+	e.do("POST", "/api/v1/auth/login", loginBody(testUsername, "my-secret-wrong-pw"))
 	out := e.logs.String()
 	for _, secret := range []string{testPassword, "my-secret-wrong-pw", c.Value, "hunter2", "198.51.100", "192.0.2.1"} {
 		if strings.Contains(out, secret) {

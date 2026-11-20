@@ -1,5 +1,13 @@
 import { z } from "zod";
-import type { Entry, Favorite, Food, SavedMeal, SavedMealItem, Settings } from "@/db/types";
+import type {
+  Entry,
+  Favorite,
+  Food,
+  HealthRecord,
+  SavedMeal,
+  SavedMealItem,
+  Settings,
+} from "@/db/types";
 import { searchName } from "@/lib/searchName";
 
 /** The server's JSON is snake_case and untrusted. Everything is validated here and mapped to local rows. */
@@ -79,9 +87,42 @@ export const settingsDoc = z.object({
   protein_g: num,
   carbs_g: num,
   fat_g: num,
+  fiber_g: num.optional().default(0),
   day_start_hour: num,
   theme: z.enum(["auto", "light", "dark"]),
+  weight_goal_kg: nullableNum,
+  med_name: nullableText,
+  med_interval_days: nullableNum,
+  med_started_on: nullableText,
+  med_supply_doses: nullableNum,
+  med_supply_as_of: nullableText,
   updated_at: z.string(),
+  server_seq: num,
+});
+
+export const healthDoc = z.object({
+  id: z.string(),
+  kind: z.enum([
+    "weight",
+    "waist",
+    "hips",
+    "chest",
+    "arm",
+    "thigh",
+    "neck",
+    "appetite",
+    "nausea",
+    "dose",
+  ]),
+  recorded_on: z.string(),
+  recorded_at: z.string(),
+  value: num,
+  medication: text,
+  site: text,
+  note: text,
+  created_at: z.string(),
+  updated_at: z.string(),
+  deleted_at: nullableText,
   server_seq: num,
 });
 
@@ -100,6 +141,7 @@ const mealItemDoc = z.object({
 export const savedMealDoc = z.object({
   id: z.string(),
   name: z.string(),
+  servings: num.optional().default(1),
   items: z.array(mealItemDoc),
   created_at: z.string(),
   updated_at: z.string(),
@@ -185,9 +227,33 @@ export function toSettings(userId: string, d: z.infer<typeof settingsDoc>): Sett
     proteinG: d.protein_g,
     carbsG: d.carbs_g,
     fatG: d.fat_g,
+    fiberG: d.fiber_g,
     dayStartHour: d.day_start_hour,
     theme: d.theme,
+    weightGoalKg: d.weight_goal_kg,
+    medName: d.med_name,
+    medIntervalDays: d.med_interval_days,
+    medStartedOn: d.med_started_on,
+    medSupplyDoses: d.med_supply_doses,
+    medSupplyAsOf: d.med_supply_as_of,
     updatedAt: d.updated_at,
+    serverSeq: d.server_seq,
+  };
+}
+
+export function toHealth(d: z.infer<typeof healthDoc>): HealthRecord {
+  return {
+    id: d.id,
+    kind: d.kind,
+    recordedOn: d.recorded_on,
+    recordedAt: d.recorded_at,
+    value: d.value,
+    medication: d.medication,
+    site: d.site,
+    note: d.note,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+    deletedAt: d.deleted_at,
     serverSeq: d.server_seq,
   };
 }
@@ -200,6 +266,7 @@ export function toMeal(d: z.infer<typeof savedMealDoc>): {
     meal: {
       id: d.id,
       name: d.name,
+      servings: d.servings,
       createdAt: d.created_at,
       updatedAt: d.updated_at,
       deletedAt: d.deleted_at,

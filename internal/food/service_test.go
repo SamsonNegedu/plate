@@ -62,7 +62,7 @@ func newFx(t *testing.T) *fx {
 		t.Fatal(err)
 	}
 	r := store.NewRepo(d)
-	if err := r.CreateUser(ctx, domain.User{ID: uid, Email: "a@b.c", PasswordHash: "h", CreatedAt: stamp(now), UpdatedAt: stamp(now)}); err != nil {
+	if err := r.CreateUser(ctx, domain.User{ID: uid, Username: "a@b.c", PasswordHash: "h", CreatedAt: stamp(now), UpdatedAt: stamp(now)}); err != nil {
 		t.Fatal(err)
 	}
 	off := &fakeOFF{products: map[string]OFFProduct{}}

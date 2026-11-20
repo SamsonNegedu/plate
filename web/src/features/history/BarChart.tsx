@@ -1,11 +1,29 @@
 import { useState } from "react";
+import { cn } from "@/lib/cn";
 import { shortLabel } from "@/lib/dates";
-import { formatKcal } from "@/lib/numbers";
-import { type DayPoint, labelEvery, niceMax, yFor } from "./stats";
+import {
+  amountText,
+  type DayPoint,
+  formatMetric,
+  labelEvery,
+  METRICS,
+  type Metric,
+  unitOf,
+  niceMax,
+  valueOf,
+  monotonePath,
+  yFor,
+} from "./stats";
 
 interface Props {
   days: DayPoint[];
-  goal: number;
+  metric: Metric;
+  /** Rolling 7-day mean, one per day; null breaks the line. */
+  trend: Array<number | null>;
+  /** Null when there is no goal: no line is drawn. */
+  goal: number | null;
+  /** Days a medication dose was taken; each gets a small mark under the axis. */
+  doseDays?: ReadonlySet<string>;
   today: string;
   onOpen: (date: string) => void;
 }
@@ -17,27 +35,44 @@ const RIGHT = 8;
 const TOP = 14;
 const BOTTOM = 178;
 const GAP = 2;
+/** A bar never gets wider than this, so a 7-day chart is not made of slabs. */
+const MAX_BAR = 20;
 
 /**
  * One series, one y-axis, zero baseline. Bars have 4 px rounded top corners and a 2 px gap. The goal is a dashed line with a
  * surface halo. Red marks over-goal days and is always also stated in words (tooltip, table, aria-label).
  */
-export function BarChart({ days, goal, today, onOpen }: Props) {
+export function BarChart({ days, metric, trend, goal, doseDays, today, onOpen }: Props) {
   const [active, setActive] = useState<string | null>(null);
-  const max = niceMax(Math.max(goal * 1.1, ...days.map((d) => d.kcal * 1.08)));
+  const limit = metric === "kcal";
+  const name = METRICS.find((m) => m.key === metric)?.label ?? "";
+  const values = days.map((d) => valueOf(d, metric));
+  const max = niceMax(
+    Math.max(
+      (goal ?? 0) * 1.1,
+      ...values.map((v) => (v ?? 0) * 1.08),
+      ...trend.map((v) => (v ?? 0) * 1.08),
+    ),
+    metric,
+  );
   const slot = (W - LEFT - RIGHT) / days.length;
-  const barW = Math.max(2, slot - GAP);
+  const barW = Math.min(MAX_BAR, Math.max(2, slot - GAP));
   const every = labelEvery(days.length);
   const ticks = [0, max / 2, max];
-  const goalY = yFor(goal, max, TOP, BOTTOM);
+  const goalY = goal === null ? 0 : yFor(goal, max, TOP, BOTTOM);
   const activeDay = days.find((d) => d.date === active);
+  const legend = `${goal === null ? "" : "Dashed line: your goal. "}${doseDays && doseDays.size > 0 ? "▲ marks a dose day. " : ""}${goal === null ? "The line" : "Solid line"} is the 7-day average. Tap or focus a bar for details.`;
+  const trendEnd = trendSegments(trend, slot, max).at(-1)?.at(-1);
 
   return (
     <figure>
+      <p className="mb-1 px-1 text-meta font-medium text-ink-2">
+        {`${name}, ${unitOf(metric)} a day`}
+      </p>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="group"
-        aria-label={`Calories per day for the last ${days.length} days. Goal ${formatKcal(goal)}.`}
+        aria-label={`${name} per day for the last ${days.length} days.${goal === null ? "" : ` Goal ${formatMetric(goal, metric)}.`}`}
         className="block h-auto w-full overflow-visible"
       >
         {ticks.map((t) => (
@@ -55,17 +90,18 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
               textAnchor="end"
               className="fill-ink-3 font-sans text-axis"
             >
-              {formatKcal(t)}
+              {formatMetric(t, metric)}
             </text>
           </g>
         ))}
 
         {days.map((d, i) => {
-          const x = LEFT + i * slot + GAP / 2;
-          const over = d.kcal > goal;
-          const y = yFor(d.kcal, max, TOP, BOTTOM);
+          const value = values[i] ?? null;
+          const x = LEFT + i * slot + (slot - barW) / 2;
+          const over = limit && goal !== null && value !== null && value > goal;
+          const y = yFor(value ?? 0, max, TOP, BOTTOM);
           const h = BOTTOM - y;
-          const label = `${shortLabel(d.date)}, ${formatKcal(d.kcal)} kcal, ${d.count} ${d.count === 1 ? "entry" : "entries"}${over ? ", over goal" : ""}`;
+          const label = describe(d, value, metric, goal, doseDays?.has(d.date) ?? false);
           return (
             <g
               key={d.date}
@@ -96,9 +132,9 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
                     : "fill-transparent group-focus-visible:fill-accent group-focus-visible:stroke-accent group-focus-visible:stroke-[1.5px] group-focus-visible:opacity-[0.22]"
                 }
               />
-              {d.kcal > 0 ? (
+              {value !== null && value > 0 ? (
                 <path
-                  d={roundedTop(x, y, barW, h, 4)}
+                  d={roundedTop(x, y, barW, h, 3)}
                   className={over ? "fill-red" : "fill-accent"}
                 />
               ) : null}
@@ -109,28 +145,55 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
                   textAnchor="middle"
                   className="fill-ink font-sans text-chart font-semibold"
                 >
-                  {formatKcal(d.kcal)}
+                  {value === null ? "" : formatMetric(value, metric)}
                 </text>
+              ) : null}
+              {doseDays?.has(d.date) ? (
+                <path
+                  d={`M${x + barW / 2 - 4} ${BOTTOM + 11}L${x + barW / 2 + 4} ${BOTTOM + 11}L${x + barW / 2} ${BOTTOM + 4}Z`}
+                  className="fill-ink"
+                />
               ) : null}
             </g>
           );
         })}
 
-        <line
-          x1={LEFT}
-          x2={W - RIGHT}
-          y1={goalY}
-          y2={goalY}
-          className="stroke-ink-2 stroke-1 [stroke-dasharray:4_3]"
-        />
-        <text
-          x={W - RIGHT - 2}
-          y={goalY - 5}
-          textAnchor="end"
-          className="fill-ink-2 stroke-surface stroke-[4px] font-sans text-axis [paint-order:stroke] [stroke-linejoin:round]"
-        >
-          {`goal ${formatKcal(goal)}`}
-        </text>
+        {trendSegments(trend, slot, max).map((seg) => (
+          <path
+            key={seg[0]?.join(",")}
+            d={monotonePath(seg)}
+            fill="none"
+            className="stroke-ink stroke-[1.5px] [stroke-linecap:round] [stroke-linejoin:round]"
+          />
+        ))}
+        {trendEnd ? (
+          <circle
+            cx={trendEnd[0]}
+            cy={trendEnd[1]}
+            r={3}
+            className="fill-ink stroke-surface stroke-[1.5px]"
+          />
+        ) : null}
+
+        {goal === null ? null : (
+          <>
+            <line
+              x1={LEFT}
+              x2={W - RIGHT}
+              y1={goalY}
+              y2={goalY}
+              className="stroke-ink-2 stroke-1 [stroke-dasharray:4_3]"
+            />
+            <text
+              x={LEFT - 6}
+              y={goalY + 4}
+              textAnchor="end"
+              className="fill-ink font-sans text-axis font-semibold"
+            >
+              {formatMetric(goal, metric)}
+            </text>
+          </>
+        )}
 
         {days.map((d, i) =>
           (days.length - 1 - i) % every === 0 ? (
@@ -146,13 +209,74 @@ export function BarChart({ days, goal, today, onOpen }: Props) {
           ) : null,
         )}
       </svg>
-      <figcaption className="mt-1.5 min-h-5.5 text-meta text-ink-2" aria-live="polite">
-        {activeDay
-          ? `${shortLabel(activeDay.date)}: ${formatKcal(activeDay.kcal)} kcal, ${activeDay.count} ${activeDay.count === 1 ? "entry" : "entries"}${activeDay.kcal > goal ? ", over goal" : ""}`
-          : "Tap or focus a bar for details."}
+      <figcaption className="mt-1.5 grid text-meta text-ink-2" aria-live="polite">
+        {/* Both texts sit in one cell, so the card keeps the taller one's height and never jumps when a bar is focused. */}
+        <span
+          className={cn("col-start-1 row-start-1", activeDay && "invisible")}
+          aria-hidden={activeDay ? true : undefined}
+        >
+          {legend}
+        </span>
+        <span
+          className={cn("col-start-1 row-start-1", !activeDay && "invisible")}
+          aria-hidden={activeDay ? undefined : true}
+        >
+          {activeDay
+            ? describe(
+                activeDay,
+                valueOf(activeDay, metric),
+                metric,
+                goal,
+                doseDays?.has(activeDay.date) ?? false,
+              )
+            : ""}
+        </span>
       </figcaption>
     </figure>
   );
+}
+
+function describe(
+  d: DayPoint,
+  value: number | null,
+  metric: Metric,
+  goal: number | null,
+  dose: boolean,
+): string {
+  const entries = `${d.count} ${d.count === 1 ? "entry" : "entries"}`;
+  if (d.count === 0) return `${shortLabel(d.date)}, not logged${dose ? ", dose day" : ""}`;
+  if (value === null) {
+    const name = METRICS.find((m) => m.key === metric)?.label.toLowerCase();
+    return `${shortLabel(d.date)}, no ${name} reported, ${entries}`;
+  }
+  const parts = [shortLabel(d.date), amountText(value, metric), entries];
+  if (d.partial.includes(metric)) parts.push("some entries report none");
+  if (goal !== null) {
+    if (metric === "kcal" && value > goal) parts.push("over goal");
+    if (metric !== "kcal" && value >= goal) parts.push("goal reached");
+  }
+  if (dose) parts.push("dose day");
+  return parts.join(", ");
+}
+
+/** The 7-day average as runs of points; a day with no value ends a run, so the line breaks instead of dipping to zero. */
+function trendSegments(
+  trend: Array<number | null>,
+  slot: number,
+  max: number,
+): Array<Array<[number, number]>> {
+  const runs: Array<Array<[number, number]>> = [];
+  let run: Array<[number, number]> = [];
+  trend.forEach((v, i) => {
+    if (v === null) {
+      if (run.length > 0) runs.push(run);
+      run = [];
+      return;
+    }
+    run.push([LEFT + i * slot + slot / 2, yFor(v, max, TOP, BOTTOM)]);
+  });
+  if (run.length > 0) runs.push(run);
+  return runs;
 }
 
 /** A bar anchored to the baseline with only its top corners rounded. */

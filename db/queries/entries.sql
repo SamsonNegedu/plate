@@ -32,3 +32,6 @@ SELECT * FROM entries WHERE user_id = ? AND server_seq > ? ORDER BY server_seq L
 
 -- name: ListAllEntries :many
 SELECT * FROM entries WHERE user_id = ? ORDER BY eaten_on, created_at, id;
+
+-- name: CountLiveEntries :one
+SELECT count(*) FROM entries WHERE user_id = ? AND deleted_at IS NULL;

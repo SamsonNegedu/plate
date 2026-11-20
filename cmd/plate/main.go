@@ -99,11 +99,15 @@ func run() error {
 		Dir:        filepath.Join(cfg.DataDir, "images"),
 		CacheBytes: cfg.ImageCacheMB << 20,
 	})
+	pow, err := auth.NewPoW(cfg.SignupPoWBits)
+	if err != nil {
+		return err
+	}
 	handler, _ := httpapi.New(httpapi.Deps{
 		Config: cfg,
 		Log:    log,
 		DB:     db,
-		Auth:   httpapi.NewAuth(sessions),
+		Auth:   httpapi.NewAuth(sessions, pow),
 		Food:   foods,
 		Images: images,
 		Web:    webui.Handler(),

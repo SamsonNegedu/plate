@@ -134,3 +134,63 @@ export function meterFill(
     left: Math.abs(left),
   };
 }
+
+export type NutrientKey = "protein" | "carbs" | "fat" | "sugar" | "satfat" | "fiber" | "salt";
+const NUTRIENT_KEYS: readonly NutrientKey[] = [
+  "protein",
+  "carbs",
+  "fat",
+  "sugar",
+  "satfat",
+  "fiber",
+  "salt",
+];
+
+export interface NutrientTotals {
+  kcal: number;
+  /** Null when no entry reported it: not 0. */
+  protein: number | null;
+  carbs: number | null;
+  fat: number | null;
+  sugar: number | null;
+  satfat: number | null;
+  fiber: number | null;
+  salt: number | null;
+  count: number;
+  /** Nutrients some entries report and others do not, so the total undercounts them. */
+  partial: NutrientKey[];
+}
+
+/** The eaten amount of every nutrient across entries. A nutrient is null only when nothing reported it. */
+export function nutrientTotals(
+  entries: Array<Pick<Entry, "kcal" | "grams" | "deletedAt"> & Record<NutrientKey, number | null>>,
+): NutrientTotals {
+  let kcal = 0;
+  let count = 0;
+  const sums: Record<NutrientKey, number | null> = {
+    protein: null,
+    carbs: null,
+    fat: null,
+    sugar: null,
+    satfat: null,
+    fiber: null,
+    salt: null,
+  };
+  const missing = new Set<NutrientKey>();
+  for (const e of entries) {
+    if (e.deletedAt) continue;
+    count++;
+    kcal += (e.kcal * e.grams) / 100;
+    for (const k of NUTRIENT_KEYS) {
+      const v = e[k];
+      if (v === null) missing.add(k);
+      else sums[k] = (sums[k] ?? 0) + (v * e.grams) / 100;
+    }
+  }
+  return {
+    kcal,
+    ...sums,
+    count,
+    partial: NUTRIENT_KEYS.filter((k) => missing.has(k) && sums[k] !== null),
+  };
+}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -27,7 +28,7 @@ func populate(t *testing.T, f *fx) {
 	if err := writeFoodTx(ctx, f, custom); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := f.svc.PutSettings(ctx, uid, SettingsBody{GoalKcal: 2100, ProteinG: 140, DayStartHour: 4, Theme: "dark"}); err != nil {
+	if _, err := f.svc.PutSettings(ctx, uid, SettingsBody{GoalKcal: 2100, ProteinG: 140, FiberG: 30, DayStartHour: 4, Theme: "dark", WeightGoalKg: ptr(78.5), MedName: ptr("Mounjaro"), MedIntervalDays: ptr(int64(7))}); err != nil {
 		t.Fatal(err)
 	}
 	b := body()
@@ -44,7 +45,7 @@ func populate(t *testing.T, f *fx) {
 	}
 	err := store.InTx(ctx, f.db, func(r *store.Repo) error {
 		m := domain.SavedMeal{
-			ID: mealID, UserID: uid, Name: "Breakfast", CreatedAt: stamp(t0), UpdatedAt: stamp(t0),
+			ID: mealID, UserID: uid, Name: "Breakfast", Servings: 2, CreatedAt: stamp(t0), UpdatedAt: stamp(t0),
 			Items: []domain.SavedMealItem{{
 				ID: uuid.Must(uuid.NewV7()).String(), FoodID: ptr(food1), Name: "Oats", Amount: 40, Unit: domain.Gram, Grams: 40,
 				Snapshot: domain.Nutrients{Kcal: 370}, Position: 0,
@@ -52,6 +53,16 @@ func populate(t *testing.T, f *fx) {
 		}
 		if err := writeMeal(ctx, r, m, "upsert", t0); err != nil {
 			return err
+		}
+		for i, h := range []domain.HealthRecord{
+			{ID: uuid.Must(uuid.NewV7()).String(), Kind: domain.HealthWeight, Value: 82.4},
+			{ID: uuid.Must(uuid.NewV7()).String(), Kind: domain.HealthDose, Value: 2.5, Medication: "Mounjaro", Site: "left thigh"},
+		} {
+			h.UserID, h.RecordedOn, h.RecordedAt = uid, "2026-11-01", "2026-11-01T08:00:00Z"
+			h.CreatedAt, h.UpdatedAt = stamp(t0), stamp(t0)
+			if _, err := writeHealth(ctx, r, h, "upsert", t0.Add(time.Duration(i)*time.Second)); err != nil {
+				return err
+			}
 		}
 		return writeFavorite(ctx, r, domain.Favorite{UserID: uid, FoodID: food1, CreatedAt: stamp(t0), UpdatedAt: stamp(t0)}, "upsert", t0)
 	})
@@ -136,6 +147,18 @@ func TestRoundTripIntoAFreshDatabasePreservesEverything(t *testing.T) {
 	}
 	if len(got.SavedMeals) != 1 || len(got.SavedMeals[0].Items) != 1 || len(got.Favorites) != 1 || len(got.Foods) != 1 {
 		t.Fatalf("collections lost: %+v", got)
+	}
+	if len(got.HealthRecords) != 2 || got.HealthRecords[1].Medication != "Mounjaro" {
+		t.Fatalf("health records lost: %+v", got.HealthRecords)
+	}
+	if got.Settings.FiberG != 30 {
+		t.Fatalf("fibre target lost: %+v", got.Settings)
+	}
+	if got.Settings.MedName == nil || *got.Settings.MedName != "Mounjaro" || got.Settings.WeightGoalKg == nil || *got.Settings.WeightGoalKg != 78.5 {
+		t.Fatalf("medication plan lost: %+v", got.Settings)
+	}
+	if got.SavedMeals[0].Servings != 2 {
+		t.Fatalf("recipe servings = %v, want 2", got.SavedMeals[0].Servings)
 	}
 	if got.Entries[0].Protein != nil {
 		t.Fatal("null nutrient turned into a value")

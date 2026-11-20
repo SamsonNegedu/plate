@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countUnusedRecoveryCodes = `-- name: CountUnusedRecoveryCodes :one
+SELECT count(*) FROM recovery_codes WHERE user_id = ? AND used_at IS NULL
+`
+
+func (q *Queries) CountUnusedRecoveryCodes(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUnusedRecoveryCodes, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUsers = `-- name: CountUsers :one
 SELECT count(*) FROM users
 `
@@ -20,44 +31,40 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const getFirstUser = `-- name: GetFirstUser :one
-SELECT id, email, password_hash, created_at, updated_at, last_login_at FROM users ORDER BY created_at LIMIT 1
+const deleteRecoveryCodes = `-- name: DeleteRecoveryCodes :exec
+DELETE FROM recovery_codes WHERE user_id = ?
 `
 
-func (q *Queries) GetFirstUser(ctx context.Context) (User, error) {
-	row := q.db.QueryRowContext(ctx, getFirstUser)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.LastLoginAt,
-	)
-	return i, err
+func (q *Queries) DeleteRecoveryCodes(ctx context.Context, userID string) error {
+	_, err := q.db.ExecContext(ctx, deleteRecoveryCodes, userID)
+	return err
 }
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password_hash, created_at, updated_at, last_login_at FROM users WHERE email = ?
+const deleteUser = `-- name: DeleteUser :execrows
+DELETE FROM users WHERE id = ?
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.LastLoginAt,
-	)
-	return i, err
+func (q *Queries) DeleteUser(ctx context.Context, id string) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteUser, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const getCodesAcknowledged = `-- name: GetCodesAcknowledged :one
+SELECT codes_acknowledged_at FROM users WHERE id = ?
+`
+
+func (q *Queries) GetCodesAcknowledged(ctx context.Context, id string) (*string, error) {
+	row := q.db.QueryRowContext(ctx, getCodesAcknowledged, id)
+	var codes_acknowledged_at *string
+	err := row.Scan(&codes_acknowledged_at)
+	return codes_acknowledged_at, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, password_hash, created_at, updated_at, last_login_at FROM users WHERE id = ?
+SELECT id, username, password_hash, created_at, updated_at, last_login_at, codes_acknowledged_at FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
@@ -65,22 +72,57 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Email,
+		&i.Username,
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LastLoginAt,
+		&i.CodesAcknowledgedAt,
 	)
 	return i, err
 }
 
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, username, password_hash, created_at, updated_at, last_login_at, codes_acknowledged_at FROM users WHERE username = ?
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.PasswordHash,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LastLoginAt,
+		&i.CodesAcknowledgedAt,
+	)
+	return i, err
+}
+
+const insertRecoveryCode = `-- name: InsertRecoveryCode :exec
+INSERT INTO recovery_codes (user_id, code_hash, created_at) VALUES (?, ?, ?)
+`
+
+type InsertRecoveryCodeParams struct {
+	UserID    string
+	CodeHash  []byte
+	CreatedAt string
+}
+
+func (q *Queries) InsertRecoveryCode(ctx context.Context, arg InsertRecoveryCodeParams) error {
+	_, err := q.db.ExecContext(ctx, insertRecoveryCode, arg.UserID, arg.CodeHash, arg.CreatedAt)
+	return err
+}
+
 const insertUser = `-- name: InsertUser :exec
-INSERT INTO users (id, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
+INSERT INTO users (id, username, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)
 `
 
 type InsertUserParams struct {
 	ID           string
-	Email        string
+	Username     string
 	PasswordHash string
 	CreatedAt    string
 	UpdatedAt    string
@@ -89,11 +131,52 @@ type InsertUserParams struct {
 func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) error {
 	_, err := q.db.ExecContext(ctx, insertUser,
 		arg.ID,
-		arg.Email,
+		arg.Username,
 		arg.PasswordHash,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
+	return err
+}
+
+const listUnusedRecoveryHashes = `-- name: ListUnusedRecoveryHashes :many
+SELECT code_hash FROM recovery_codes WHERE user_id = ? AND used_at IS NULL
+`
+
+func (q *Queries) ListUnusedRecoveryHashes(ctx context.Context, userID string) ([][]byte, error) {
+	rows, err := q.db.QueryContext(ctx, listUnusedRecoveryHashes, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := [][]byte{}
+	for rows.Next() {
+		var code_hash []byte
+		if err := rows.Scan(&code_hash); err != nil {
+			return nil, err
+		}
+		items = append(items, code_hash)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setCodesAcknowledged = `-- name: SetCodesAcknowledged :exec
+UPDATE users SET codes_acknowledged_at = ? WHERE id = ?
+`
+
+type SetCodesAcknowledgedParams struct {
+	CodesAcknowledgedAt *string
+	ID                  string
+}
+
+func (q *Queries) SetCodesAcknowledged(ctx context.Context, arg SetCodesAcknowledgedParams) error {
+	_, err := q.db.ExecContext(ctx, setCodesAcknowledged, arg.CodesAcknowledgedAt, arg.ID)
 	return err
 }
 
@@ -123,6 +206,24 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, updateUserPassword, arg.PasswordHash, arg.UpdatedAt, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const useRecoveryCode = `-- name: UseRecoveryCode :execrows
+UPDATE recovery_codes SET used_at = ? WHERE user_id = ? AND code_hash = ? AND used_at IS NULL
+`
+
+type UseRecoveryCodeParams struct {
+	UsedAt   *string
+	UserID   string
+	CodeHash []byte
+}
+
+func (q *Queries) UseRecoveryCode(ctx context.Context, arg UseRecoveryCodeParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, useRecoveryCode, arg.UsedAt, arg.UserID, arg.CodeHash)
 	if err != nil {
 		return 0, err
 	}

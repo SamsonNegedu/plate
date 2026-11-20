@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"plate/internal/domain"
 	"plate/internal/store/sqlc"
@@ -37,26 +38,22 @@ func (r *Repo) CountUsers(ctx context.Context) (int64, error) {
 	return n, nil
 }
 
+// CreateUser inserts a user. A taken username returns domain.ErrConflict.
 func (r *Repo) CreateUser(ctx context.Context, u domain.User) error {
 	err := r.q.InsertUser(ctx, sqlc.InsertUserParams{
-		ID: u.ID, Email: u.Email, PasswordHash: u.PasswordHash, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
+		ID: u.ID, Username: u.Username, PasswordHash: u.PasswordHash, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt,
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed: users.username") {
+			return fmt.Errorf("username %q: %w", u.Username, domain.ErrConflict)
+		}
 		return fmt.Errorf("inserting user: %w", err)
 	}
 	return nil
 }
 
-func (r *Repo) FirstUser(ctx context.Context) (domain.User, error) {
-	u, err := r.q.GetFirstUser(ctx)
-	if err != nil {
-		return domain.User{}, notFound(err, "user")
-	}
-	return toUser(u), nil
-}
-
-func (r *Repo) UserByEmail(ctx context.Context, email string) (domain.User, error) {
-	u, err := r.q.GetUserByEmail(ctx, email)
+func (r *Repo) UserByUsername(ctx context.Context, username string) (domain.User, error) {
+	u, err := r.q.GetUserByUsername(ctx, username)
 	if err != nil {
 		return domain.User{}, notFound(err, "user")
 	}
@@ -72,6 +69,91 @@ func (r *Repo) SetPassword(ctx context.Context, id, hash, now string) error {
 		return fmt.Errorf("user %s: %w", id, domain.ErrNotFound)
 	}
 	return nil
+}
+
+// DeleteUser removes the account and, through foreign keys, everything it owns.
+func (r *Repo) DeleteUser(ctx context.Context, id string) error {
+	n, err := r.q.DeleteUser(ctx, id)
+	if err != nil {
+		return fmt.Errorf("deleting user: %w", err)
+	}
+	if n == 0 {
+		return fmt.Errorf("user %s: %w", id, domain.ErrNotFound)
+	}
+	return nil
+}
+
+// ReplaceRecoveryCodes swaps every code the user has for the given hashes. Call it inside a transaction.
+func (r *Repo) ReplaceRecoveryCodes(ctx context.Context, userID string, hashes [][]byte, now string) error {
+	if err := r.q.DeleteRecoveryCodes(ctx, userID); err != nil {
+		return fmt.Errorf("clearing recovery codes: %w", err)
+	}
+	if err := r.q.SetCodesAcknowledged(ctx, sqlc.SetCodesAcknowledgedParams{ID: userID}); err != nil {
+		return fmt.Errorf("clearing acknowledgement: %w", err)
+	}
+	for _, h := range hashes {
+		if err := r.q.InsertRecoveryCode(ctx, sqlc.InsertRecoveryCodeParams{UserID: userID, CodeHash: h, CreatedAt: now}); err != nil {
+			return fmt.Errorf("storing recovery code: %w", err)
+		}
+	}
+	return nil
+}
+
+// CodesAcknowledged reports whether the person confirmed they saved their current recovery codes.
+func (r *Repo) CodesAcknowledged(ctx context.Context, userID string) (bool, error) {
+	at, err := r.q.GetCodesAcknowledged(ctx, userID)
+	if err != nil {
+		return false, notFound(err, "user")
+	}
+	return at != nil, nil
+}
+
+func (r *Repo) AcknowledgeCodes(ctx context.Context, userID, now string) error {
+	if err := r.q.SetCodesAcknowledged(ctx, sqlc.SetCodesAcknowledgedParams{CodesAcknowledgedAt: &now, ID: userID}); err != nil {
+		return fmt.Errorf("acknowledging recovery codes: %w", err)
+	}
+	return nil
+}
+
+func (r *Repo) UnusedRecoveryHashes(ctx context.Context, userID string) ([][]byte, error) {
+	hs, err := r.q.ListUnusedRecoveryHashes(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("listing recovery codes: %w", err)
+	}
+	return hs, nil
+}
+
+// UseRecoveryCode marks one code spent. It reports false when the code was already used or never existed.
+func (r *Repo) UseRecoveryCode(ctx context.Context, userID string, hash []byte, now string) (bool, error) {
+	n, err := r.q.UseRecoveryCode(ctx, sqlc.UseRecoveryCodeParams{UsedAt: &now, UserID: userID, CodeHash: hash})
+	if err != nil {
+		return false, fmt.Errorf("spending recovery code: %w", err)
+	}
+	return n == 1, nil
+}
+
+func (r *Repo) CountRecoveryCodes(ctx context.Context, userID string) (int64, error) {
+	n, err := r.q.CountUnusedRecoveryCodes(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("counting recovery codes: %w", err)
+	}
+	return n, nil
+}
+
+func (r *Repo) CountLiveEntries(ctx context.Context, userID string) (int64, error) {
+	n, err := r.q.CountLiveEntries(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("counting entries: %w", err)
+	}
+	return n, nil
+}
+
+func (r *Repo) CountLiveUserFoods(ctx context.Context, userID string) (int64, error) {
+	n, err := r.q.CountLiveUserFoods(ctx, userID)
+	if err != nil {
+		return 0, fmt.Errorf("counting foods: %w", err)
+	}
+	return n, nil
 }
 
 func (r *Repo) UserByID(ctx context.Context, id string) (domain.User, error) {
@@ -91,7 +173,7 @@ func (r *Repo) TouchLastLogin(ctx context.Context, id, now string) error {
 
 func toUser(u sqlc.User) domain.User {
 	return domain.User{
-		ID: u.ID, Email: u.Email, PasswordHash: u.PasswordHash,
+		ID: u.ID, Username: u.Username, PasswordHash: u.PasswordHash,
 		CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt, LastLoginAt: u.LastLoginAt,
 	}
 }
@@ -102,15 +184,19 @@ func (r *Repo) Settings(ctx context.Context, userID string) (domain.Settings, er
 		return domain.Settings{}, notFound(err, "settings")
 	}
 	return domain.Settings{
-		UserID: s.UserID, GoalKcal: s.GoalKcal, ProteinG: s.ProteinG, CarbsG: s.CarbsG, FatG: s.FatG,
-		DayStartHour: s.DayStartHour, Theme: s.Theme, CreatedAt: s.CreatedAt, UpdatedAt: s.UpdatedAt, ServerSeq: s.ServerSeq,
+		UserID: s.UserID, GoalKcal: s.GoalKcal, ProteinG: s.ProteinG, CarbsG: s.CarbsG, FatG: s.FatG, FiberG: s.FiberG,
+		DayStartHour: s.DayStartHour, Theme: s.Theme, WeightGoalKg: s.WeightGoalKg, MedName: s.MedName,
+		MedIntervalDays: s.MedIntervalDays, MedStartedOn: s.MedStartedOn, MedSupplyDoses: s.MedSupplyDoses,
+		MedSupplyAsOf: s.MedSupplyAsOf, CreatedAt: s.CreatedAt, UpdatedAt: s.UpdatedAt, ServerSeq: s.ServerSeq,
 	}, nil
 }
 
 func (r *Repo) PutSettings(ctx context.Context, s domain.Settings) error {
 	err := r.q.UpsertSettings(ctx, sqlc.UpsertSettingsParams{
-		UserID: s.UserID, GoalKcal: s.GoalKcal, ProteinG: s.ProteinG, CarbsG: s.CarbsG, FatG: s.FatG,
-		DayStartHour: s.DayStartHour, Theme: s.Theme, CreatedAt: s.CreatedAt, UpdatedAt: s.UpdatedAt, ServerSeq: s.ServerSeq,
+		UserID: s.UserID, GoalKcal: s.GoalKcal, ProteinG: s.ProteinG, CarbsG: s.CarbsG, FatG: s.FatG, FiberG: s.FiberG,
+		DayStartHour: s.DayStartHour, Theme: s.Theme, WeightGoalKg: s.WeightGoalKg, MedName: s.MedName,
+		MedIntervalDays: s.MedIntervalDays, MedStartedOn: s.MedStartedOn, MedSupplyDoses: s.MedSupplyDoses,
+		MedSupplyAsOf: s.MedSupplyAsOf, CreatedAt: s.CreatedAt, UpdatedAt: s.UpdatedAt, ServerSeq: s.ServerSeq,
 	})
 	if err != nil {
 		return fmt.Errorf("saving settings: %w", err)
