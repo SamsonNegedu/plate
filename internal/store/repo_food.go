@@ -3,8 +3,10 @@ package store
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 
 	"plate/internal/domain"
 	"plate/internal/store/sqlc"
@@ -174,7 +176,7 @@ func (r *Repo) PutCatalogFood(ctx context.Context, c domain.CatalogFood, now str
 		Barcode: c.Barcode, Name: c.Name, Brand: c.Brand, Quantity: c.Quantity, ServingSize: c.ServingSize,
 		ServingGrams: c.ServingGrams, Kcal100g: c.Per100.Kcal, Protein100g: c.Per100.Protein, Carbs100g: c.Per100.Carbs,
 		Fat100g: c.Per100.Fat, Sugar100g: c.Per100.Sugar, Satfat100g: c.Per100.SatFat, Fiber100g: c.Per100.Fiber,
-		Salt100g: c.Per100.Salt, Nutriscore: c.Nutriscore, ImageSourceUrl: c.ImageSourceURL, Scans: c.Scans,
+		Salt100g: c.Per100.Salt, Nutriscore: c.Nutriscore, ImageSourceUrl: c.ImageSourceURL, Scans: c.Scans, Category: optional(c.Category),
 		DatasetVersion: c.DatasetVersion, ImportedAt: c.ImportedAt, UpdatedAt: now,
 	})
 	if err != nil {
@@ -199,7 +201,7 @@ func toCatalogFood(c sqlc.CatalogFood) domain.CatalogFood {
 			Kcal: c.Kcal100g, Protein: c.Protein100g, Carbs: c.Carbs100g, Fat: c.Fat100g,
 			Sugar: c.Sugar100g, SatFat: c.Satfat100g, Fiber: c.Fiber100g, Salt: c.Salt100g,
 		},
-		Nutriscore: c.Nutriscore, ImageSourceURL: c.ImageSourceUrl, Scans: c.Scans,
+		Nutriscore: c.Nutriscore, ImageSourceURL: c.ImageSourceUrl, Scans: c.Scans, Category: deref(c.Category),
 		DatasetVersion: c.DatasetVersion, ImportedAt: c.ImportedAt,
 	}
 }
@@ -273,4 +275,80 @@ func (r *Repo) ImagesLRU(ctx context.Context, limit int) ([]LRUImage, error) {
 		out = append(out, LRUImage{Key: i.Key, Bytes: i.Bytes})
 	}
 	return out, nil
+}
+
+func optional(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// ReplaceCategoryStats swaps the whole category table, as the catalog import does with the catalog itself.
+func (r *Repo) ReplaceCategoryStats(ctx context.Context, stats []domain.CategoryStats) error {
+	if err := r.q.DeleteAllCategoryStats(ctx); err != nil {
+		return fmt.Errorf("clearing category stats: %w", err)
+	}
+	for _, c := range stats {
+		b, err := json.Marshal(c.Ranges)
+		if err != nil {
+			return fmt.Errorf("encoding ranges of %s: %w", c.Category, err)
+		}
+		if err := r.q.InsertCategoryStats(ctx, sqlc.InsertCategoryStatsParams{Category: c.Category, N: int64(c.N), Ranges: string(b)}); err != nil {
+			return fmt.Errorf("saving category stats: %w", err)
+		}
+	}
+	return nil
+}
+
+// CategoryStats returns the ranges of one category, or ErrNotFound.
+func (r *Repo) CategoryStats(ctx context.Context, category string) (domain.CategoryStats, error) {
+	row, err := r.q.GetCategoryStats(ctx, category)
+	if err != nil {
+		return domain.CategoryStats{}, notFound(err, "category stats")
+	}
+	out := domain.CategoryStats{Category: row.Category, N: int(row.N), Ranges: map[string][3]float64{}}
+	if err := json.Unmarshal([]byte(row.Ranges), &out.Ranges); err != nil {
+		return domain.CategoryStats{}, fmt.Errorf("reading ranges of %s: %w", category, err)
+	}
+	return out, nil
+}
+
+// MostSpecificCategory picks, among a product's category tags, the one with ranges that covers the fewest products, or "".
+// Open Food Facts lists tags from general to specific, so of two that cover the same products the later one wins.
+func (r *Repo) MostSpecificCategory(ctx context.Context, tags []string) (string, error) {
+	if len(tags) == 0 {
+		return "", nil
+	}
+	rows, err := r.q.ListCategorySizes(ctx, tags)
+	if err != nil {
+		return "", fmt.Errorf("choosing a category: %w", err)
+	}
+	size := make(map[string]int64, len(rows))
+	for _, c := range rows {
+		size[c.Category] = c.N
+	}
+	best, bestN := "", int64(math.MaxInt64)
+	for _, tag := range tags {
+		if n, ok := size[tag]; ok && n <= bestN {
+			best, bestN = tag, n
+		}
+	}
+	return best, nil
+}
+
+// CountCategoryStats says how many categories have ranges.
+func (r *Repo) CountCategoryStats(ctx context.Context) (int64, error) {
+	n, err := r.q.CountCategoryStats(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("counting category stats: %w", err)
+	}
+	return n, nil
 }

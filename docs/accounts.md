@@ -35,7 +35,7 @@ A person who loses both their password and every code cannot recover the account
 
 ## Deleting an account
 
-Settings, Account, "Delete account" asks for the password and calls `POST /auth/delete-account`. The server deletes the user row; foreign keys remove sessions, recovery codes, settings, foods, entries, saved meals (recipes), favorites, health records, the change log and applied ops with it. The browser clears its local data and returns to sign-in. This is an account-level erasure the person asked for, not a sync delete, so it is the one place rows are removed rather than tombstoned. Accounts that go quiet are kept; nothing expires them.
+Settings, Account, "Delete account" asks for the password and calls `POST /auth/delete-account`. The server deletes the user row; foreign keys remove sessions, recovery codes, settings, foods, entries, saved meals (recipes), favorites, health records, the change log and applied ops with it. The browser clears its local data and returns to sign-in. This is an account-level erasure the person asked for, not a sync delete, so it is the one place rows are removed rather than tombstoned. Community fact revisions are not removed: they describe a product, carry only an opaque contributor id, and other accounts rely on them. Accounts that go quiet are kept; nothing expires them.
 
 ## Limits per account
 
@@ -47,7 +47,7 @@ Settings, Account, "Delete account" asks for the password and calls `POST /auth/
 | Barcode lookups | 60 a minute per user | `internal/httpapi/foods.go` |
 | General API / sync | 300 / 600 a minute per user | `internal/httpapi/auth.go` |
 
-A write over a cap is rejected with `limit_reached`; existing rows stay editable and deleting frees room. Barcode lookups are limited per user, not per address, because behind a proxy every person shares one address. The server-wide Open Food Facts rate cap (30 a minute) still protects the upstream for everyone.
+Community corrections are capped at 50 a day and 500 in total per account. A write over a cap is rejected with `limit_reached`; existing rows stay editable and deleting frees room. Barcode lookups are limited per user, not per address, because behind a proxy every person shares one address. The server-wide Open Food Facts rate cap (30 a minute) still protects the upstream for everyone.
 
 ## Several accounts on one device
 

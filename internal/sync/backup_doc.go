@@ -33,6 +33,7 @@ type FoodDoc struct {
 	UpdatedAt       string   `json:"updated_at"`
 	DeletedAt       *string  `json:"deleted_at" nullable:"true"`
 	ServerSeq       int64    `json:"server_seq"`
+	CommunityRev    *string  `json:"community_rev,omitempty" nullable:"true"`
 }
 
 type SavedMealItemDoc struct {
@@ -102,6 +103,7 @@ func FoodToDoc(f domain.Food) FoodDoc {
 		Nutriscore: f.Nutriscore, Source: string(f.Source), SourceID: f.SourceID, SourceUpdatedAt: f.SourceUpdatedAt,
 		SourceCheckedAt: f.SourceCheckedAt, ImageKey: f.ImageKey, Ingredients: f.Ingredients, Allergens: f.Allergens,
 		CreatedAt: f.CreatedAt, UpdatedAt: f.UpdatedAt, DeletedAt: f.DeletedAt, ServerSeq: f.ServerSeq,
+		CommunityRev: f.CommunityRev,
 	}
 }
 
@@ -117,6 +119,7 @@ func DocToFood(d FoodDoc, userID string) domain.Food {
 		SourceUpdatedAt: d.SourceUpdatedAt, SourceCheckedAt: d.SourceCheckedAt, ImageKey: d.ImageKey,
 		Ingredients: d.Ingredients, Allergens: d.Allergens, SearchName: domain.SearchName(d.Name + " " + d.Brand),
 		CreatedAt: d.CreatedAt, UpdatedAt: d.UpdatedAt, DeletedAt: d.DeletedAt, ServerSeq: d.ServerSeq,
+		CommunityRev: d.CommunityRev,
 	}
 }
 

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
@@ -8,9 +8,14 @@ import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { saveCustomFood } from "@/db/foods";
 import type { Food, Meal } from "@/db/types";
-import { copy } from "@/lib/copy";
+import { type CorrectionOutcome, submitCorrection } from "@/food/corrections";
+import type { ScanResult } from "@/food/ocr/scan";
+import { copy, labelCopy } from "@/lib/copy";
 import { useUi } from "@/lib/ui";
 import { cls } from "./forms";
+import { LabelScan } from "./LabelScan";
+import { NUTRIENT_FIELDS, NutritionTable, useNutrientInputs } from "./NutritionFields";
+import { PhotoShare } from "./PhotoShare";
 import { optionalNumber, requiredNumber } from "./schemas";
 
 const schema = z.object({
@@ -44,12 +49,44 @@ interface Props {
   food?: Food | undefined;
   name?: string | undefined;
   notLoggable?: boolean | undefined;
+  /** A label already read (from the not-found sheet), to fill the form with. */
+  scan?: ScanResult | undefined;
 }
 
 const txt = (n: number | null | undefined) => (n === null || n === undefined ? "" : String(n));
 
+const fromScan = (
+  scan: ScanResult | undefined,
+  field: (typeof NUTRIENT_FIELDS)[number],
+): string => {
+  const v = scan?.values[field];
+  return v === undefined ? "" : String(v);
+};
+
+function scanNote(r: ScanResult): string {
+  if (r.perServing) return labelCopy.perServing;
+  return r.found === 0 ? labelCopy.nothing : labelCopy.filled;
+}
+
+function correctionNotice(out: CorrectionOutcome): string {
+  if (out.kind === "shared") return copy.corrections.shared;
+  if (out.kind === "queued") return copy.corrections.queued;
+  return [
+    copy.corrections.privateTitle,
+    ...out.issues.map((i) => copy.corrections.issues[i] ?? i),
+    copy.corrections.checkLabel,
+  ].join(" ");
+}
+
+function describe(notLoggable: boolean | undefined, shared: boolean): string {
+  if (notLoggable) return copy.sheet.notLoggable;
+  if (shared)
+    return "Everyone who scans this barcode sees these values. Energy per 100 g is required; blank stays blank.";
+  return "Calories per 100 g are required. Anything you leave blank stays blank.";
+}
+
 /** A missing barcode, a correction, or a homemade staple. Calories per 100 g are required; blank nutrients stay blank. */
-export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }: Props) {
+export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable, scan }: Props) {
   const db = useDb();
   const ui = useUi();
   const [server, setServer] = useState<string | null>(null);
@@ -60,46 +97,84 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
       brand: food?.brand ?? "",
       barcode: food?.barcode ?? barcode ?? "",
       servingGrams: txt(food?.servingGrams),
-      kcal: food ? String(food.kcal) : "",
-      protein: txt(food?.protein),
-      carbs: txt(food?.carbs),
-      fat: txt(food?.fat),
-      sugar: txt(food?.sugar),
-      satfat: txt(food?.satfat),
-      fiber: txt(food?.fiber),
-      salt: txt(food?.salt),
+      kcal: food ? String(food.kcal) : fromScan(scan, "kcal"),
+      protein: food ? txt(food.protein) : fromScan(scan, "protein"),
+      carbs: food ? txt(food.carbs) : fromScan(scan, "carbs"),
+      fat: food ? txt(food.fat) : fromScan(scan, "fat"),
+      sugar: food ? txt(food.sugar) : fromScan(scan, "sugar"),
+      satfat: food ? txt(food.satfat) : fromScan(scan, "satfat"),
+      fiber: food ? txt(food.fiber) : fromScan(scan, "fiber"),
+      salt: food ? txt(food.salt) : fromScan(scan, "salt"),
     },
   });
+  const [read, setRead] = useState<ScanResult | null>(scan ?? null);
+  const [shareLabel, setShareLabel] = useState(true);
+  const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
+  const watched = useWatch({ control: form.control, name: NUTRIENT_FIELDS });
+  const inputs = useNutrientInputs(
+    {
+      register: (f) => form.register(f),
+      setValue: (f, v) => form.setValue(f, v, { shouldDirty: true }),
+      getValue: (f) => form.getValues(f),
+    },
+    Object.fromEntries(NUTRIENT_FIELDS.map((f, i) => [f, watched[i]])),
+    scan?.check,
+  );
+  const onScan = (r: ScanResult) => {
+    setRead(r);
+    inputs.fill(r);
+  };
   const { errors, isSubmitting } = form.formState;
   const correcting = Boolean(food);
+  const hasBarcode = Boolean(food?.barcode ?? barcode);
+  const shared = hasBarcode;
+  let title = "Add a food";
+  if (hasBarcode) title = correcting ? copy.sheet.correctProduct : copy.sheet.addProduct;
+  else if (correcting) title = copy.sheet.editNutrition;
 
   const submit = form.handleSubmit(async (v) => {
     setServer(null);
+    const base = {
+      ...(food ? { id: food.id } : {}),
+      barcode: v.barcode.replace(/\s/g, "") || null,
+      name: v.name,
+      brand: v.brand,
+      servingGrams: v.servingGrams,
+      kcal: v.kcal,
+      protein: v.protein,
+      carbs: v.carbs,
+      fat: v.fat,
+      sugar: v.sugar,
+      satfat: v.satfat,
+      fiber: v.fiber,
+      salt: v.salt,
+    };
     try {
-      const saved = await saveCustomFood(db, {
-        ...(food ? { id: food.id } : {}),
-        barcode: v.barcode.replace(/\s/g, "") || null,
-        name: v.name,
-        brand: v.brand,
-        servingGrams: v.servingGrams,
-        kcal: v.kcal,
-        protein: v.protein,
-        carbs: v.carbs,
-        fat: v.fat,
-        sugar: v.sugar,
-        satfat: v.satfat,
-        fiber: v.fiber,
-        salt: v.salt,
-      });
-      const notice = correcting
-        ? "Saved. Entries you logged before keep their old values."
-        : "Saved on this device.";
+      if (base.barcode) {
+        const out = await submitCorrection(
+          db,
+          {
+            ...base,
+            barcode: base.barcode,
+            source: read && read.found > 0 ? "ocr" : "manual",
+            labelImage: shareLabel ? (read?.labelPhoto ?? null) : null,
+            frontImage: frontPhoto,
+          },
+          { existingFoodId: food?.id },
+        );
+        const notice = correctionNotice(out);
+        ui.replace({ kind: "product", food: out.food, meal, date, notice });
+        return;
+      }
+      const saved = await saveCustomFood(db, base);
       ui.replace({
         kind: "product",
         food: saved,
         meal,
         date,
-        notice: correcting ? notice : `${notice} Add it to Open Food Facts so others can find it.`,
+        notice: correcting
+          ? "Saved. Entries you logged before keep their old values."
+          : "Saved on this device.",
       });
     } catch {
       setServer("The food could not be saved on this device. Free some storage and try again.");
@@ -108,12 +183,8 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
 
   return (
     <Sheet
-      title={correcting ? copy.sheet.editNutrition : "Add a food"}
-      description={
-        notLoggable
-          ? copy.sheet.notLoggable
-          : "Calories per 100 g are required. Anything you leave blank stays blank."
-      }
+      title={title}
+      description={describe(notLoggable, shared)}
       onClose={ui.close}
       footer={
         <>
@@ -128,96 +199,85 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable }
         </>
       }
     >
-      <form id="manual-food" className={cls.form} onSubmit={submit} noValidate>
-        <Field
-          label="Name"
-          autoFocus={!correcting}
-          error={errors.name?.message}
-          {...form.register("name")}
+      <form
+        id="manual-food"
+        className={cls.form}
+        onSubmit={submit}
+
+        noValidate
+      >
+        <div className="grid gap-2">
+          <LabelScan
+            primary={!read}
+            onResult={onScan}
+            label={read ? labelCopy.scanAgain : undefined}
+          />
+          {read ? (
+            <div className="flex items-start gap-3">
+              <img
+                src={read.thumb}
+                alt="The nutrition label you scanned"
+                className="h-20 w-20 shrink-0 rounded-ctl border border-line object-cover"
+              />
+              <p className="text-meta text-ink-2" role="status">
+                {scanNote(read)}
+              </p>
+            </div>
+          ) : null}
+        </div>
+        <Field label="Name" error={errors.name?.message} {...form.register("name")} />
+        <NutritionTable
+          title="Per 100 g"
+          rows={NUTRIENT_FIELDS}
+          inputs={inputs}
+          errors={{
+            kcal: errors.kcal?.message,
+            fat: errors.fat?.message,
+            satfat: errors.satfat?.message,
+            carbs: errors.carbs?.message,
+            sugar: errors.sugar?.message,
+            fiber: errors.fiber?.message,
+            protein: errors.protein?.message,
+            salt: errors.salt?.message,
+          }}
         />
-        <Field label="Brand (optional)" error={errors.brand?.message} {...form.register("brand")} />
-        <Field
-          label="Barcode"
-          inputMode="numeric"
-          readOnly={correcting && Boolean(food?.barcode)}
-          hint={
-            correcting && food?.barcode
-              ? "The barcode stays the same when you correct a food."
-              : undefined
-          }
-          error={errors.barcode?.message}
-          {...form.register("barcode")}
-        />
-        <Field
-          label="Serving size (optional)"
-          inputMode="decimal"
-          suffix="g"
-          hint="Adds a portion option when you log it."
-          error={errors.servingGrams?.message}
-          {...form.register("servingGrams")}
-        />
-        <h3 className={cls.group}>Per 100 g</h3>
-        <Field
-          label="Calories"
-          inputMode="decimal"
-          suffix="kcal"
-          error={errors.kcal?.message}
-          {...form.register("kcal")}
-        />
-        <Field
-          label="Protein"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.protein?.message}
-          {...form.register("protein")}
-        />
-        <Field
-          label="Carbs"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.carbs?.message}
-          {...form.register("carbs")}
-        />
-        <Field
-          label="Fat"
-          inputMode="decimal"
-          suffix="g"
-          error={errors.fat?.message}
-          {...form.register("fat")}
-        />
-        <details className={cls.more}>
-          <summary>More nutrients</summary>
-          <div className={cls.moreBody}>
+        <section className="grid gap-3" aria-label="Details">
+          <Field
+            label="Brand (optional)"
+            error={errors.brand?.message}
+            {...form.register("brand")}
+          />
+          <div className="grid grid-cols-2 items-start gap-3">
             <Field
-              label="Sugars"
-              inputMode="decimal"
-              suffix="g"
-              error={errors.sugar?.message}
-              {...form.register("sugar")}
+              label="Barcode"
+              inputMode="numeric"
+              readOnly={correcting && Boolean(food?.barcode)}
+              hint={
+                correcting && food?.barcode
+                  ? "The barcode stays the same when you correct a food."
+                  : undefined
+              }
+              error={errors.barcode?.message}
+              {...form.register("barcode")}
             />
             <Field
-              label="Saturates"
+              label="Serving size (optional)"
               inputMode="decimal"
               suffix="g"
-              error={errors.satfat?.message}
-              {...form.register("satfat")}
-            />
-            <Field
-              label="Fibre"
-              inputMode="decimal"
-              suffix="g"
-              error={errors.fiber?.message}
-              {...form.register("fiber")}
-            />
-            <Field
-              label="Salt"
-              inputMode="decimal"
-              suffix="g"
-              error={errors.salt?.message}
-              {...form.register("salt")}
+              error={errors.servingGrams?.message}
+              {...form.register("servingGrams")}
             />
           </div>
-        </details>
+        </section>
+        {shared ? (
+          <PhotoShare
+            labelPhoto={read?.labelPhoto ?? null}
+            shareLabel={shareLabel}
+            onShareLabel={setShareLabel}
+            frontPhoto={frontPhoto}
+            onFrontPhoto={setFrontPhoto}
+          />
+        ) : null}
       </form>
     </Sheet>
   );

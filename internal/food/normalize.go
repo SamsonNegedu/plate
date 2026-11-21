@@ -36,6 +36,8 @@ func (e *NotLoggableError) Unwrap() error { return domain.ErrNotLoggable }
 type Normalized struct {
 	Food     domain.Food
 	ImageURL string
+	// CategoryTags are the product's Open Food Facts category tags; the store picks the one that has ranges.
+	CategoryTags []string
 }
 
 const (
@@ -102,7 +104,7 @@ func Normalize(p OFFProduct, now time.Time) (Normalized, error) {
 	}
 	checked := now.UTC().Format(time.RFC3339)
 	f.SourceCheckedAt = &checked
-	return Normalized{Food: f, ImageURL: img}, nil
+	return Normalized{Food: f, ImageURL: img, CategoryTags: p.CategoriesTags}, nil
 }
 
 // kcalPer100 prefers the per-100 g energy fields. Per-serving energy is converted only when the serving weight is known.

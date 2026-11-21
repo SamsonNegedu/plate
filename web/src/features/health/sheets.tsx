@@ -296,14 +296,29 @@ export function DoseSheet({
     >
       <div className={cls.form}>
         <div className="grid gap-2">
-          <Field
-            label="Dose"
-            inputMode="decimal"
-            suffix="mg"
-            value={mg}
-            error={errors.mg}
-            onChange={(e) => setMg(e.target.value)}
-          />
+          <div className="grid grid-cols-2 items-start gap-3">
+            <Field
+              label="Dose"
+              inputMode="decimal"
+              suffix="mg"
+              value={mg}
+              error={errors.mg}
+              onChange={(e) => setMg(e.target.value)}
+            />
+            <div className="grid gap-1.5">
+              <label htmlFor="site" className="text-meta font-medium text-ink-2">
+                Injection site
+              </label>
+              <Select id="site" value={site} onChange={(e) => setSite(e.target.value)}>
+                <option value="">Not noted</option>
+                {SITES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
           {strengths.length > 0 ? (
             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Strengths">
               {strengths.map((st) => (
@@ -324,19 +339,6 @@ export function DoseSheet({
               {`${(parseDecimal(mg) ?? 0) > lastDose.value ? "Up" : "Down"} from ${formatMg(lastDose.value)} mg last time.`}
             </p>
           ) : null}
-        </div>
-        <div className="grid gap-1.5">
-          <label htmlFor="site" className="text-meta font-medium text-ink-2">
-            Injection site
-          </label>
-          <Select id="site" value={site} onChange={(e) => setSite(e.target.value)}>
-            <option value="">Not noted</option>
-            {SITES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </Select>
           {!record && lastDose?.site ? (
             <p
               className={cls.muted}

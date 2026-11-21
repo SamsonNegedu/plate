@@ -5,7 +5,7 @@ import type { Food } from "@/db/types";
 import { createDetector, makeDeduper } from "./barcode";
 import { classifyCameraError } from "./camera";
 import { digitsOnly, foodView, resolveBarcode } from "./lookup";
-import { LocalSearch } from "./searchIndex";
+import { LocalSearch, spellings } from "./searchIndex";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -277,5 +277,27 @@ describe("local search", () => {
     const i = new LocalSearch();
     i.rebuild([{ ...mk("9", "Hidden"), deletedAt: "2026-11-13T00:00:00Z" }]);
     expect(i.search("hidden")).toEqual([]);
+  });
+});
+
+describe("local search spellings", () => {
+  test("a word typed without umlaut keys finds the umlaut product, and the other way round", () => {
+    const search = new LocalSearch();
+    search.rebuild([
+      mk("0190a1b2-0000-7000-8000-000000000011", "Käse mild", "Hochland"),
+      mk("0190a1b2-0000-7000-8000-000000000012", "Müller Reis", "Müller"),
+      mk("0190a1b2-0000-7000-8000-000000000013", "Hähnchenbrust", "Wiesenhof"),
+      mk("0190a1b2-0000-7000-8000-000000000014", "Weißbrot", "Harry"),
+    ]);
+    expect(search.search("kaese").map((f) => f.name)).toEqual(["Käse mild"]);
+    expect(search.search("mueller").map((f) => f.name)).toContain("Müller Reis");
+    expect(search.search("haehnchen").map((f) => f.name)).toEqual(["Hähnchenbrust"]);
+    expect(search.search("weissbrot").map((f) => f.name)).toEqual(["Weißbrot"]);
+    expect(search.search("käse").map((f) => f.name)).toEqual(["Käse mild"]);
+  });
+
+  test("a query that needs no change is searched once", () => {
+    expect(spellings("brot")).toEqual(["brot"]);
+    expect(spellings("Kaese")).toEqual(["Kaese", "kase"]);
   });
 });

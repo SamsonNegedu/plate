@@ -45,17 +45,63 @@ func Long(tokens []string) bool {
 	return n >= MinLength
 }
 
-// Match renders a bound FTS5 MATCH string. Every token is quoted. With prefix, the last token also matches word starts.
+var umlautPairs = strings.NewReplacer("ae", "a", "oe", "o", "ue", "u")
+
+// Variants returns the spellings of one query word that should all count. Both indexes fold ä ö ü to a o u but keep ß, so a
+// person typing without those keys (kaese, mueller, weissbrot) must also match what the index holds (kase, muller, weißbrot).
+// The original spelling comes first. A word with a natural "ue" or "ss" gains a variant that matches nothing, which is harmless.
+func Variants(token string) []string {
+	lower := strings.ToLower(token)
+	out := []string{token}
+	add := func(v string) {
+		if v != "" && v != lower && !slices.Contains(out, v) {
+			out = append(out, v)
+		}
+	}
+	plain := umlautPairs.Replace(lower)
+	add(plain)
+	for _, base := range []string{lower, plain} {
+		if strings.Contains(base, "ss") {
+			add(strings.ReplaceAll(base, "ss", "ß"))
+		}
+		if strings.Contains(base, "ß") {
+			add(strings.ReplaceAll(base, "ß", "ss"))
+		}
+	}
+	return out
+}
+
+// Match renders a bound FTS5 MATCH string. Every token is quoted, and a word with spelling variants becomes an OR group.
+// With prefix, the last token also matches word starts.
 func Match(tokens []string, prefix bool) string {
 	parts := make([]string, len(tokens))
+	grouped := false
 	for i, t := range tokens {
-		parts[i] = `"` + strings.ReplaceAll(t, `"`, `""`) + `"`
+		star := ""
 		if prefix && i == len(tokens)-1 {
-			parts[i] += "*"
+			star = "*"
 		}
+		vs := Variants(t)
+		quoted := make([]string, len(vs))
+		for j, v := range vs {
+			quoted[j] = `"` + strings.ReplaceAll(v, `"`, `""`) + `"` + star
+		}
+		if len(quoted) == 1 {
+			parts[i] = quoted[0]
+		} else {
+			parts[i] = "(" + strings.Join(quoted, " OR ") + ")"
+			grouped = true
+		}
+	}
+	if grouped {
+		return strings.Join(parts, " AND ") // FTS5 does not read a group followed by a phrase as an implicit AND
 	}
 	return strings.Join(parts, " ")
 }
+
+// PopularScans is how many scans make a product one that people mean when they type a few letters. Such a product ranks above
+// obscure whole-word matches: "nut" should offer Nutella before the hundred products that happen to be called "Nut".
+const PopularScans = 100
 
 // Item is one candidate from any source.
 type Item struct {
@@ -67,22 +113,24 @@ type Item struct {
 	Infix     bool // matched only as a substring (a German compound), through the trigram index
 	Favorite  bool
 	Recent    bool
-	Order     int // position in the source's bm25 order; lower is better
+	Scans     int64 // how often the catalog saw this product scanned; 0 for the person's own foods
+	Order     int   // position in the source's bm25 order; lower is better
 }
 
-// Rank orders items: favorite, recent, exact name, whole-word before prefix-only, name prefix, source, then bm25.
+// Rank orders items: favorite, recent, exact name, widely scanned, whole-word before prefix-only, name prefix, source, then bm25.
 // A single prefix query cannot tell `Ja!` from `Jana`, which is why the whole-word tier exists (Spike F).
 func Rank(items []Item, query string) []Item {
-	q := domain.SearchName(query)
+	forms := queryForms(query)
 	out := slices.Clone(items)
 	slices.SortStableFunc(out, func(a, b Item) int {
 		for _, k := range []func(Item) int{
 			func(i Item) int { return boolRank(i.Favorite) },
 			func(i Item) int { return boolRank(i.Recent) },
-			func(i Item) int { return boolRank(domain.SearchName(i.Name) == q) },
+			func(i Item) int { return boolRank(matchesAny(forms, domain.SearchName(i.Name), false)) },
+			func(i Item) int { return boolRank(i.Scans >= PopularScans) },
 			func(i Item) int { return boolRank(i.WholeWord) },
 			func(i Item) int { return boolRank(!i.Infix) },
-			func(i Item) int { return boolRank(strings.HasPrefix(domain.SearchName(i.Name), q)) },
+			func(i Item) int { return boolRank(matchesAny(forms, domain.SearchName(i.Name), true)) },
 			func(i Item) int { return sourceRank(i.Source) },
 			func(i Item) int { return i.Order },
 		} {
@@ -93,6 +141,25 @@ func Rank(items []Item, query string) []Item {
 		return 0
 	})
 	return out
+}
+
+// queryForms is the query as the index folds it, and again with ae/oe/ue read as umlauts, so "Haehnchen" ranks like "Hähnchen".
+func queryForms(query string) []string {
+	q := domain.SearchName(query)
+	forms := []string{q}
+	if plain := umlautPairs.Replace(q); plain != q {
+		forms = append(forms, plain)
+	}
+	return forms
+}
+
+func matchesAny(forms []string, name string, prefix bool) bool {
+	for _, f := range forms {
+		if (prefix && strings.HasPrefix(name, f)) || (!prefix && name == f) {
+			return true
+		}
+	}
+	return false
 }
 
 func boolRank(b bool) int {

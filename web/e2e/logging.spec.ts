@@ -207,7 +207,9 @@ test("a scan is announced and silent mode suppresses the feedback", async ({ pag
   ).toBeGreaterThan(0);
 });
 
-test("a product without calories opens manual entry, not a zero-calorie Add", async ({ page }) => {
+test("a product without calories offers the label scan or typing, never a zero-calorie Add", async ({
+  page,
+}) => {
   const code = "9999999999991";
   await page.route(`**/api/v1/foods/barcode/${code}`, (route) =>
     route.fulfill({
@@ -223,12 +225,50 @@ test("a product without calories opens manual entry, not a zero-calorie Add", as
   );
   await mockDetector(page, code);
   await page.goto(`/scan?date=${day("05-07")}`);
-  const dialog = page.getByRole("dialog", { name: "Add a food" });
+  const dialog = page.getByRole("dialog", { name: "Not in the database yet" });
   await expect(dialog).toBeVisible({ timeout: 15_000 });
   await expect(
     dialog.getByText("This product has no calorie data, so it cannot be added as it is."),
   ).toBeVisible();
+  await dialog.getByRole("button", { name: "Type it in" }).click();
+  const form = page.getByRole("dialog", { name: "Add this product" });
+  await expect(form.getByRole("textbox", { name: "Name" })).toHaveValue("Mystery drink");
   await expect(page.getByRole("button", { name: /^Add to / })).toHaveCount(0);
+});
+
+test("a barcode nobody knows is added once, shared, and found by the next scan", async ({
+  page,
+}) => {
+  const code = "4337256560191";
+  let first = true;
+  await page.route(`**/api/v1/foods/barcode/${code}`, (route) => {
+    if (!first) return route.continue();
+    first = false;
+    return route.fulfill({
+      status: 404,
+      contentType: "application/problem+json",
+      body: JSON.stringify({ code: "not_found", can_add_manually: true }),
+    });
+  });
+  await mockDetector(page, code);
+  await page.goto(`/scan?date=${day("05-07")}`);
+  const notFound = page.getByRole("dialog", { name: "Not in the database yet" });
+  await expect(notFound).toBeVisible({ timeout: 15_000 });
+  await expect(notFound.getByText(`Barcode ${code}`)).toBeVisible();
+  await notFound.getByRole("button", { name: "Type it in" }).click();
+
+  const form = page.getByRole("dialog", { name: "Add this product" });
+  await form.getByRole("textbox", { name: "Name" }).fill("Räucherlachs");
+  await form.getByRole("textbox", { name: "Energy in kilocalories" }).fill("192");
+  await form.getByRole("textbox", { name: "Fat in grams" }).fill("12");
+  await form.getByRole("textbox", { name: "Carbohydrate in grams" }).fill("0");
+  await form.getByRole("textbox", { name: "Protein in grams" }).fill("21");
+  await form.getByRole("button", { name: "Save" }).click();
+
+  const product = page.getByRole("dialog", { name: "Räucherlachs" });
+  await expect(product).toBeVisible();
+  await expect(product.getByText("Saved for everyone who scans this barcode.")).toBeVisible();
+  await expect(product.getByText("Corrected by the community.", { exact: false })).toBeVisible();
 });
 
 test("track a medication, log a dose from the Today reminder, then weight and appetite", async ({

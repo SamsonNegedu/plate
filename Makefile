@@ -16,7 +16,7 @@ DATA_DIR ?= ./data
 DB_PATH ?= $(DATA_DIR)/plate.db
 GOOSE_ENV := GOOSE_DRIVER=sqlite3 GOOSE_DBSTRING=$(DB_PATH) GOOSE_MIGRATION_DIR=db/migrations
 
-.PHONY: dev dev-api dev-web build build-web test test-go test-web test-e2e lint fmt generate sqlc-diff \
+.PHONY: off-export dev dev-api dev-web build build-web test test-go test-web test-e2e lint fmt generate sqlc-diff \
 	docker-smoke coverage coverage-live catalog lint-go audit-go migrate-up migrate-down migrate-status backup verify audit
 
 dev:
@@ -79,6 +79,9 @@ coverage:
 
 coverage-live:
 	go run ./tools/corpus -dump $(DUMP) -seed $(or $(SEED),data/off-catalog.db) -record
+
+off-export:
+	go run ./tools/offexport -db $(DB_PATH) -out $(or $(OUT),off-export)
 
 catalog:
 	go run ./tools/catalog -dump $(DUMP) -out $(or $(OUT),data/off-catalog.db) -n $(or $(N),100000) -min-scans $(or $(MIN_SCANS),2) $(if $(VERSION),-version $(VERSION))

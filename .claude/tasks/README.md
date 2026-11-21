@@ -82,6 +82,7 @@ Phases 1 to 10 are built, and their phase files were removed once implemented (t
 | 0 | `01-spikes.md` | S | iOS/Android scan runs (spikes A and E), seed build artifact and real corpus, ADR-015 notes |
 | 11 | `12-testing-qa.md` | M | Device matrix, a11y, security, perf, restore drill |
 | 12 | `13-deploy-launch.md` | M | Fresh deploy, backup restore, 14-day dogfood |
+| 13 | `14-food-corrections-ocr.md` | L | Shared OFF-shaped corrections, plausibility warning, nutrition-table OCR |
 
 Carried over from Phases 8 to 10, still to verify on a real phone: the design-parity walk (`design-parity.md`), airplane-mode logging and reconnect sync, and the installed-PWA checks on iOS and Android.
 
@@ -101,9 +102,9 @@ Carried over from Phases 8 to 10, still to verify on a real phone: the design-pa
 - Many accounts, each with multiple devices. Open signup, no admin, no email (ADR-016). No sharing, households, or social features.
 - Self-hosted behind Cloudflare Tunnel with Cloudflare Access in front, always over HTTPS. The origin has no inbound ports; only cloudflared reaches the app.
 - English UI with en-GB dates and numbers. German product search and umlaut folding are required. German UI is out of scope; English copy lives in one module so a translation can be added later.
-- v1 includes recents, favorites, saved meals, quick add, and label corrections.
+- v1 includes recents, favorites, saved meals, quick add, and label corrections (shared across accounts from Phase 13, ADR-020).
 - v1 includes a 20k–50k OFF catalog seed. The full German subset (300k–500k) is an optional larger seed.
-- v1 excludes recipes, weight tracking, photo OCR, and push notifications.
+- v1 excludes push notifications. Nutrition-table OCR arrives in Phase 13 (ADR-021).
 - Password auth in v1; passkeys are a later upgrade.
 - Offline covers cached foods and generic foods. The catalog seed is server-side; a client starter pack is a v1.1 option.
 
@@ -122,6 +123,7 @@ Update in place. This is the single source of truth for phase state.
 - [x] Accounts — open signup, proof of work, recovery codes, per-account limits (ADR-016, `docs/accounts.md`)
 - [ ] Phase 11 — Testing and QA
 - [ ] Phase 12 — Deploy and launch
+- [x] Phase 13 — Shared food corrections and nutrition-table OCR (built 2026-11-21, not through review; phone measurements and the OCR gate are still open)
 - [ ] Design parity sign-off after Phases 8, 9, and 10
 
 ## How to execute

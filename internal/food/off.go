@@ -59,10 +59,10 @@ type OFFConfig struct {
 }
 
 const productFields = "code,product_name,product_name_de,generic_name,brands,quantity,serving_size,serving_quantity," +
-	"nutriments,nutriscore_grade,image_front_url,image_url,ingredients_text,allergens,last_modified_t,countries_tags"
+	"nutriments,nutriscore_grade,image_front_url,image_url,ingredients_text,allergens,last_modified_t,countries_tags,categories_tags"
 
 const searchFields = "code,product_name,product_name_de,generic_name,brands,quantity,serving_size,serving_quantity," +
-	"nutriments,nutriscore_grade,image_front_url,image_url,last_modified_t,countries_tags"
+	"nutriments,nutriscore_grade,image_front_url,image_url,last_modified_t,countries_tags,categories_tags"
 
 const (
 	searchPageSize = 24

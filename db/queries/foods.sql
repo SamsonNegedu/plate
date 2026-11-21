@@ -9,8 +9,8 @@ INSERT INTO foods (
     id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g,
     protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g,
     nutriscore, source, source_id, source_updated_at, source_checked_at, image_key,
-    ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (id) DO UPDATE SET
     barcode = excluded.barcode, name = excluded.name, brand = excluded.brand,
     quantity = excluded.quantity, serving_size = excluded.serving_size, serving_grams = excluded.serving_grams,
@@ -20,7 +20,8 @@ ON CONFLICT (id) DO UPDATE SET
     source = excluded.source, source_id = excluded.source_id, source_updated_at = excluded.source_updated_at,
     source_checked_at = excluded.source_checked_at, image_key = excluded.image_key,
     ingredients = excluded.ingredients, allergens = excluded.allergens, search_name = excluded.search_name,
-    updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
+    updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq,
+    community_rev = excluded.community_rev, category = excluded.category
 WHERE foods.user_id = excluded.user_id;
 
 -- name: SearchFoods :many

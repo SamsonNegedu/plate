@@ -3,11 +3,13 @@ package food
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -37,7 +39,13 @@ CREATE TABLE catalog_foods (
 	salt_100g        REAL,
 	nutriscore       TEXT,
 	image_source_url TEXT,
-	scans            INTEGER NOT NULL DEFAULT 0
+	scans            INTEGER NOT NULL DEFAULT 0,
+	category         TEXT
+) WITHOUT ROWID;
+CREATE TABLE category_stats (
+	category TEXT PRIMARY KEY,
+	n        INTEGER NOT NULL,
+	ranges   TEXT NOT NULL
 ) WITHOUT ROWID;
 CREATE TABLE catalog_meta (
 	key   TEXT PRIMARY KEY,
@@ -46,7 +54,7 @@ CREATE TABLE catalog_meta (
 `
 
 const seedColumns = `barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g,
-	fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans`
+	fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans, category`
 
 // SeedMeta describes a seed release.
 type SeedMeta struct {
@@ -58,6 +66,11 @@ type SeedMeta struct {
 // WriteSeed writes a distributable seed file: the catalog table and its metadata, nothing else.
 // The tool in tools/catalog and the importer tests both use it.
 func WriteSeed(path string, rows []domain.CatalogFood, meta SeedMeta) error {
+	return WriteSeedWithStats(path, rows, nil, meta)
+}
+
+// WriteSeedWithStats is WriteSeed plus the per-category ranges the products' `category` values refer to.
+func WriteSeedWithStats(path string, rows []domain.CatalogFood, stats []domain.CategoryStats, meta SeedMeta) error {
 	ctx := context.Background()
 	if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("removing old seed: %w", err)
@@ -78,7 +91,7 @@ func WriteSeed(path string, rows []domain.CatalogFood, meta SeedMeta) error {
 		return fmt.Errorf("starting seed transaction: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
-	stmt, err := tx.PrepareContext(ctx, `INSERT INTO catalog_foods (`+seedColumns+`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO catalog_foods (`+seedColumns+`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return fmt.Errorf("preparing seed insert: %w", err)
 	}
@@ -86,9 +99,18 @@ func WriteSeed(path string, rows []domain.CatalogFood, meta SeedMeta) error {
 	for _, c := range rows {
 		_, err := stmt.ExecContext(ctx, c.Barcode, c.Name, c.Brand, c.Quantity, c.ServingSize, c.ServingGrams, c.Per100.Kcal,
 			c.Per100.Protein, c.Per100.Carbs, c.Per100.Fat, c.Per100.Sugar, c.Per100.SatFat, c.Per100.Fiber, c.Per100.Salt,
-			c.Nutriscore, c.ImageSourceURL, c.Scans)
+			c.Nutriscore, c.ImageSourceURL, c.Scans, optionalText(c.Category))
 		if err != nil {
 			return fmt.Errorf("writing seed row %s: %w", c.Barcode, err)
+		}
+	}
+	for _, st := range stats {
+		b, err := json.Marshal(st.Ranges)
+		if err != nil {
+			return fmt.Errorf("encoding ranges of %s: %w", st.Category, err)
+		}
+		if _, err := tx.ExecContext(ctx, `INSERT INTO category_stats(category, n, ranges) VALUES (?, ?, ?)`, st.Category, st.N, string(b)); err != nil {
+			return fmt.Errorf("writing category stats: %w", err)
 		}
 	}
 	for k, v := range map[string]string{
@@ -140,6 +162,7 @@ func ImportCatalog(ctx context.Context, db *sql.DB, path string, log *slog.Logge
 	}
 	version := meta["dataset_version"]
 
+	stats := readCategoryStats(ctx, seed)
 	var res CatalogImport
 	res.Version = version
 	now := time.Now().UTC().Format(time.RFC3339)
@@ -148,7 +171,7 @@ func ImportCatalog(ctx context.Context, db *sql.DB, path string, log *slog.Logge
 		if err := r.ClearCatalog(ctx); err != nil {
 			return err
 		}
-		rows, err := seed.QueryContext(ctx, `SELECT `+seedColumns+` FROM catalog_foods`)
+		rows, err := seed.QueryContext(ctx, `SELECT `+seedColumnsFor(seed)+` FROM catalog_foods`) //nolint:gosec // the column list is fixed by the seed schema, not user input
 		if err != nil {
 			return fmt.Errorf("reading seed rows: %w", err)
 		}
@@ -174,6 +197,9 @@ func ImportCatalog(ctx context.Context, db *sql.DB, path string, log *slog.Logge
 		if res.Rows == 0 {
 			return errors.New("seed contains no usable rows; the previous catalog is kept")
 		}
+		if err := r.ReplaceCategoryStats(ctx, stats); err != nil {
+			return err
+		}
 		n, err := r.CountCatalog(ctx)
 		if err != nil {
 			return err
@@ -198,7 +224,7 @@ func ImportCatalog(ctx context.Context, db *sql.DB, path string, log *slog.Logge
 	return res, nil
 }
 
-var allowedSeedTables = map[string]bool{"catalog_foods": true, "catalog_meta": true}
+var allowedSeedTables = map[string]bool{"catalog_foods": true, "catalog_meta": true, "category_stats": true}
 
 // validateSeed checks structure and metadata without trusting anything in the file.
 func validateSeed(ctx context.Context, seed *sql.DB) (map[string]string, error) {
@@ -263,7 +289,7 @@ func validateSeed(ctx context.Context, seed *sql.DB) (map[string]string, error) 
 
 // scanSeedRow reads one row and reports whether it is usable. Unusable rows are skipped, never repaired.
 func probeColumns(ctx context.Context, seed *sql.DB) error {
-	probe, err := seed.QueryContext(ctx, `SELECT `+seedColumns+` FROM catalog_foods LIMIT 1`)
+	probe, err := seed.QueryContext(ctx, `SELECT `+seedColumnsFor(seed)+` FROM catalog_foods LIMIT 1`) //nolint:gosec // the column list is fixed by the seed schema, not user input
 	if err != nil {
 		return fmt.Errorf("seed has the wrong columns: %w", err)
 	}
@@ -277,11 +303,11 @@ func scanSeedRow(rows *sql.Rows) (domain.CatalogFood, bool, error) {
 		c                                                   domain.CatalogFood
 		kcal                                                sql.NullFloat64
 		serving, protein, carbs, fat, sugar, sat, fib, salt sql.NullFloat64
-		nutri, image                                        sql.NullString
+		nutri, image, category                              sql.NullString
 		scans                                               sql.NullInt64
 	)
 	err := rows.Scan(&barcode, &name, &brand, &quantity, &servingSize, &serving, &kcal, &protein, &carbs, &fat,
-		&sugar, &sat, &fib, &salt, &nutri, &image, &scans)
+		&sugar, &sat, &fib, &salt, &nutri, &image, &scans, &category)
 	if err != nil {
 		return domain.CatalogFood{}, false, fmt.Errorf("scanning seed row: %w", err)
 	}
@@ -325,5 +351,90 @@ func scanSeedRow(rows *sql.Rows) (domain.CatalogFood, bool, error) {
 		c.ImageSourceURL = &s
 	}
 	c.Scans = scans.Int64
+	c.Category = cleanCategory(category.String)
 	return c, true, nil
+}
+
+func optionalText(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
+// seedColumnsFor lists the columns to read. A seed built before categories existed has no category column; it reads as NULL.
+func seedColumnsFor(seed *sql.DB) string {
+	rows, err := seed.QueryContext(context.Background(), `PRAGMA table_info(catalog_foods)`)
+	if err != nil {
+		return seedColumns
+	}
+	defer func() { _ = rows.Close() }()
+	for rows.Next() {
+		var cid int
+		var name, typ string
+		var notnull, pk int
+		var dflt sql.NullString
+		if err := rows.Scan(&cid, &name, &typ, &notnull, &dflt, &pk); err != nil {
+			return seedColumns
+		}
+		if name == "category" {
+			return seedColumns
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return seedColumns
+	}
+	return strings.TrimSuffix(seedColumns, ", category") + ", NULL"
+}
+
+var categoryTagRe = regexp.MustCompile(`^[a-z]{2,3}:[^\s,;"']{1,100}$`)
+
+// cleanCategory keeps a category tag only if it looks like one. It is data from a file we do not trust.
+func cleanCategory(s string) string {
+	s = strings.TrimSpace(s)
+	if categoryTagRe.MatchString(s) {
+		return s
+	}
+	return ""
+}
+
+// RangeKeys are the nutrients a category's ranges describe.
+var RangeKeys = []string{"kcal", "fat", "protein", "carbs", "salt"}
+
+// readCategoryStats reads the seed's ranges, skipping anything malformed: a bad row costs one category's warning, not the import.
+func readCategoryStats(ctx context.Context, seed *sql.DB) []domain.CategoryStats {
+	var present int
+	if err := seed.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'category_stats'`).Scan(&present); err != nil || present == 0 {
+		return nil
+	}
+	rows, err := seed.QueryContext(ctx, `SELECT category, n, ranges FROM category_stats`)
+	if err != nil {
+		return nil
+	}
+	defer func() { _ = rows.Close() }()
+	var out []domain.CategoryStats
+	for rows.Next() {
+		var tag, ranges string
+		var n int
+		if err := rows.Scan(&tag, &n, &ranges); err != nil || cleanCategory(tag) == "" || n <= 0 {
+			continue
+		}
+		var raw map[string][3]float64
+		if err := json.Unmarshal([]byte(ranges), &raw); err != nil {
+			continue
+		}
+		clean := map[string][3]float64{}
+		for _, k := range RangeKeys {
+			if r, ok := raw[k]; ok && r[0] <= r[1] && r[1] <= r[2] && r[0] >= 0 && r[2] < 1e5 {
+				clean[k] = r
+			}
+		}
+		if len(clean) > 0 {
+			out = append(out, domain.CategoryStats{Category: tag, N: n, Ranges: clean})
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil
+	}
+	return out
 }

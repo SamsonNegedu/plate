@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	candidatePool   = 50
+	candidatePool   = 150
 	maxResults      = 30
 	localEnough     = 5
 	offMinQueryLen  = 3
@@ -43,6 +43,8 @@ type Result struct {
 	Favorite     bool
 	// CatalogImage is true when a catalog hit has an image the proxy can serve by barcode.
 	CatalogImage bool
+	// Scans is the catalog's scan count for this product, used only to rank it.
+	Scans int64
 }
 
 // Search finds foods: exact barcode, then FTS over the user's foods and the catalog, then Open Food Facts when
@@ -66,7 +68,7 @@ func (s *Service) Search(ctx context.Context, userID, query string) ([]Result, e
 		}
 		byKey[key] = r
 		items = append(items, search.Item{
-			Key: key, Name: r.Name, Brand: r.Brand, Source: r.Source, WholeWord: tier == tierWhole, Infix: tier == tierInfix, Order: order,
+			Key: key, Name: r.Name, Brand: r.Brand, Source: r.Source, WholeWord: tier == tierWhole, Infix: tier == tierInfix, Scans: r.Scans, Order: order,
 		})
 	}
 
@@ -106,8 +108,9 @@ func (s *Service) local(ctx context.Context, repo *store.Repo, userID string, to
 		if err != nil {
 			return err
 		}
+		overlay := s.factKcal(ctx, repo, cats)
 		for _, c := range cats {
-			add(catalogResult(c), t, order)
+			add(overlayKcal(catalogResult(c), overlay), t, order)
 			order++
 		}
 	}
@@ -141,11 +144,38 @@ func (s *Service) localInfix(ctx context.Context, repo *store.Repo, userID strin
 	if err != nil {
 		return err
 	}
+	overlay := s.factKcal(ctx, repo, cats)
 	for _, c := range cats {
-		add(catalogResult(c), tierInfix, order)
+		add(overlayKcal(catalogResult(c), overlay), tierInfix, order)
 		order++
 	}
 	return nil
+}
+
+// factKcal returns the served community calories for catalog hits that have a fact, keyed by barcode.
+func (s *Service) factKcal(ctx context.Context, repo *store.Repo, cats []domain.CatalogFood) map[string]float64 {
+	codes := make([]string, len(cats))
+	for i, c := range cats {
+		codes[i] = c.Barcode
+	}
+	revs, err := repo.AcceptedFacts(ctx, codes)
+	if err != nil || len(revs) == 0 {
+		return nil
+	}
+	out := make(map[string]float64, len(revs))
+	for _, v := range revs {
+		out[v.Barcode] = v.Per100.Kcal
+	}
+	return out
+}
+
+func overlayKcal(r Result, overlay map[string]float64) Result {
+	if r.Barcode != nil {
+		if k, ok := overlay[*r.Barcode]; ok {
+			r.Kcal100 = k
+		}
+	}
+	return r
 }
 
 func (s *Service) rankResults(ctx context.Context, repo *store.Repo, userID, query string, items []search.Item, byKey map[string]Result) ([]Result, error) {
@@ -217,7 +247,7 @@ func catalogResult(c domain.CatalogFood) Result {
 	return Result{
 		Barcode: &bc, Name: c.Name, Brand: c.Brand, Kcal100: c.Per100.Kcal, ServingSize: c.ServingSize,
 		ServingGrams: c.ServingGrams, Source: domain.SourceCatalog, Nutriscore: c.Nutriscore,
-		CatalogImage: c.ImageSourceURL != nil,
+		CatalogImage: c.ImageSourceURL != nil, Scans: c.Scans,
 	}
 }
 
@@ -275,6 +305,11 @@ func upsertOFFFood(ctx context.Context, r *store.Repo, userID string, n Normaliz
 	f := n.Food
 	f.UserID = userID
 	ts := stamp(now)
+	category, err := r.MostSpecificCategory(ctx, n.CategoryTags)
+	if err != nil {
+		return domain.Food{}, err
+	}
+	f.Category = category
 	f.ImageKey = RegisterImage(ctx, r, n.ImageURL, ts)
 	if f.Barcode != nil {
 		existing, err := r.FoodByBarcode(ctx, userID, *f.Barcode)
@@ -295,6 +330,14 @@ func upsertOFFFood(ctx context.Context, r *store.Repo, userID string, n Normaliz
 		f.ID, f.CreatedAt = id.String(), ts
 	}
 	f.UpdatedAt = ts
+	if f.Barcode != nil {
+		// An accepted community fact outranks what Open Food Facts says (ADR-020).
+		if rev, err := r.AcceptedFact(ctx, *f.Barcode); err == nil {
+			applyRevision(&f, rev, now)
+		} else if !errors.Is(err, domain.ErrNotFound) {
+			return domain.Food{}, err
+		}
+	}
 	if err := r.PutFood(ctx, f); err != nil {
 		return domain.Food{}, err
 	}

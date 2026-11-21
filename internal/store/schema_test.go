@@ -85,8 +85,8 @@ func TestSchemaObjects(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "catalog_ad catalog_ai catalog_au catalog_foods catalog_fts catalog_meta catalog_trgm catalog_trgm_ad catalog_trgm_ai " +
-		"catalog_trgm_au change_log entries favorites foods foods_ad foods_ai foods_au foods_fts foods_trgm foods_trgm_ad " +
-		"foods_trgm_ai foods_trgm_au health_records image_cache meta recovery_codes saved_meal_items saved_meals search_cache " +
+		"catalog_trgm_au category_stats change_log entries favorites foods foods_ad foods_ai foods_au foods_fts foods_trgm foods_trgm_ad " +
+		"foods_trgm_ai foods_trgm_au health_records image_cache meta product_fact_disputes product_fact_revisions product_facts recovery_codes saved_meal_items saved_meals search_cache " +
 		"sessions settings sync_ops sync_state users"
 	if strings.Join(got, " ") != want {
 		t.Fatalf("schema drift:\n got %s\nwant %s", strings.Join(got, " "), want)

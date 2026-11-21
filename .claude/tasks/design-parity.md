@@ -36,11 +36,12 @@ Every surface gets designed states, not browser defaults.
 |---|---|---|
 | Today | Today | default, empty day, over goal, missing macros, offline, syncing, sync error |
 | Scan | Scan | starting, detecting, permission denied, no camera, camera busy, insecure context, offline, file fallback |
-| Product | Product | found, identity missing nutrition if applicable, not loggable, custom, stale, offline, add, edit |
+| Product | Product | found, identity missing nutrition if applicable, not loggable, custom, stale, community-corrected, unusual values, offline, add, edit |
 | Search | Search | empty query with recents, results, no results, offline, rate limited, upstream error |
-| Quick add | Quick add | default, validation error |
+| Quick add | Quick add | default, validation error, kJ entry, numbers that do not add up (the same table and hint as Add this product) |
 | Entry edit | Entry edit | default, deleted with undo, tombstoned conflict |
-| Manual food | — | new food, correction, missing kcal, server error |
+| Manual food | Add this product | new food, correction, missing kcal, server error, label read (values filled, doubtful values marked, photo beside them), per-portion label, nothing read, kJ entry, numbers that do not add up, photos for the product |
+| Not found | Not found | barcode shown, scan the label (first-use download wording, reading, downloading, failed), type it in, offline |
 | History | History | data, no data, one day, over goal, offline, table view, loading |
 | Settings | — (Phase 9) | default, dirty, saved, sync paused, conflicts, export, import, delete-all, install |
 | Login / onboarding | — | login, wrong password, rate limited, offline start, first run, goal estimate |

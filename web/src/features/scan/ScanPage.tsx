@@ -104,18 +104,25 @@ export default function ScanPage() {
             });
             break;
           case "not-found":
-            ui.open({ kind: "manual", meal, date, barcode: code });
+            ui.open({ kind: "notFound", meal, date, barcode: code });
             break;
           case "not-loggable":
-            ui.open({ kind: "manual", meal, date, barcode: code, name: r.name, notLoggable: true });
+            ui.open({
+              kind: "notFound",
+              meal,
+              date,
+              barcode: code,
+              name: r.name,
+              notLoggable: true,
+            });
             break;
           case "offline":
             ui.toast({ message: copy.scan.offlineMiss });
-            ui.open({ kind: "manual", meal, date, barcode: code });
+            ui.open({ kind: "notFound", meal, date, barcode: code });
             break;
           case "unavailable":
             ui.toast({ message: copy.scan.unavailable });
-            ui.open({ kind: "manual", meal, date, barcode: code });
+            ui.open({ kind: "notFound", meal, date, barcode: code });
             break;
           case "invalid":
             dispatch({ type: "announced", message: copy.scan.invalid });

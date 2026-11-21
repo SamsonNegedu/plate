@@ -18,6 +18,15 @@ func (q *Queries) ClearImage(ctx context.Context, key string) error {
 	return err
 }
 
+const deleteSearchCache = `-- name: DeleteSearchCache :exec
+DELETE FROM search_cache WHERE key = ?
+`
+
+func (q *Queries) DeleteSearchCache(ctx context.Context, key string) error {
+	_, err := q.db.ExecContext(ctx, deleteSearchCache, key)
+	return err
+}
+
 const getImage = `-- name: GetImage :one
 SELECT key, content_type, bytes, fetched_at, last_used_at, source_url FROM image_cache WHERE key = ?
 `

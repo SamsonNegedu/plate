@@ -82,6 +82,7 @@ type OFFProduct struct {
 	Allergens       string                     `json:"allergens"`
 	LastModifiedT   flexNum                    `json:"last_modified_t"`
 	CountriesTags   []string                   `json:"countries_tags"`
+	CategoriesTags  []string                   `json:"categories_tags"`
 }
 
 // nutriment returns one nutriments value, or nil when it is absent or not numeric.

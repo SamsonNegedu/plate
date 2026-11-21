@@ -1303,6 +1303,21 @@
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
+
+  /* Add this product: the not-found choice and the label-style capture table */
+  .nf-code { font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
+  .nf-copy { font-size: 13px; color: var(--ink-2); margin: 0 0 12px; line-height: 1.35; }
+  .nf-btn { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+  .nf-btn.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); }
+  .nt-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid var(--ink); padding-bottom: 5px; margin-top: 10px; font-weight: 600; font-size: 14px; }
+  .nt-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; min-height: 42px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 500; }
+  .nt-row.sub { padding-left: 12px; color: var(--ink-2); font-weight: 400; }
+  .nt-in { display: flex; align-items: center; justify-content: flex-end; gap: 6px; width: 104px; min-height: 32px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-variant-numeric: tabular-nums; }
+  .nt-in small { width: 26px; text-align: left; color: var(--ink-2); font-size: 11px; }
+  .nt-in.check { border-color: var(--amber); }
+  .nt-note { font-size: 11px; color: var(--ink-2); margin: 2px 0 0; }
+  .nt-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .nt-field { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12px; color: var(--ink-2); background: var(--surface); }
 </style>
 
 <div class="board">
@@ -1579,6 +1594,62 @@
         </div>
       </div>
       <figcaption><strong>Search</strong><span>Recent foods, saved meals and results in one place.</span></figcaption>
+    </figure>
+
+    <!-- NOT FOUND -->
+    <figure class="mock">
+      <div class="phone">
+        <div class="screen sheet-screen quick-sheet" aria-hidden="true">
+          <div class="sheet-backdrop">
+            <div class="fake-line w40"></div>
+            <div class="fake-card"></div>
+          </div>
+          <div class="quick-panel">
+            <div class="quick-head">
+              <div><h2>Not in the database yet</h2></div>
+              <span class="p-close">×</span>
+            </div>
+            <div class="nf-code">Barcode 4337256560191</div>
+            <p class="nf-copy">Add it once and everyone who scans this barcode gets it. A photo of the nutrition table is the quickest way.</p>
+            <div class="nf-btn primary">Scan the nutrition label (18 MB download, once)</div>
+            <div class="nf-btn">Type it in</div>
+          </div>
+        </div>
+      </div>
+      <figcaption><strong>Not found</strong><span>One path: photograph the table or type it. Saved for everyone, so a rescan finds it.</span></figcaption>
+    </figure>
+
+    <!-- ADD THIS PRODUCT -->
+    <figure class="mock">
+      <div class="phone">
+        <div class="screen sheet-screen quick-sheet" aria-hidden="true">
+          <div class="sheet-backdrop">
+            <div class="fake-line w40"></div>
+            <div class="fake-card"></div>
+          </div>
+          <div class="quick-panel">
+            <div class="quick-head">
+              <div><h2>Add this product</h2><p class="quick-sub">Everyone who scans this barcode sees these values.</p></div>
+              <span class="p-close">×</span>
+            </div>
+            <div class="nt-pair">
+              <div class="nt-field">Barcode<br><strong>4337256560191</strong></div>
+              <div class="nt-field">Serving size<br><strong>50 g</strong></div>
+            </div>
+            <div class="nt-head"><span>Per 100 g</span><span>kcal | kJ</span></div>
+            <div class="nt-row"><span>Energy</span><span class="nt-in">192<small>kcal</small></span></div>
+            <div class="nt-row"><span>Fat</span><span class="nt-in">12<small>g</small></span></div>
+            <div class="nt-row sub"><span>of which saturates</span><span class="nt-in check">1,9<small>g</small></span></div>
+            <p class="nt-note">Check this value against the label.</p>
+            <div class="nt-row"><span>Carbohydrate</span><span class="nt-in">0<small>g</small></span></div>
+            <div class="nt-row sub"><span>of which sugars</span><span class="nt-in">0<small>g</small></span></div>
+            <div class="nt-row"><span>Fibre</span><span class="nt-in">0<small>g</small></span></div>
+            <div class="nt-row"><span>Protein</span><span class="nt-in">21<small>g</small></span></div>
+            <div class="nt-row"><span>Salt</span><span class="nt-in">2,8<small>g</small></span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><strong>Add this product</strong><span>A printed label's order, units fixed, doubtful values marked in words, short fields side by side.</span></figcaption>
     </figure>
 
     <!-- QUICK ADD -->

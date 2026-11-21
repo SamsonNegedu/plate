@@ -3,6 +3,7 @@ package httpapi
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"image"
 	"image/jpeg"
@@ -54,6 +55,8 @@ func TestFoodRoutesRequireAuth(t *testing.T) {
 		{"PUT", "/foods/" + id, `{}`}, {"GET", "/foods/" + id + "/favorite", ""}, {"PUT", "/foods/" + id + "/favorite", ""},
 		{"DELETE", "/foods/" + id + "/favorite", ""}, {"GET", "/images/" + strings.Repeat("a", 32), ""},
 		{"GET", "/images/catalog/3017620422003", ""}, {"GET", "/about", ""},
+		{"PUT", "/foods/barcode/4337256560191/correction", `{}`}, {"GET", "/foods/barcode/4337256560191/fact", ""},
+		{"POST", "/foods/barcode/4337256560191/dispute", ""},
 	} {
 		if rec := e.do(r.m, "/api/v1"+r.p, r.b); rec.Code != 401 {
 			t.Errorf("%s %s = %d, want 401", r.m, r.p, rec.Code)
@@ -351,5 +354,266 @@ func TestExportCarriesAttribution(t *testing.T) {
 	// and it must re-import unchanged
 	if rec := e.do("POST", "/api/v1/import?mode=replace", rec.Body.String(), cookie(c)); rec.Code != 200 {
 		t.Fatalf("re-import = %d %s", rec.Code, rec.Body)
+	}
+}
+
+func correctionJSON(mods map[string]any) string {
+	m := map[string]any{
+		"revision_id": newID(), "name": "Räucherlachs", "brand": "REWE Beste Wahl", "kcal": 192, "kj": 801, "protein": 21,
+		"carbs": 0, "fat": 12, "satfat": 1.9, "sugar": 0, "fiber": 0, "salt": 2.8, "source": "manual",
+	}
+	for k, v := range mods {
+		m[k] = v
+	}
+	return jsonBody(m)
+}
+
+func TestACorrectionIsSharedAndAFailedOneIsNot(t *testing.T) {
+	e := newEnv(t, opts{})
+	a := e.login(t)
+	rec := e.signup(t, "second", "a long passphrase here")
+	if rec.Code != 200 {
+		t.Fatalf("signup = %d %s", rec.Code, rec.Body)
+	}
+	b := sessionCookie(rec)
+	const code = "4337256560191"
+	p := offProduct(code, "Räucherlachs", "399")
+	p.Nutriments["fat_100g"], p.Nutriments["proteins_100g"] = json.RawMessage("25"), json.RawMessage("43.8")
+	e.off.products[code] = p
+
+	if rec := e.do("GET", "/api/v1/foods/barcode/"+code, "", cookie(a)); rec.Code != 200 {
+		t.Fatalf("setup lookup = %d", rec.Code)
+	}
+	// A correction that contradicts itself stays private: the other account still sees Open Food Facts.
+	bad := e.do("PUT", "/api/v1/foods/barcode/"+code+"/correction", correctionJSON(map[string]any{"kcal": 500, "kj": nil}), cookie(a))
+	got := decode[map[string]any](t, bad)
+	if bad.Code != 200 || got["status"] != "pending" || len(got["issues"].([]any)) == 0 {
+		t.Fatalf("failed check = %d %s", bad.Code, bad.Body)
+	}
+	if v := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/"+code, "", cookie(b))); v["kcal"] != float64(399) || v["community"] != false {
+		t.Fatalf("a pending value leaked to another account: %v", v)
+	}
+
+	ok := e.do("PUT", "/api/v1/foods/barcode/"+code+"/correction", correctionJSON(nil), cookie(a))
+	if got := decode[map[string]any](t, ok); ok.Code != 200 || got["status"] != "accepted" {
+		t.Fatalf("correction = %d %s", ok.Code, ok.Body)
+	}
+	v := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/"+code, "", cookie(b)))
+	if v["kcal"] != float64(192) || v["community"] != true || v["protein"] != float64(21) {
+		t.Fatalf("the other account sees %v", v)
+	}
+	fact := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/"+code+"/fact", "", cookie(b)))
+	if f, _ := fact["fact"].(map[string]any); f == nil || f["mine"] != false || f["origin"] != "off_correction" {
+		t.Fatalf("fact = %v", fact)
+	}
+	if strings.Contains(ok.Body.String(), "contributor") || strings.Contains(fact["fact"].(map[string]any)["updated_at"].(string), "contributor") {
+		t.Fatal("a contributor id leaked")
+	}
+	if rec := e.do("POST", "/api/v1/foods/barcode/"+code+"/dispute", "", cookie(a)); rec.Code != 409 {
+		t.Fatalf("disputing your own facts = %d", rec.Code)
+	}
+}
+
+func TestCorrectionValidation(t *testing.T) {
+	e := newEnv(t, opts{})
+	c := e.login(t)
+	for name, body := range map[string]string{
+		"not a uuid":    correctionJSON(map[string]any{"revision_id": "nope"}),
+		"unknown field": correctionJSON(map[string]any{"user_id": "x"}),
+		"bad source":    correctionJSON(map[string]any{"source": "guess"}),
+		"junk photo":    correctionJSON(map[string]any{"label_image": "AAAA"}),
+	} {
+		if rec := e.do("PUT", "/api/v1/foods/barcode/4337256560191/correction", body, cookie(c)); rec.Code != 422 && rec.Code != 400 {
+			t.Errorf("%s = %d %s", name, rec.Code, rec.Body)
+		}
+	}
+	if rec := e.do("PUT", "/api/v1/foods/barcode/12/correction", correctionJSON(nil), cookie(c)); rec.Code < 400 {
+		t.Errorf("a short barcode = %d", rec.Code)
+	}
+}
+
+func photoB64(t *testing.T) string { return base64.StdEncoding.EncodeToString(jpegBody(t)) }
+
+func TestASharedFrontPhotoIsServedBackAndOnlyWhileItsRevisionIsTheServedOne(t *testing.T) {
+	e := newEnv(t, opts{})
+	a := e.login(t)
+	rec := e.signup(t, "second", "a long passphrase here")
+	b := sessionCookie(rec)
+	const code = "4337256560191"
+
+	ok := e.do("PUT", "/api/v1/foods/barcode/"+code+"/correction",
+		correctionJSON(map[string]any{"front_image": photoB64(t), "label_image": photoB64(t)}), cookie(a))
+	first := decode[map[string]any](t, ok)
+	if ok.Code != 200 || first["status"] != "accepted" {
+		t.Fatalf("correction = %d %s", ok.Code, ok.Body)
+	}
+
+	food := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/"+code, "", cookie(b)))
+	front, _ := food["image_path"].(string)
+	want := "/api/v1/images/fact/" + first["revision_id"].(string) + "/front"
+	if front != want {
+		t.Fatalf("image_path = %q, want %q", front, want)
+	}
+	for _, p := range []string{front, strings.TrimSuffix(front, "front") + "nutrition"} {
+		got := e.do("GET", p, "", cookie(b))
+		if got.Code != 200 || got.Header().Get("Content-Type") != "image/jpeg" ||
+			!strings.Contains(got.Header().Get("Cache-Control"), "immutable") || !bytes.Equal(got.Body.Bytes(), jpegBody(t)) {
+			t.Fatalf("%s = %d %v", p, got.Code, got.Header())
+		}
+	}
+	if got := e.do("GET", front, ""); got.Code != 401 {
+		t.Fatalf("a photo needs a session: %d", got.Code)
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+newID()+"/front", "", cookie(b)); got.Code != 404 {
+		t.Fatalf("an unknown revision = %d", got.Code)
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+newID()+"/side", "", cookie(b)); got.Code != 422 && got.Code != 404 {
+		t.Fatalf("an unknown kind = %d", got.Code)
+	}
+
+	// A private revision (a check failed) has no public photo.
+	private := e.do("PUT", "/api/v1/foods/barcode/"+code+"/correction",
+		correctionJSON(map[string]any{"kcal": 500, "kj": nil, "front_image": photoB64(t)}), cookie(b))
+	pend := decode[map[string]any](t, private)
+	if pend["status"] != "pending" {
+		t.Fatalf("setup: %s", private.Body)
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+pend["revision_id"].(string)+"/front", "", cookie(a)); got.Code != 404 {
+		t.Fatalf("a private revision's photo = %d", got.Code)
+	}
+
+	// A newer revision replaces the served one: the old photo URL stops working and the food stops pointing at it.
+	if r := e.do("PUT", "/api/v1/foods/barcode/"+code+"/correction", correctionJSON(nil), cookie(b)); r.Code != 200 {
+		t.Fatalf("second correction = %d %s", r.Code, r.Body)
+	}
+	if got := e.do("GET", front, "", cookie(a)); got.Code != 404 {
+		t.Fatalf("a replaced revision's photo = %d", got.Code)
+	}
+	if again := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/"+code, "", cookie(a))); again["image_path"] != nil {
+		t.Fatalf("image_path after the photo was replaced = %v", again["image_path"])
+	}
+}
+
+func TestASharedFrontPhotoNeverReplacesAPictureTheFoodAlreadyHas(t *testing.T) {
+	e := newEnv(t, opts{imagesDir: t.TempDir()})
+	a := e.login(t)
+	rec := e.signup(t, "second", "a long passphrase here")
+	b := sessionCookie(rec)
+	addCatalog(t, e, "4337256560191", "Räucherlachs", 399)
+
+	before := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4337256560191", "", cookie(a)))
+	catalogPath, _ := before["image_path"].(string)
+	if !strings.HasPrefix(catalogPath, "/api/v1/images/") || strings.Contains(catalogPath, "/fact/") {
+		t.Fatalf("setup: image_path = %q", catalogPath)
+	}
+	if r := e.do("PUT", "/api/v1/foods/barcode/4337256560191/correction", correctionJSON(map[string]any{"front_image": photoB64(t)}), cookie(a)); r.Code != 200 {
+		t.Fatalf("correction = %d %s", r.Code, r.Body)
+	}
+	for name, c := range map[string]*http.Cookie{"the author": a, "another account that never looked it up": b} {
+		got := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4337256560191", "", cookie(c)))
+		path, _ := got["image_path"].(string)
+		if got["community"] != true || got["kcal"] != float64(192) {
+			t.Fatalf("%s: %v", name, got)
+		}
+		if !strings.HasPrefix(path, "/api/v1/images/") || strings.Contains(path, "/fact/") {
+			t.Errorf("%s: the catalog picture was replaced by %q", name, path)
+		}
+	}
+}
+
+// sizedJPEG makes a valid JPEG whose pixels and size differ from another's, so a test can tell which photo came back.
+func sizedJPEG(t *testing.T, w, h int, shade uint8) []byte {
+	t.Helper()
+	img := image.NewGray(image.Rect(0, 0, w, h))
+	for i := range img.Pix {
+		img.Pix[i] = shade + uint8(i%7)*9
+	}
+	var b bytes.Buffer
+	if err := jpeg.Encode(&b, img, &jpeg.Options{Quality: 90}); err != nil {
+		t.Fatal(err)
+	}
+	return b.Bytes()
+}
+
+func TestFrontAndNutritionPhotosAreNeverMixedUp(t *testing.T) {
+	e := newEnv(t, opts{})
+	a := e.login(t)
+	front := sizedJPEG(t, 40, 60, 20)
+	table := sizedJPEG(t, 90, 50, 180)
+	if bytes.Equal(front, table) {
+		t.Fatal("setup: the two photos must differ")
+	}
+	enc := base64.StdEncoding.EncodeToString
+
+	// Both photos: the food's picture is the front, and each URL returns its own bytes.
+	rec := e.do("PUT", "/api/v1/foods/barcode/4337256560191/correction",
+		correctionJSON(map[string]any{"front_image": enc(front), "label_image": enc(table)}), cookie(a))
+	both := decode[map[string]any](t, rec)
+	rev := both["revision_id"].(string)
+	food := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4337256560191", "", cookie(a)))
+	if food["image_path"] != "/api/v1/images/fact/"+rev+"/front" {
+		t.Fatalf("image_path = %v, want the front photo", food["image_path"])
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+rev+"/front", "", cookie(a)); !bytes.Equal(got.Body.Bytes(), front) {
+		t.Fatal("/front did not return the front photo")
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+rev+"/nutrition", "", cookie(a)); !bytes.Equal(got.Body.Bytes(), table) {
+		t.Fatal("/nutrition did not return the nutrition table")
+	}
+
+	// Only the nutrition table was shared (the front photo is optional): the food must not show the table as its picture.
+	rec = e.do("PUT", "/api/v1/foods/barcode/4337256560208/correction",
+		correctionJSON(map[string]any{"label_image": enc(table)}), cookie(a))
+	only := decode[map[string]any](t, rec)["revision_id"].(string)
+	food = decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4337256560208", "", cookie(a)))
+	if food["image_path"] != nil {
+		t.Fatalf("image_path = %v, but no front photo was shared", food["image_path"])
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+only+"/front", "", cookie(a)); got.Code != 404 {
+		t.Fatalf("/front with no front photo = %d, want 404 and not the table", got.Code)
+	}
+	if got := e.do("GET", "/api/v1/images/fact/"+only+"/nutrition", "", cookie(a)); got.Code != 200 || !bytes.Equal(got.Body.Bytes(), table) {
+		t.Fatalf("/nutrition = %d", got.Code)
+	}
+}
+
+func TestAFoodCarriesItsCategoryRangesSoTheClientCanSpotOutliers(t *testing.T) {
+	e := newEnv(t, opts{})
+	c := e.login(t)
+	repo := store.NewRepo(e.db)
+	ctx := context.Background()
+	if err := repo.PutCatalogFood(ctx, domain.CatalogFood{
+		Barcode: "4337256560191", Name: "Räucherlachs", Per100: domain.Nutrients{Kcal: 190}, Category: "en:smoked-salmons",
+		DatasetVersion: "v1", ImportedAt: "2026-11-21T00:00:00Z",
+	}, "2026-11-21T00:00:00Z"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.PutCatalogFood(ctx, domain.CatalogFood{
+		Barcode: "4000000000011", Name: "Nudeln", Per100: domain.Nutrients{Kcal: 350},
+		DatasetVersion: "v1", ImportedAt: "2026-11-21T00:00:00Z",
+	}, "2026-11-21T00:00:00Z"); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.ReplaceCategoryStats(ctx, []domain.CategoryStats{{
+		Category: "en:smoked-salmons", N: 227, Ranges: map[string][3]float64{"kcal": {123, 180, 244}, "salt": {1.4, 2.8, 3.6}},
+	}}); err != nil {
+		t.Fatal(err)
+	}
+
+	got := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4337256560191", "", cookie(c)))
+	cat, _ := got["category"].(map[string]any)
+	if cat == nil || cat["name"] != "smoked salmons" {
+		t.Fatalf("category = %v", got["category"])
+	}
+	kcal, _ := cat["ranges"].(map[string]any)["kcal"].([]any)
+	if len(kcal) != 3 || kcal[2] != float64(244) {
+		t.Fatalf("kcal range = %v", kcal)
+	}
+	plain := decode[map[string]any](t, e.do("GET", "/api/v1/foods/barcode/4000000000011", "", cookie(c)))
+	if _, has := plain["category"]; has {
+		t.Fatalf("a food with no category must not carry one: %v", plain["category"])
+	}
+	if strings.Contains(e.do("GET", "/api/v1/foods/recent", "", cookie(c)).Body.String(), "internal") {
+		t.Fatal("recent must stay clean")
 	}
 }

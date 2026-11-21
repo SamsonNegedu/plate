@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -18,30 +19,46 @@ const staleAfterDays = 90
 
 // FoodView is a loggable food as the client sees it. Nutrients are per 100 g; null means not reported.
 type FoodView struct {
-	ID              string   `json:"id" format:"uuid"`
-	Barcode         *string  `json:"barcode" nullable:"true"`
-	Name            string   `json:"name"`
-	Brand           string   `json:"brand"`
-	Quantity        string   `json:"quantity"`
-	ServingSize     string   `json:"serving_size"`
-	ServingGrams    *float64 `json:"serving_grams" nullable:"true"`
-	Kcal            float64  `json:"kcal"`
-	Protein         *float64 `json:"protein" nullable:"true"`
-	Carbs           *float64 `json:"carbs" nullable:"true"`
-	Fat             *float64 `json:"fat" nullable:"true"`
-	Sugar           *float64 `json:"sugar" nullable:"true"`
-	SatFat          *float64 `json:"satfat" nullable:"true"`
-	Fiber           *float64 `json:"fiber" nullable:"true"`
-	Salt            *float64 `json:"salt" nullable:"true"`
-	Nutriscore      *string  `json:"nutriscore" nullable:"true"`
-	Source          string   `json:"source" enum:"off,bls,user,catalog"`
-	SourceID        *string  `json:"source_id" nullable:"true"`
-	SourceCheckedAt *string  `json:"source_checked_at" nullable:"true"`
-	Stale           bool     `json:"stale" doc:"Cached from Open Food Facts and not checked for 90 days."`
-	ImagePath       *string  `json:"image_path" nullable:"true" doc:"Same-origin path of the product image."`
-	Ingredients     string   `json:"ingredients"`
-	Allergens       string   `json:"allergens"`
-	UpdatedAt       string   `json:"updated_at"`
+	ID              string        `json:"id" format:"uuid"`
+	Barcode         *string       `json:"barcode" nullable:"true"`
+	Name            string        `json:"name"`
+	Brand           string        `json:"brand"`
+	Quantity        string        `json:"quantity"`
+	ServingSize     string        `json:"serving_size"`
+	ServingGrams    *float64      `json:"serving_grams" nullable:"true"`
+	Kcal            float64       `json:"kcal"`
+	Protein         *float64      `json:"protein" nullable:"true"`
+	Carbs           *float64      `json:"carbs" nullable:"true"`
+	Fat             *float64      `json:"fat" nullable:"true"`
+	Sugar           *float64      `json:"sugar" nullable:"true"`
+	SatFat          *float64      `json:"satfat" nullable:"true"`
+	Fiber           *float64      `json:"fiber" nullable:"true"`
+	Salt            *float64      `json:"salt" nullable:"true"`
+	Nutriscore      *string       `json:"nutriscore" nullable:"true"`
+	Source          string        `json:"source" enum:"off,bls,user,catalog"`
+	SourceID        *string       `json:"source_id" nullable:"true"`
+	SourceCheckedAt *string       `json:"source_checked_at" nullable:"true"`
+	Stale           bool          `json:"stale" doc:"Cached from Open Food Facts and not checked for 90 days."`
+	ImagePath       *string       `json:"image_path" nullable:"true" doc:"Same-origin path of the product image."`
+	Ingredients     string        `json:"ingredients"`
+	Allergens       string        `json:"allergens"`
+	UpdatedAt       string        `json:"updated_at"`
+	Community       bool          `json:"community" doc:"The nutrition comes from a community correction shared by every account."`
+	Category        *CategoryView `json:"category,omitempty" required:"false" doc:"How this food's category looks per 100 g, so the client can tell when the values are far outside it."`
+}
+
+// CategoryView is the Open Food Facts category a food is compared with and that category's ranges per 100 g.
+type CategoryView struct {
+	Name   string               `json:"name" doc:"Readable name, such as smoked salmons."`
+	Ranges map[string][]float64 `json:"ranges" doc:"Per nutrient (kcal, fat, protein, carbs, salt): the 5th percentile, the median and the 95th percentile."`
+}
+
+// categoryName makes a category tag readable: en:smoked-salmons becomes smoked salmons.
+func categoryName(tag string) string {
+	if _, rest, ok := strings.Cut(tag, ":"); ok {
+		tag = rest
+	}
+	return strings.ReplaceAll(tag, "-", " ")
 }
 
 func imagePath(key *string) *string {
@@ -52,13 +69,40 @@ func imagePath(key *string) *string {
 	return &p
 }
 
+// foodViewWithPhoto is foodView plus, for a community food that has no Open Food Facts picture, the front photo someone shared
+// with it. A picture the food already has is never replaced: the shared photo only fills a gap.
+func (d Deps) foodViewWithPhoto(ctx context.Context, repo *store.Repo, f domain.Food) FoodView {
+	v := d.foodView(f)
+	if f.Category != "" {
+		if cs, err := repo.CategoryStats(ctx, f.Category); err == nil {
+			ranges := make(map[string][]float64, len(cs.Ranges))
+			for k, r := range cs.Ranges {
+				ranges[k] = []float64{r[0], r[1], r[2]}
+			}
+			v.Category = &CategoryView{Name: categoryName(cs.Category), Ranges: ranges}
+		}
+	}
+	if v.ImagePath != nil || f.CommunityRev == nil {
+		return v
+	}
+	if ok, err := repo.ServedFactHasFrontPhoto(ctx, *f.CommunityRev); err == nil && ok {
+		p := factPhotoPath(*f.CommunityRev, "front")
+		v.ImagePath = &p
+	}
+	return v
+}
+
+func factPhotoPath(revision, kind string) string {
+	return APIPrefix + "/images/fact/" + revision + "/" + kind
+}
+
 func (d Deps) foodView(f domain.Food) FoodView {
 	v := FoodView{
 		ID: f.ID, Barcode: f.Barcode, Name: f.Name, Brand: f.Brand, Quantity: f.Quantity, ServingSize: f.ServingSize,
 		ServingGrams: f.ServingGrams, Kcal: f.Per100.Kcal, Protein: f.Per100.Protein, Carbs: f.Per100.Carbs, Fat: f.Per100.Fat,
 		Sugar: f.Per100.Sugar, SatFat: f.Per100.SatFat, Fiber: f.Per100.Fiber, Salt: f.Per100.Salt, Nutriscore: f.Nutriscore,
 		Source: string(f.Source), SourceID: f.SourceID, SourceCheckedAt: f.SourceCheckedAt, ImagePath: imagePath(f.ImageKey),
-		Ingredients: f.Ingredients, Allergens: f.Allergens, UpdatedAt: f.UpdatedAt,
+		Ingredients: f.Ingredients, Allergens: f.Allergens, UpdatedAt: f.UpdatedAt, Community: f.CommunityRev != nil,
 	}
 	if f.Source == domain.SourceOFF && f.SourceCheckedAt != nil {
 		if t, err := time.Parse(time.RFC3339, *f.SourceCheckedAt); err == nil && time.Since(t) > staleAfterDays*24*time.Hour {
@@ -138,6 +182,69 @@ type FoodBody struct {
 	Nutriscore   *string  `json:"nutriscore" required:"false" nullable:"true" enum:"a,b,c,d,e"`
 }
 
+// CorrectionBody is a person's version of a product's facts, in Open Food Facts terms. A submission whose numbers pass
+// the plausibility checks goes live for every account at once.
+type CorrectionBody struct {
+	RevisionID      string   `json:"revision_id" format:"uuid" doc:"Chosen by the client; resending the same id is safe."`
+	Name            string   `json:"name" minLength:"1" maxLength:"200"`
+	Brand           string   `json:"brand" required:"false" maxLength:"200"`
+	Quantity        string   `json:"quantity" required:"false" maxLength:"100"`
+	ServingSize     string   `json:"serving_size" required:"false" maxLength:"100"`
+	ServingGrams    *float64 `json:"serving_grams" required:"false" nullable:"true" exclusiveMinimum:"0"`
+	Kcal            float64  `json:"kcal" minimum:"0"`
+	KJ              *float64 `json:"kj" required:"false" nullable:"true" minimum:"0"`
+	Protein         *float64 `json:"protein" required:"false" nullable:"true" minimum:"0"`
+	Carbs           *float64 `json:"carbs" required:"false" nullable:"true" minimum:"0"`
+	Fat             *float64 `json:"fat" required:"false" nullable:"true" minimum:"0"`
+	Sugar           *float64 `json:"sugar" required:"false" nullable:"true" minimum:"0"`
+	SatFat          *float64 `json:"satfat" required:"false" nullable:"true" minimum:"0"`
+	Fiber           *float64 `json:"fiber" required:"false" nullable:"true" minimum:"0"`
+	Salt            *float64 `json:"salt" required:"false" nullable:"true" minimum:"0"`
+	Source          string   `json:"source" enum:"manual,ocr" doc:"How the numbers were entered."`
+	AppVersion      string   `json:"app_version" required:"false" maxLength:"40"`
+	Lang            string   `json:"lang" required:"false" maxLength:"8" doc:"Label language, such as de."`
+	Countries       string   `json:"countries" required:"false" maxLength:"60"`
+	IngredientsText string   `json:"ingredients_text" required:"false" maxLength:"2000"`
+	LabelImage      []byte   `json:"label_image" required:"false" doc:"Cropped nutrition-table photo, JPEG or PNG, at most 400 KB."`
+	FrontImage      []byte   `json:"front_image" required:"false" doc:"Front of the pack, JPEG or PNG, at most 250 KB."`
+}
+
+type correctionIn struct {
+	Code string `path:"code" maxLength:"32"`
+	Body CorrectionBody
+}
+
+type correctionOut struct {
+	Body struct {
+		RevisionID string   `json:"revision_id" format:"uuid"`
+		Status     string   `json:"status" enum:"pending,accepted,superseded,reverted" doc:"accepted: every account sees it. pending: only you, because a check failed."`
+		Origin     string   `json:"origin" enum:"off_correction,off_missing_fields,new_product"`
+		Issues     []string `json:"issues" doc:"The plausibility checks the numbers failed. Empty when none."`
+	}
+}
+
+type disputeOut struct {
+	Body struct {
+		Reverted bool `json:"reverted" doc:"Enough accounts disputed it, so the product went back to its previous facts."`
+	}
+}
+
+// FactView says whether a barcode has a community fact and where it came from.
+type FactView struct {
+	Status    string `json:"status" enum:"accepted,upstream_confirmed"`
+	Origin    string `json:"origin" enum:"off_correction,off_missing_fields,new_product"`
+	Source    string `json:"source" enum:"manual,ocr"`
+	UpdatedAt string `json:"updated_at"`
+	Mine      bool   `json:"mine" doc:"You submitted the served revision."`
+	HasPhoto  bool   `json:"has_photo"`
+}
+
+type factOut struct {
+	Body struct {
+		Fact *FactView `json:"fact,omitempty" required:"false" doc:"Absent when no community fact exists."`
+	}
+}
+
 type foodPutIn struct {
 	ID   string `path:"id" format:"uuid"`
 	Body FoodBody
@@ -156,6 +263,11 @@ type favoriteOut struct {
 
 type imageIn struct {
 	Key string `path:"key" pattern:"^[0-9a-f]{32}$"`
+}
+
+type factPhotoIn struct {
+	Revision string `path:"revision" format:"uuid"`
+	Kind     string `path:"kind" enum:"front,nutrition" doc:"front: the front of the pack. nutrition: the cropped nutrition table."`
 }
 
 type catalogImageIn struct {
@@ -237,7 +349,7 @@ func (d Deps) registerFoods(api huma.API) {
 		if err != nil {
 			return nil, d.foodError(ctx, err)
 		}
-		return &foodOut{Body: d.foodView(f)}, nil
+		return &foodOut{Body: d.foodViewWithPhoto(ctx, repo, f)}, nil
 	})
 
 	huma.Register(api, huma.Operation{
@@ -268,7 +380,7 @@ func (d Deps) registerFoods(api huma.API) {
 		out := &recentOut{}
 		out.Body.Foods = make([]FoodView, 0, len(foods))
 		for _, f := range foods {
-			out.Body.Foods = append(out.Body.Foods, d.foodView(f))
+			out.Body.Foods = append(out.Body.Foods, d.foodViewWithPhoto(ctx, repo, f))
 		}
 		return out, nil
 	})
@@ -292,6 +404,66 @@ func (d Deps) registerFoods(api huma.API) {
 			return nil, d.foodError(ctx, err)
 		}
 		return &foodOut{Body: d.foodView(f)}, nil
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "correct-product", Method: http.MethodPut, Path: "/foods/barcode/{code}/correction", Tags: []string{"foods"},
+		Summary:     "Submit the facts for a product, shared by every account",
+		Description: "Numbers that pass the plausibility checks go live for everyone at once and replace what was served. A submission that fails a check is stored and stays private to its author.",
+		Security:    sessionSecurity, MaxBodyBytes: 1 << 20,
+		Errors: []int{http.StatusConflict, http.StatusUnprocessableEntity, http.StatusTooManyRequests},
+	}, func(ctx context.Context, in *correctionIn) (*correctionOut, error) {
+		b := in.Body
+		res, err := d.Food.Correct(ctx, UserID(ctx), in.Code, food.CorrectionInput{
+			FoodInput: food.FoodInput{
+				Name: b.Name, Brand: b.Brand, Quantity: b.Quantity, ServingSize: b.ServingSize, ServingGrams: b.ServingGrams,
+				Per100: domain.Nutrients{
+					Kcal: b.Kcal, Protein: b.Protein, Carbs: b.Carbs, Fat: b.Fat, Sugar: b.Sugar, SatFat: b.SatFat, Fiber: b.Fiber, Salt: b.Salt,
+				},
+			},
+			RevisionID: b.RevisionID, Source: b.Source, AppVersion: b.AppVersion, Lang: b.Lang, Countries: b.Countries,
+			IngredientsText: b.IngredientsText, EnergyKJ: b.KJ, LabelImage: b.LabelImage, FrontImage: b.FrontImage,
+		})
+		if err != nil {
+			return nil, d.foodError(ctx, err)
+		}
+		out := &correctionOut{}
+		out.Body.RevisionID, out.Body.Status, out.Body.Origin = res.RevisionID, string(res.Status), string(res.Origin)
+		out.Body.Issues = append([]string{}, res.Issues...)
+		return out, nil
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-product-fact", Method: http.MethodGet, Path: "/foods/barcode/{code}/fact", Tags: []string{"foods"},
+		Summary: "Is there a community fact for this barcode?", Security: sessionSecurity,
+	}, func(ctx context.Context, in *barcodeIn) (*factOut, error) {
+		sum, ok, err := d.Food.Fact(ctx, UserID(ctx), in.Code)
+		if err != nil {
+			return nil, d.foodError(ctx, err)
+		}
+		out := &factOut{}
+		if ok {
+			out.Body.Fact = &FactView{
+				Status: sum.Status, Origin: string(sum.Origin), Source: sum.Source, UpdatedAt: sum.UpdatedAt,
+				Mine: sum.Mine, HasPhoto: sum.HasPhotos,
+			}
+		}
+		return out, nil
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "dispute-product-fact", Method: http.MethodPost, Path: "/foods/barcode/{code}/dispute", Tags: []string{"foods"},
+		Summary:     "Say the community facts for a product are wrong",
+		Description: "Two accounts other than the contributor return the product to its previous facts. Disputing your own submission is a conflict.",
+		Security:    sessionSecurity, Errors: []int{http.StatusNotFound, http.StatusConflict},
+	}, func(ctx context.Context, in *barcodeIn) (*disputeOut, error) {
+		reverted, err := d.Food.Dispute(ctx, UserID(ctx), in.Code)
+		if err != nil {
+			return nil, d.foodError(ctx, err)
+		}
+		out := &disputeOut{}
+		out.Body.Reverted = reverted
+		return out, nil
 	})
 
 	favorite := func(id, op, summary, method string, on *bool) {
@@ -358,6 +530,28 @@ func (d Deps) registerFoods(api huma.API) {
 			return nil, d.imageError(ctx, err)
 		}
 		return serveImage(img), nil
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-fact-photo", Method: http.MethodGet, Path: "/images/fact/{revision}/{kind}", Tags: []string{"images"},
+		Summary:     "A photo shared with a community product fact",
+		Description: "Only the revision currently served for its barcode has public photos; an older, reverted or private revision answers 404. The URL names the revision, so its bytes never change.",
+		Security:    sessionSecurity, Responses: imageResponses, Errors: []int{http.StatusNotFound},
+	}, func(ctx context.Context, in *factPhotoIn) (*huma.StreamResponse, error) {
+		b, err := repo.ServedFactPhoto(ctx, in.Revision, in.Kind == "nutrition")
+		if err != nil {
+			return nil, d.imageError(ctx, err)
+		}
+		ctype := http.DetectContentType(b)
+		if ctype != "image/jpeg" && ctype != "image/png" {
+			return nil, Err(http.StatusNotFound, "not_found", "No such image.")
+		}
+		return &huma.StreamResponse{Body: func(ctx huma.Context) {
+			ctx.SetHeader("Content-Type", ctype)
+			ctx.SetHeader("Cache-Control", "public, max-age=31536000, immutable")
+			ctx.SetHeader("X-Content-Type-Options", "nosniff")
+			_, _ = ctx.BodyWriter().Write(b)
+		}}, nil
 	})
 
 	huma.Register(api, huma.Operation{

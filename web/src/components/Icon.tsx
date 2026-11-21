@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Camera,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -36,6 +37,7 @@ const lucide = {
   minus: Minus,
   plus: Plus,
   search: Search,
+  camera: Camera,
   settings: Settings,
   share: Share2,
   star: Star,

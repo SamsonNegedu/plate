@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { ItemInput } from "@/db/savedMeals";
 import type { Entry, Food, Meal } from "@/db/types";
 import type { DraftItem } from "@/features/recipes/draft";
+import type { ScanResult } from "@/food/ocr/scan";
 
 /** Ephemeral UI state only: which sheet is open and which toasts are showing. Never persisted rows. */
 /** Called with a food and its amount when a sheet was opened to pick a recipe ingredient instead of logging. */
@@ -29,6 +30,16 @@ export type Sheet =
       name?: string;
       notLoggable?: boolean;
       logOnSave?: boolean;
+      /** A label already read, to fill the form with. */
+      scan?: ScanResult;
+    }
+  | {
+      kind: "notFound";
+      meal: Meal;
+      date: string;
+      barcode: string;
+      name?: string;
+      notLoggable?: boolean;
     }
   | { kind: "saveMeal"; entries: Entry[] }
   | { kind: "nutrients"; date: string; scope: Meal | "day" };

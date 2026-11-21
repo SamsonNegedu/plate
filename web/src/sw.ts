@@ -45,6 +45,15 @@ registerRoute(
   }),
 );
 
+// The label reader's models and runtime (about 30 MB) are fetched the first time someone scans a label, then kept.
+registerRoute(
+  ({ url }) => url.pathname.startsWith("/ocr/"),
+  new CacheFirst({
+    cacheName: "plate-ocr",
+    plugins: [onlyOk, new ExpirationPlugin({ maxEntries: 8, maxAgeSeconds: 365 * 24 * 60 * 60 })],
+  }),
+);
+
 // Dexie is the data cache. A second cache for API rows would fight the sync engine, so the API is never cached.
 registerRoute(({ url }) => url.pathname.startsWith("/api/"), new NetworkOnly());
 

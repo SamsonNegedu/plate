@@ -293,6 +293,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/foods/barcode/{code}/correction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Submit the facts for a product, shared by every account
+         * @description Numbers that pass the plausibility checks go live for everyone at once and replace what was served. A submission that fails a check is stored and stays private to its author.
+         */
+        put: operations["correct-product"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/foods/barcode/{code}/dispute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Say the community facts for a product are wrong
+         * @description Two accounts other than the contributor return the product to its previous facts. Disputing your own submission is a conflict.
+         */
+        post: operations["dispute-product-fact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/foods/barcode/{code}/fact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Is there a community fact for this barcode? */
+        get: operations["get-product-fact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/foods/recent": {
         parameters: {
             query?: never;
@@ -375,6 +432,26 @@ export interface paths {
         };
         /** The image of a catalog product by barcode */
         get: operations["get-catalog-image"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/images/fact/{revision}/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A photo shared with a community product fact
+         * @description Only the revision currently served for its barcode has public photos; an older, reverted or private revision answers 404. The URL names the revision, so its bytes never change.
+         */
+        get: operations["get-fact-photo"];
         put?: never;
         post?: never;
         delete?: never;
@@ -524,6 +601,14 @@ export interface components {
             /** Format: int64 */
             rows: number;
         };
+        CategoryView: {
+            /** @description Readable name, such as smoked salmons. */
+            name: string;
+            /** @description Per nutrient (kcal, fat, protein, carbs, salt): the 5th percentile, the median and the 95th percentile. */
+            ranges: {
+                [key: string]: number[] | null;
+            };
+        };
         ChallengeBody: {
             /** Format: int64 */
             bits: number;
@@ -534,6 +619,64 @@ export interface components {
         };
         CodesOutputBody: {
             recovery_codes: string[];
+        };
+        CorrectionBody: {
+            app_version?: string;
+            brand?: string;
+            /** Format: double */
+            carbs?: number | null;
+            countries?: string;
+            /** Format: double */
+            fat?: number | null;
+            /** Format: double */
+            fiber?: number | null;
+            /** @description Front of the pack, JPEG or PNG, at most 250 KB. */
+            front_image?: string;
+            ingredients_text?: string;
+            /** Format: double */
+            kcal: number;
+            /** Format: double */
+            kj?: number | null;
+            /** @description Cropped nutrition-table photo, JPEG or PNG, at most 400 KB. */
+            label_image?: string;
+            /** @description Label language, such as de. */
+            lang?: string;
+            name: string;
+            /** Format: double */
+            protein?: number | null;
+            quantity?: string;
+            /**
+             * Format: uuid
+             * @description Chosen by the client; resending the same id is safe.
+             */
+            revision_id: string;
+            /** Format: double */
+            salt?: number | null;
+            /** Format: double */
+            satfat?: number | null;
+            /** Format: double */
+            serving_grams?: number | null;
+            serving_size?: string;
+            /**
+             * @description How the numbers were entered.
+             * @enum {string}
+             */
+            source: "manual" | "ocr";
+            /** Format: double */
+            sugar?: number | null;
+        };
+        CorrectionOutBody: {
+            /** @description The plausibility checks the numbers failed. Empty when none. */
+            issues: string[] | null;
+            /** @enum {string} */
+            origin: "off_correction" | "off_missing_fields" | "new_product";
+            /** Format: uuid */
+            revision_id: string;
+            /**
+             * @description accepted: every account sees it. pending: only you, because a check failed.
+             * @enum {string}
+             */
+            status: "pending" | "accepted" | "superseded" | "reverted";
         };
         DayBody: {
             date: string;
@@ -560,6 +703,10 @@ export interface components {
         Detail: {
             location?: string;
             message: string;
+        };
+        DisputeOutBody: {
+            /** @description Enough accounts disputed it, so the product went back to its previous facts. */
+            reverted: boolean;
         };
         EntryBody: {
             /** Format: double */
@@ -665,6 +812,22 @@ export interface components {
             /** @description Absent until goals were saved. */
             settings?: components["schemas"]["SettingsDoc"];
         };
+        FactOutBody: {
+            /** @description Absent when no community fact exists. */
+            fact?: components["schemas"]["FactView"];
+        };
+        FactView: {
+            has_photo: boolean;
+            /** @description You submitted the served revision. */
+            mine: boolean;
+            /** @enum {string} */
+            origin: "off_correction" | "off_missing_fields" | "new_product";
+            /** @enum {string} */
+            source: "manual" | "ocr";
+            /** @enum {string} */
+            status: "accepted" | "upstream_confirmed";
+            updated_at: string;
+        };
         FavoriteDoc: {
             created_at: string;
             deleted_at: string | null;
@@ -718,6 +881,7 @@ export interface components {
             brand: string;
             /** Format: double */
             carbs: number | null;
+            community_rev?: string | null;
             created_at: string;
             deleted_at: string | null;
             /** Format: double */
@@ -759,6 +923,10 @@ export interface components {
             brand: string;
             /** Format: double */
             carbs: number | null;
+            /** @description How this food's category looks per 100 g, so the client can tell when the values are far outside it. */
+            category?: components["schemas"]["CategoryView"];
+            /** @description The nutrition comes from a community correction shared by every account. */
+            community: boolean;
             /** Format: double */
             fat: number | null;
             /** Format: double */
@@ -1999,6 +2167,159 @@ export interface operations {
             };
         };
     };
+    "correct-product": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectionBody"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionOutBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "dispute-product-fact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 6 to 14 digits; other characters are ignored. */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeOutBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "get-product-fact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 6 to 14 digits; other characters are ignored. */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOutBody"];
+                };
+            };
+            /** @description Error */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     "recent-foods": {
         parameters: {
             query?: never;
@@ -2265,6 +2586,66 @@ export interface operations {
             header?: never;
             path: {
                 barcode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The product image */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/*": string;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "get-fact-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                revision: string;
+                /** @description front: the front of the pack. nutrition: the cropped nutrition table. */
+                kind: "front" | "nutrition";
             };
             cookie?: never;
         };

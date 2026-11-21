@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { cacheFood, findFoodByBarcode, logMiss } from "@/db/foods";
 import type { PlateDB } from "@/db/schema";
-import type { Food } from "@/db/types";
+import type { CategoryInfo, Food } from "@/db/types";
 import { api } from "@/lib/api";
 import { searchName } from "@/lib/searchName";
 import { AccessExpired, NetworkError } from "@/sync/errors";
@@ -43,6 +43,14 @@ export const foodView = z.object({
   ingredients: z.string().optional().default(""),
   allergens: z.string().optional().default(""),
   updated_at: z.string().optional().default(""),
+  community: z.boolean().optional().default(false),
+  category: z
+    .object({
+      name: z.string(),
+      ranges: z.record(z.string(), z.array(z.number()).length(3)),
+    })
+    .nullable()
+    .optional(),
 });
 
 export function foodFromView(v: z.infer<typeof foodView>): Food {
@@ -74,7 +82,21 @@ export function foodFromView(v: z.infer<typeof foodView>): Food {
     updatedAt: v.updated_at,
     deletedAt: null,
     serverSeq: 0,
+    community: v.community,
+    category: toCategory(v.category),
   };
+}
+
+const RANGE_KEYS = ["kcal", "fat", "protein", "carbs", "salt"] as const;
+
+function toCategory(c: z.infer<typeof foodView>["category"]): CategoryInfo | undefined {
+  if (!c) return undefined;
+  const ranges: CategoryInfo["ranges"] = {};
+  for (const k of RANGE_KEYS) {
+    const r = c.ranges[k];
+    if (r) ranges[k] = [r[0] ?? 0, r[1] ?? 0, r[2] ?? 0];
+  }
+  return Object.keys(ranges).length > 0 ? { name: c.name, ranges } : undefined;
 }
 
 export type LookupResult =

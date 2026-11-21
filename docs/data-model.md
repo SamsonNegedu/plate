@@ -23,7 +23,11 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 | `saved_meal_items` | the recipe's ingredients with their nutrition snapshot, replaced atomically with the recipe | yes (inside `saved_meals`) |
 | `health_records` | one dated number the person logs: a weight (kg), a body measurement (cm: waist, hips, chest, arm, thigh or neck), an appetite or nausea rating (0 to 5) or a medication dose (mg, with the medication and injection site) | yes |
 | `favorites` | a relation between the user and a food; removal is a tombstone | yes |
+| `product_fact_revisions` | every submitted version of a product's facts (community corrections and new products), in Open Food Facts field names, with the optional label and front photos, a status (`pending`, `accepted`, `superseded`, `reverted`) and an opaque contributor id; append-only, shared by every account | no |
+| `product_facts` | the one revision currently served for a barcode; reference data like the catalog, with no `user_id` | no |
+| `product_fact_disputes` | which contributors disputed a served revision; two accounts other than the contributor revert it | no |
 | `catalog_foods` | the bundled Open Food Facts German seed, with nutrition; reference data | no |
+| `category_stats` | per Open Food Facts category, the 5th percentile, median and 95th percentile of kcal, fat, protein, carbohydrate and salt per 100 g over its German products (only categories with 30 or more); replaced with the catalog on import | no |
 | `catalog_meta` | the seed's dataset version and import time | no |
 | `change_log` | per-user ordered stream of changes that clients pull | no |
 | `sync_state` | per user: `min_seq` and `head_seq` of the stream | no |
@@ -36,6 +40,8 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 
 ## Rules worth knowing
 
+- **Categories.** `catalog_foods.category` and `foods.category` hold the category tag a product is compared with (the most specific tag that has ranges, such as `en:smoked-salmons`). It is not synced: the server turns it into the `category` object of a food response.
+- **Community facts are shared reference data.** `product_facts` and its revisions carry no `user_id`, are not synced as client writes and are not touched by a catalog reimport. Accepting a revision rewrites each account's server-managed `foods` row for that barcode through the change log and sets `foods.community_rev`; entries keep their snapshot. A revision's contributor is an opaque hash of the account id, kept when the account is deleted because the facts describe a product, not the person. See [food-and-search.md](food-and-search.md#community-facts).
 - **Snapshot on entries.** An entry copies the food's name, brand, barcode and all nutrition when logged. `food_id` is a plain reference (`ON DELETE SET NULL`), so deleting or correcting a food never changes history.
 - **One live barcode per user.** `foods_live_barcode` is a partial unique index on `(user_id, barcode)` for rows that are not tombstoned.
 - **Catalog rows are not user data.** They are replaced wholesale on import and never synced. The logical export does not include the `catalog_foods` table (a backup restores into a server that already has its own seed). A catalog row becomes a `foods` row only when someone looks it up or logs it.

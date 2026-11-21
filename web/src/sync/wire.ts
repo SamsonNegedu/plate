@@ -73,6 +73,8 @@ export const foodDoc = z.object({
   ...nutrients,
   nutriscore: nullableText,
   source: z.enum(["off", "bls", "user", "catalog"]),
+  community_rev: nullableText,
+  image_key: nullableText,
   source_id: nullableText,
   source_checked_at: nullableText,
   ingredients: text,
@@ -188,6 +190,21 @@ export function toEntry(d: z.infer<typeof entryDoc>): Entry {
   };
 }
 
+/** Where a shared front photo is served: named by the revision, so it never changes. It may not exist, and the screens fall back to the icon. */
+export const factPhotoPath = (revision: string): string => `/api/v1/images/fact/${revision}/front`;
+
+/**
+ * The picture a food row ends up with when the server's version arrives. A picture this device already has stays. A shared photo
+ * is named by its revision and goes with it, so the incoming path wins over an old shared one and never over a real picture.
+ */
+export function mergeImagePath(
+  existing: string | null | undefined,
+  incoming: string | null,
+): string | null {
+  const kept = existing && !existing.includes("/images/fact/") ? existing : null;
+  return kept ?? incoming;
+}
+
 export function toFood(d: z.infer<typeof foodDoc>): Food {
   return {
     id: d.id,
@@ -210,13 +227,15 @@ export function toFood(d: z.infer<typeof foodDoc>): Food {
     sourceId: d.source_id,
     sourceCheckedAt: d.source_checked_at,
     stale: false,
-    imagePath: null,
+    // A community food with no picture of its own shows the front photo shared with it, if there is one.
+    imagePath: d.community_rev && !d.image_key ? factPhotoPath(d.community_rev) : null,
     ingredients: d.ingredients,
     allergens: d.allergens,
     searchName: searchName(`${d.name} ${d.brand}`),
     updatedAt: d.updated_at,
     deletedAt: d.deleted_at,
     serverSeq: d.server_seq,
+    community: d.community_rev !== null,
   };
 }
 

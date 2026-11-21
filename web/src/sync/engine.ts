@@ -24,6 +24,7 @@ import {
   settingsDoc,
   toEntry,
   toFavorite,
+  mergeImagePath,
   toFood,
   toHealth,
   toMeal,
@@ -390,7 +391,11 @@ export class SyncEngine {
             .equals(food.barcode)
             .filter((f) => f.id !== food.id)
             .delete();
-        await this.db.foods.put({ ...food, imagePath: existing?.imagePath ?? null });
+        await this.db.foods.put({
+          ...food,
+          imagePath: mergeImagePath(existing?.imagePath, food.imagePath),
+          category: existing?.category, // the server's food rows carry no category; the last lookup's stays
+        });
         return;
       }
       case "settings": {

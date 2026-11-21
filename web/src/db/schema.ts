@@ -9,6 +9,7 @@ import type {
   FoodPref,
   MetaRow,
   OutboxOp,
+  PendingCorrection,
   SavedMeal,
   SavedMealItem,
   Settings,
@@ -27,6 +28,7 @@ export class PlateDB extends Dexie {
   outbox!: Table<OutboxOp, number>;
   meta!: Table<MetaRow, string>;
   conflicts!: Table<ConflictRow, number>;
+  corrections!: Table<PendingCorrection, string>;
 
   constructor(name = "plate") {
     super(name);
@@ -73,6 +75,8 @@ export class PlateDB extends Dexie {
             s.fiberG ??= 0;
           }),
       );
+    // Corrections that could not reach the server yet (device-only, ADR-020).
+    this.version(5).stores({ corrections: "revisionId, barcode, createdAt" });
     // Saved meals became recipes: the ones saved before make one portion.
     this.version(2)
       .stores({})

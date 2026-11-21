@@ -44,6 +44,15 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     };
   }, [auth.status, db, store]);
 
+  // Corrections made offline go out when the app opens and when the connection returns.
+  useEffect(() => {
+    if (auth.status !== "authed") return;
+    const drain = () => void import("@/food/corrections").then((m) => m.drainCorrections(db));
+    drain();
+    window.addEventListener("online", drain);
+    return () => window.removeEventListener("online", drain);
+  }, [auth.status, db]);
+
   const state = useStore(store, (s) => s.state);
   useEffect(() => {
     if (state === "auth") auth.expire();

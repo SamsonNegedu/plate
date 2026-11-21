@@ -9,10 +9,12 @@ import { getPref } from "@/db/foods";
 import { useFavoriteIds } from "@/db/hooks";
 import type { Food, Meal, Unit } from "@/db/types";
 import { MEALS } from "@/db/types";
+import { categoryNote } from "@/lib/categoryCheck";
 import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
 import { formatKcal, formatOptional, parseDecimal } from "@/lib/numbers";
 import { amountLabel, gramsFor, MAX_GRAMS, portionOf } from "@/lib/nutrition";
+import { plausibility } from "@/lib/plausibility";
 import { type PickIngredient, useUi } from "@/lib/ui";
 import { isLiquid, packSize, startingPortion, stepFor } from "./portion";
 import { useLog } from "./useLog";
@@ -52,6 +54,8 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
   const ui = useUi();
   const favorites = useFavoriteIds();
   const start = useMemo(() => startingPortion(food), [food]);
+  // A picture that fails to load (a shared photo whose revision was replaced) falls back to the plain icon.
+  const [failedImage, setFailedImage] = useState<string | null>(null);
   const [unit, setUnit] = useState<Unit>(start.unit);
   const [text, setText] = useState(String(start.amount));
   const [meal, setMeal] = useState<Meal>(initialMeal);
@@ -131,7 +135,9 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
   };
 
   const mealLabel = copy.meals[meal].toLowerCase();
-  const sourceNote = sourceNotes[food.source] ?? null;
+  const sourceNote = food.community ? copy.sheet.community : (sourceNotes[food.source] ?? null);
+  const unusual = food.source === "user" ? [] : plausibility(food);
+  const categoryWarning = food.category ? categoryNote(food, food.category) : null;
 
   return (
     <Sheet
@@ -152,8 +158,13 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
     >
       <div className="flex items-center gap-3">
         <span className="grid size-16 flex-none place-items-center overflow-hidden rounded-ctl bg-surface-2 text-ink-3 [&_img]:size-full [&_img]:object-contain">
-          {food.imagePath ? (
-            <img src={food.imagePath} alt="" loading="lazy" />
+          {food.imagePath && failedImage !== food.imagePath ? (
+            <img
+              src={food.imagePath}
+              alt=""
+              loading="lazy"
+              onError={() => setFailedImage(food.imagePath)}
+            />
           ) : (
             <Icon name="bottle" size={26} />
           )}
@@ -184,22 +195,10 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
 
       {notice ? (
         <p
-          className="mt-3 rounded-ctl border border-line bg-surface-2 px-3 py-2.5 text-meta text-ink-2 [&_a]:font-medium [&_a]:text-ink"
+          className="mt-3 rounded-ctl border border-line bg-surface-2 px-3 py-2.5 text-meta text-ink-2"
           role="status"
         >
           {notice}
-          {food.barcode ? (
-            <>
-              {" "}
-              <a
-                href={`https://world.openfoodfacts.org/cgi/product.pl?type=search_or_add&code=${encodeURIComponent(food.barcode)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Add to Open Food Facts
-              </a>
-            </>
-          ) : null}
         </p>
       ) : null}
 
@@ -335,12 +334,24 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
             {food.stale ? ` ${copy.sheet.stale}` : ""}
           </p>
         ) : null}
+        {unusual.length > 0 ? (
+          <p className="text-meta text-ink-2" role="status">
+            {`These values look unusual. ${unusual.map((i) => copy.corrections.issues[i] ?? i).join(" ")} Check the label.`}
+          </p>
+        ) : null}
+        {categoryWarning ? (
+          <p className="text-meta text-ink-2" role="status">
+            {categoryWarning}
+          </p>
+        ) : null}
         {pick ? null : (
           <Button
             variant="ghost"
             onClick={() => ui.replace({ kind: "manual", meal, date, barcode: food.barcode, food })}
           >
-            {copy.sheet.editNutrition}
+            {food.barcode && food.source !== "user"
+              ? copy.sheet.correctProduct
+              : copy.sheet.editNutrition}
           </Button>
         )}
         {food.barcode && food.source !== "user" ? (

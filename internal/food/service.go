@@ -70,6 +70,9 @@ func (s *Service) Barcode(ctx context.Context, userID, raw string) (domain.Food,
 		}
 		return f, err
 	}
+	if f, ok, err := s.fromFacts(ctx, userID, candidates); err != nil || ok {
+		return f, err
+	}
 	if f, ok, err := s.fromCatalog(ctx, userID, candidates); err != nil || ok {
 		return f, err
 	}
@@ -170,7 +173,7 @@ func (s *Service) fromCatalog(ctx context.Context, userID string, candidates []s
 		out = domain.Food{
 			ID: id.String(), UserID: userID, Barcode: &bc, Name: row.Name, Brand: row.Brand, Quantity: row.Quantity,
 			ServingSize: row.ServingSize, ServingGrams: row.ServingGrams, Per100: row.Per100, Nutriscore: row.Nutriscore,
-			Source: domain.SourceCatalog, SourceID: &bc, SourceCheckedAt: &row.ImportedAt,
+			Source: domain.SourceCatalog, SourceID: &bc, SourceCheckedAt: &row.ImportedAt, Category: row.Category,
 			ImageKey: RegisterImage(ctx, r, imageSource, now), SearchName: domain.SearchName(row.Name + " " + row.Brand),
 			CreatedAt: now, UpdatedAt: now,
 		}
@@ -233,7 +236,7 @@ func ImageKeyFor(url string) string {
 // maybeRevalidate refreshes an old OFF row in the background when it was logged recently. It never blocks the caller,
 // runs at most once per food per day and never touches user rows.
 func (s *Service) maybeRevalidate(userID string, f domain.Food) {
-	if f.Source != domain.SourceOFF || f.DeletedAt != nil || f.Barcode == nil {
+	if f.Source != domain.SourceOFF || f.DeletedAt != nil || f.Barcode == nil || f.CommunityRev != nil {
 		return
 	}
 	now := s.now()
@@ -283,13 +286,17 @@ func (s *Service) revalidate(ctx context.Context, userID string, f domain.Food) 
 	}
 	err = store.InTx(ctx, s.db, func(r *store.Repo) error {
 		cur, err := r.Food(ctx, userID, f.ID)
-		if err != nil || cur.Source != domain.SourceOFF {
+		if err != nil || cur.Source != domain.SourceOFF || cur.CommunityRev != nil {
 			return err // a correction made meanwhile wins
 		}
 		u := n.Food
 		u.ID, u.UserID, u.CreatedAt, u.Source = cur.ID, userID, cur.CreatedAt, domain.SourceOFF
 		u.UpdatedAt = stamp(s.now())
 		u.ImageKey = cur.ImageKey
+		u.Category = cur.Category
+		if c, err := r.MostSpecificCategory(ctx, n.CategoryTags); err == nil && c != "" {
+			u.Category = c
+		}
 		if k := RegisterImage(ctx, r, n.ImageURL, u.UpdatedAt); k != nil {
 			u.ImageKey = k
 		}

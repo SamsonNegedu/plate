@@ -2,7 +2,10 @@
 package webui
 
 import (
+	"compress/gzip"
 	"embed"
+	"errors"
+	"io"
 	"io/fs"
 	"mime"
 	"net/http"
@@ -43,6 +46,9 @@ func handler(root fs.FS) http.Handler {
 		if name == "" {
 			name = "index.html"
 		}
+		if strings.HasPrefix(name, "ocr/") && serveGzipped(w, r, root, name) {
+			return
+		}
 		info, err := fs.Stat(root, name)
 		switch {
 		case err != nil || info.IsDir():
@@ -81,4 +87,40 @@ func missing() http.Handler {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_, _ = w.Write([]byte(missingMessage))
 	})
+}
+
+// serveGzipped sends a build-time gzipped file (the label reader's models and runtime) under its plain name. A client
+// that accepts gzip gets the bytes as stored; any other gets them decompressed. It reports whether it answered.
+func serveGzipped(w http.ResponseWriter, r *http.Request, root fs.FS, name string) bool {
+	f, err := root.Open(name + ".gz")
+	if err != nil {
+		return false
+	}
+	defer func() { _ = f.Close() }()
+	ctype := mime.TypeByExtension(path.Ext(name))
+	if ctype == "" {
+		ctype = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", ctype)
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Vary", "Accept-Encoding")
+	var src io.Reader = f
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		w.Header().Set("Content-Encoding", "gzip")
+	} else {
+		zr, err := gzip.NewReader(f)
+		if err != nil {
+			http.Error(w, "reader unreadable", http.StatusInternalServerError)
+			return true
+		}
+		defer func() { _ = zr.Close() }()
+		src = zr
+	}
+	if r.Method == http.MethodHead {
+		return true
+	}
+	if _, err := io.Copy(w, src); err != nil && !errors.Is(err, io.EOF) {
+		return true // the client went away; nothing useful to add
+	}
+	return true
 }

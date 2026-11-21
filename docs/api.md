@@ -48,6 +48,9 @@ All paths are under `/api/v1`. Every operation needs a session cookie unless it 
 | Method | Path | What it does | Auth | Responses |
 |---|---|---|---|---|
 | GET | `/foods/barcode/{code}` | Resolve a barcode to a loggable food | session | 200, 404, 422, 429, 500, 503 |
+| PUT | `/foods/barcode/{code}/correction` | Submit the facts for a product, shared by every account | session | 200, 409, 422, 429, 500 |
+| POST | `/foods/barcode/{code}/dispute` | Say the community facts for a product are wrong | session | 200, 404, 409, 422, 500 |
+| GET | `/foods/barcode/{code}/fact` | Is there a community fact for this barcode? | session | 200, default |
 | GET | `/foods/recent` | Distinct foods logged most recently | session | 200, default |
 | GET | `/foods/search` | Search foods by name, brand or barcode | session | 200, default |
 | PUT | `/foods/{id}` | Create a custom food or correct an existing one | session | 200, 409, 422, 500 |
@@ -60,6 +63,7 @@ All paths are under `/api/v1`. Every operation needs a session cookie unless it 
 | Method | Path | What it does | Auth | Responses |
 |---|---|---|---|---|
 | GET | `/images/catalog/{barcode}` | The image of a catalog product by barcode | session | 200, 404, 422, 500, 502 |
+| GET | `/images/fact/{revision}/{kind}` | A photo shared with a community product fact | session | 200, 404, 422, 500, 502 |
 | GET | `/images/{key}` | A cached product image by server-generated key | session | 200, 404, 422, 500, 502 |
 
 ## meta

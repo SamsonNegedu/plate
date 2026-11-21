@@ -49,6 +49,9 @@ func run(dump, out, version string, n, minScans int) error {
 		return err
 	}
 	rows = dedupe(rows, stats)
+	cats := categoryStats(rows) // over every German product with energy, before the scan cut
+	assignCategories(rows, cats)
+	stats["categories_with_ranges"] = len(cats)
 	slices.SortFunc(rows, func(a, b domain.CatalogFood) int {
 		if a.Scans != b.Scans {
 			return int(b.Scans - a.Scans)
@@ -73,7 +76,7 @@ func run(dump, out, version string, n, minScans int) error {
 		DatasetVersion: version, BuiltAt: time.Now().UTC().Format(time.RFC3339),
 		Source: "Open Food Facts (ODbL 1.0), German products with per-100 g energy, ranked by unique scans",
 	}
-	if err := food.WriteSeed(out, rows, meta); err != nil {
+	if err := food.WriteSeedWithStats(out, rows, cats, meta); err != nil {
 		return err
 	}
 	st, err := os.Stat(out)
@@ -191,6 +194,7 @@ func read(path string, stats counters) ([]domain.CatalogFood, error) {
 		if food.AllowedImageURL(img) {
 			c.ImageSourceURL = &img
 		}
+		c.Categories = categoryTags(get(rec, "categories_tags"))
 		out = append(out, c)
 	}
 	return out, nil
@@ -211,6 +215,17 @@ func dedupe(rows []domain.CatalogFood, stats counters) []domain.CatalogFood {
 		}
 		best[key] = len(out)
 		out = append(out, c)
+	}
+	return out
+}
+
+// categoryTags splits the dump's comma-separated categories_tags.
+func categoryTags(s string) []string {
+	var out []string
+	for _, t := range strings.Split(s, ",") {
+		if t = strings.TrimSpace(t); t != "" {
+			out = append(out, t)
+		}
 	}
 	return out
 }

@@ -21,6 +21,17 @@ func (q *Queries) CountCatalogFoods(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countCategoryStats = `-- name: CountCategoryStats :one
+SELECT count(*) FROM category_stats
+`
+
+func (q *Queries) CountCategoryStats(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCategoryStats)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const deleteAllCatalogFoods = `-- name: DeleteAllCatalogFoods :exec
 DELETE FROM catalog_foods
 `
@@ -30,8 +41,17 @@ func (q *Queries) DeleteAllCatalogFoods(ctx context.Context) error {
 	return err
 }
 
+const deleteAllCategoryStats = `-- name: DeleteAllCategoryStats :exec
+DELETE FROM category_stats
+`
+
+func (q *Queries) DeleteAllCategoryStats(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllCategoryStats)
+	return err
+}
+
 const getCatalogFoodByBarcode = `-- name: GetCatalogFoodByBarcode :one
-SELECT rowid_alias, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans, source, dataset_version, imported_at, updated_at FROM catalog_foods WHERE barcode = ?
+SELECT rowid_alias, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans, source, dataset_version, imported_at, updated_at, category FROM catalog_foods WHERE barcode = ?
 `
 
 func (q *Queries) GetCatalogFoodByBarcode(ctx context.Context, barcode string) (CatalogFood, error) {
@@ -60,6 +80,7 @@ func (q *Queries) GetCatalogFoodByBarcode(ctx context.Context, barcode string) (
 		&i.DatasetVersion,
 		&i.ImportedAt,
 		&i.UpdatedAt,
+		&i.Category,
 	)
 	return i, err
 }
@@ -75,19 +96,30 @@ func (q *Queries) GetCatalogMeta(ctx context.Context, key string) (string, error
 	return value, err
 }
 
+const getCategoryStats = `-- name: GetCategoryStats :one
+SELECT category, n, ranges FROM category_stats WHERE category = ?
+`
+
+func (q *Queries) GetCategoryStats(ctx context.Context, category string) (CategoryStat, error) {
+	row := q.db.QueryRowContext(ctx, getCategoryStats, category)
+	var i CategoryStat
+	err := row.Scan(&i.Category, &i.N, &i.Ranges)
+	return i, err
+}
+
 const insertCatalogFood = `-- name: InsertCatalogFood :exec
 INSERT INTO catalog_foods (
     barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g,
     protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g,
-    nutriscore, image_source_url, scans, dataset_version, imported_at, updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    nutriscore, image_source_url, scans, category, dataset_version, imported_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (barcode) DO UPDATE SET
     name = excluded.name, brand = excluded.brand, quantity = excluded.quantity,
     serving_size = excluded.serving_size, serving_grams = excluded.serving_grams, kcal_100g = excluded.kcal_100g,
     protein_100g = excluded.protein_100g, carbs_100g = excluded.carbs_100g, fat_100g = excluded.fat_100g,
     sugar_100g = excluded.sugar_100g, satfat_100g = excluded.satfat_100g, fiber_100g = excluded.fiber_100g,
     salt_100g = excluded.salt_100g, nutriscore = excluded.nutriscore, image_source_url = excluded.image_source_url,
-    scans = excluded.scans, dataset_version = excluded.dataset_version,
+    scans = excluded.scans, category = excluded.category, dataset_version = excluded.dataset_version,
     imported_at = excluded.imported_at, updated_at = excluded.updated_at
 `
 
@@ -109,6 +141,7 @@ type InsertCatalogFoodParams struct {
 	Nutriscore     *string
 	ImageSourceUrl *string
 	Scans          int64
+	Category       *string
 	DatasetVersion string
 	ImportedAt     string
 	UpdatedAt      string
@@ -133,6 +166,7 @@ func (q *Queries) InsertCatalogFood(ctx context.Context, arg InsertCatalogFoodPa
 		arg.Nutriscore,
 		arg.ImageSourceUrl,
 		arg.Scans,
+		arg.Category,
 		arg.DatasetVersion,
 		arg.ImportedAt,
 		arg.UpdatedAt,
@@ -140,8 +174,24 @@ func (q *Queries) InsertCatalogFood(ctx context.Context, arg InsertCatalogFoodPa
 	return err
 }
 
+const insertCategoryStats = `-- name: InsertCategoryStats :exec
+INSERT INTO category_stats (category, n, ranges) VALUES (?, ?, ?)
+ON CONFLICT (category) DO UPDATE SET n = excluded.n, ranges = excluded.ranges
+`
+
+type InsertCategoryStatsParams struct {
+	Category string
+	N        int64
+	Ranges   string
+}
+
+func (q *Queries) InsertCategoryStats(ctx context.Context, arg InsertCategoryStatsParams) error {
+	_, err := q.db.ExecContext(ctx, insertCategoryStats, arg.Category, arg.N, arg.Ranges)
+	return err
+}
+
 const listCatalogByBarcodes = `-- name: ListCatalogByBarcodes :many
-SELECT rowid_alias, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans, source, dataset_version, imported_at, updated_at FROM catalog_foods WHERE barcode IN (/*SLICE:barcodes*/?)
+SELECT rowid_alias, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, image_source_url, scans, source, dataset_version, imported_at, updated_at, category FROM catalog_foods WHERE barcode IN (/*SLICE:barcodes*/?)
 `
 
 func (q *Queries) ListCatalogByBarcodes(ctx context.Context, barcodes []string) ([]CatalogFood, error) {
@@ -186,6 +236,7 @@ func (q *Queries) ListCatalogByBarcodes(ctx context.Context, barcodes []string) 
 			&i.DatasetVersion,
 			&i.ImportedAt,
 			&i.UpdatedAt,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -200,12 +251,54 @@ func (q *Queries) ListCatalogByBarcodes(ctx context.Context, barcodes []string) 
 	return items, nil
 }
 
+const listCategorySizes = `-- name: ListCategorySizes :many
+SELECT category, n FROM category_stats WHERE category IN (/*SLICE:tags*/?)
+`
+
+type ListCategorySizesRow struct {
+	Category string
+	N        int64
+}
+
+func (q *Queries) ListCategorySizes(ctx context.Context, tags []string) ([]ListCategorySizesRow, error) {
+	query := listCategorySizes
+	var queryParams []interface{}
+	if len(tags) > 0 {
+		for _, v := range tags {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:tags*/?", strings.Repeat(",?", len(tags))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:tags*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCategorySizesRow{}
+	for rows.Next() {
+		var i ListCategorySizesRow
+		if err := rows.Scan(&i.Category, &i.N); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchCatalog = `-- name: SearchCatalog :many
-SELECT c.rowid_alias, c.barcode, c.name, c.brand, c.quantity, c.serving_size, c.serving_grams, c.kcal_100g, c.protein_100g, c.carbs_100g, c.fat_100g, c.sugar_100g, c.satfat_100g, c.fiber_100g, c.salt_100g, c.nutriscore, c.image_source_url, c.scans, c.source, c.dataset_version, c.imported_at, c.updated_at
+SELECT c.rowid_alias, c.barcode, c.name, c.brand, c.quantity, c.serving_size, c.serving_grams, c.kcal_100g, c.protein_100g, c.carbs_100g, c.fat_100g, c.sugar_100g, c.satfat_100g, c.fiber_100g, c.salt_100g, c.nutriscore, c.image_source_url, c.scans, c.source, c.dataset_version, c.imported_at, c.updated_at, c.category
 FROM catalog_fts
 JOIN catalog_foods c ON c.rowid_alias = catalog_fts.rowid
 WHERE catalog_fts MATCH ?1
-ORDER BY bm25(catalog_fts, 10.0, 5.0, 50.0), c.scans DESC
+ORDER BY c.scans DESC, bm25(catalog_fts, 10.0, 5.0, 50.0)
 LIMIT ?2
 `
 
@@ -246,6 +339,7 @@ func (q *Queries) SearchCatalog(ctx context.Context, arg SearchCatalogParams) ([
 			&i.DatasetVersion,
 			&i.ImportedAt,
 			&i.UpdatedAt,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -261,11 +355,11 @@ func (q *Queries) SearchCatalog(ctx context.Context, arg SearchCatalogParams) ([
 }
 
 const searchCatalogInfix = `-- name: SearchCatalogInfix :many
-SELECT c.rowid_alias, c.barcode, c.name, c.brand, c.quantity, c.serving_size, c.serving_grams, c.kcal_100g, c.protein_100g, c.carbs_100g, c.fat_100g, c.sugar_100g, c.satfat_100g, c.fiber_100g, c.salt_100g, c.nutriscore, c.image_source_url, c.scans, c.source, c.dataset_version, c.imported_at, c.updated_at
+SELECT c.rowid_alias, c.barcode, c.name, c.brand, c.quantity, c.serving_size, c.serving_grams, c.kcal_100g, c.protein_100g, c.carbs_100g, c.fat_100g, c.sugar_100g, c.satfat_100g, c.fiber_100g, c.salt_100g, c.nutriscore, c.image_source_url, c.scans, c.source, c.dataset_version, c.imported_at, c.updated_at, c.category
 FROM catalog_trgm
 JOIN catalog_foods c ON c.rowid_alias = catalog_trgm.rowid
 WHERE catalog_trgm MATCH ?1
-ORDER BY bm25(catalog_trgm, 10.0, 5.0), c.scans DESC
+ORDER BY c.scans DESC, bm25(catalog_trgm, 10.0, 5.0)
 LIMIT ?2
 `
 
@@ -306,6 +400,7 @@ func (q *Queries) SearchCatalogInfix(ctx context.Context, arg SearchCatalogInfix
 			&i.DatasetVersion,
 			&i.ImportedAt,
 			&i.UpdatedAt,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}

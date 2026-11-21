@@ -27,6 +27,7 @@ type CatalogFood struct {
 	DatasetVersion string
 	ImportedAt     string
 	UpdatedAt      string
+	Category       *string
 }
 
 type CatalogFt struct {
@@ -47,6 +48,12 @@ type CatalogTrgm struct {
 	Brand       string
 	CatalogTrgm *string
 	Rank        *float64
+}
+
+type CategoryStat struct {
+	Category string
+	N        int64
+	Ranges   string
 }
 
 type ChangeLog struct {
@@ -126,6 +133,8 @@ type Food struct {
 	UpdatedAt       string
 	DeletedAt       *string
 	ServerSeq       int64
+	CommunityRev    *string
+	Category        *string
 }
 
 type FoodsFt struct {
@@ -171,6 +180,52 @@ type ImageCache struct {
 type Meta struct {
 	Key   string
 	Value string
+}
+
+type ProductFact struct {
+	Barcode    string
+	RevisionID string
+	Status     string
+	UpdatedAt  string
+}
+
+type ProductFactDispute struct {
+	Barcode     string
+	RevisionID  string
+	Contributor string
+	CreatedAt   string
+}
+
+type ProductFactRevision struct {
+	ID                string
+	Barcode           string
+	Contributor       string
+	Source            string
+	Origin            string
+	Status            string
+	AppVersion        string
+	Lang              string
+	Countries         string
+	ProductName       string
+	Brands            string
+	Quantity          string
+	ServingSize       string
+	ServingGrams      *float64
+	IngredientsText   string
+	EnergyKcal100g    float64
+	EnergyKj100g      *float64
+	Fat100g           *float64
+	SaturatedFat100g  *float64
+	Carbohydrates100g *float64
+	Sugars100g        *float64
+	Fiber100g         *float64
+	Proteins100g      *float64
+	Salt100g          *float64
+	LabelImage        []byte
+	FrontImage        []byte
+	SubmittedAt       string
+	AcceptedAt        *string
+	PushedAt          *string
 }
 
 type RecoveryCode struct {

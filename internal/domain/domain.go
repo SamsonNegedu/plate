@@ -176,6 +176,10 @@ type Food struct {
 	UpdatedAt       string
 	DeletedAt       *string
 	ServerSeq       int64
+	// CommunityRev is the accepted product-fact revision this row's nutrition came from (ADR-020), or nil.
+	CommunityRev *string
+	// Category is the Open Food Facts category this food is compared with (a key of category_stats), or empty.
+	Category string
 }
 
 type Entry struct {
@@ -269,6 +273,10 @@ type CatalogFood struct {
 	Scans          int64
 	DatasetVersion string
 	ImportedAt     string
+	// Category is the category this product is compared with, a key of category_stats; empty when it has none.
+	Category string
+	// Categories are all the category tags the product carries. Only the catalog builder fills them in; they are never stored.
+	Categories []string
 }
 
 // ImageRecord tracks one cached product image. SourceURL never leaves the server.
@@ -279,4 +287,13 @@ type ImageRecord struct {
 	FetchedAt   string
 	LastUsedAt  string
 	SourceURL   string
+}
+
+// CategoryStats is how one Open Food Facts category looks per 100 g: for each of kcal, fat, protein, carbs and salt the 5th
+// percentile, the median and the 95th percentile over its German products. A product far outside these ranges on several
+// nutrients at once is almost always a data-entry mistake.
+type CategoryStats struct {
+	Category string
+	N        int
+	Ranges   map[string][3]float64
 }

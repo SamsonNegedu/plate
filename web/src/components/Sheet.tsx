@@ -1,5 +1,5 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { type CSSProperties, type FocusEvent, type ReactNode, useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
 import { Icon } from "./Icon";
@@ -41,6 +41,27 @@ function useVisibleArea(): { height: number; bottom: number } | null {
   return area;
 }
 
+/**
+ * Brings a field that just took focus to the middle of the sheet's scrolling body. The keyboard rises about a quarter of a
+ * second later and shrinks the sheet; without this the field can end up under it or under the sticky footer.
+ */
+function keepFocusedFieldInView(e: FocusEvent<HTMLDivElement>) {
+  const el = e.target;
+  if (
+    !(
+      el instanceof HTMLInputElement ||
+      el instanceof HTMLTextAreaElement ||
+      el instanceof HTMLSelectElement
+    )
+  )
+    return;
+  if (el.type === "file" || el.type === "checkbox") return;
+  window.setTimeout(() => {
+    // The sheet may have closed meanwhile, and jsdom has no scrollIntoView.
+    if (el.isConnected) el.scrollIntoView?.({ block: "center", behavior: "auto" });
+  }, 300);
+}
+
 /** A bottom sheet. Radix gives the focus trap, Escape, and focus return to the trigger. */
 export function Sheet({ title, description, onClose, children, footer, pinned, tall }: Props) {
   const area = useVisibleArea();
@@ -80,6 +101,7 @@ export function Sheet({ title, description, onClose, children, footer, pinned, t
           {pinned ? <div className="px-4 pt-3 pb-1">{pinned}</div> : null}
           <div
             className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 ${pinned ? "pt-1" : "pt-3"}`}
+            onFocus={keepFocusedFieldInView}
           >
             {children}
           </div>

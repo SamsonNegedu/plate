@@ -451,3 +451,98 @@ func TestTrigramIndexFollowsFoodChanges(t *testing.T) {
 		t.Fatal("the new name must enter the index")
 	}
 }
+
+func loadPopular(t *testing.T, x *fx, rows []struct {
+	barcode, name, brand string
+	scans                int64
+}) {
+	t.Helper()
+	err := store.InTx(context.Background(), x.db, func(r *store.Repo) error {
+		for _, c := range rows {
+			if err := r.PutCatalogFood(context.Background(), domain.CatalogFood{
+				Barcode: c.barcode, Name: c.name, Brand: c.brand, Scans: c.scans, Per100: domain.Nutrients{Kcal: 100},
+				DatasetVersion: "v1", ImportedAt: stamp(now),
+			}, stamp(now)); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAPartialWordPutsTheWidelyScannedProductFirstEvenAmongHundredsOfMatches(t *testing.T) {
+	x := newFx(t)
+	var rows []struct {
+		barcode, name, brand string
+		scans                int64
+	}
+	// 200 obscure products that all start with "nut" and read better to the text ranker (shorter names), plus the one everybody scans.
+	for i := 0; i < 200; i++ {
+		rows = append(rows, struct {
+			barcode, name, brand string
+			scans                int64
+		}{fmt.Sprintf("5%012d", i), fmt.Sprintf("Nut %d", i), "Obscure", 2})
+	}
+	rows = append(rows, struct {
+		barcode, name, brand string
+		scans                int64
+	}{"3017620422003", "Nutella Nuss-Nougat-Creme", "Ferrero", 1683})
+	loadPopular(t, x, rows)
+
+	for _, q := range []string{"nut", "nute", "nutel"} {
+		res, err := x.svc.Search(context.Background(), uid, q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pos := slices.IndexFunc(res, func(r Result) bool { return r.Barcode != nil && *r.Barcode == "3017620422003" })
+		if pos < 0 || pos > 4 {
+			t.Errorf("%q: Nutella at position %d of %d, want the top five", q, pos, len(res))
+		}
+	}
+}
+
+func TestGermanSpellingsWithoutUmlautKeysFindTheSameProducts(t *testing.T) {
+	x := newFx(t)
+	loadCatalog(t, x, []seed{
+		{"4000000000101", "Käse mild", "Hochland"},
+		{"4000000000102", "Gouda Käse", "Milbona"},
+		{"4000000000103", "Müller Reis", "Müller"},
+		{"4000000000104", "Hähnchenbrust", "Wiesenhof"},
+		{"4000000000105", "Weißbrot", "Harry"},
+		{"4000000000106", "Weissbrot Toast", "Golden Toast"},
+		{"4000000000107", "Soße Bolognese", "Knorr"},
+		{"4000000000108", "Sosse Hollandaise", "Maggi"},
+	})
+	cases := map[string]int{ // query -> products that must come back
+		"kaese":      2,
+		"käse":       2,
+		"mueller":    1,
+		"müller":     1,
+		"haehnchen":  1,
+		"weissbrot":  2,
+		"weißbrot":   2,
+		"sosse":      2,
+		"soße":       2,
+		"kaes milde": 0, // a typo is still a typo
+	}
+	for q, want := range cases {
+		res, err := x.svc.Search(context.Background(), uid, q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(res) < want {
+			t.Errorf("%q found %d, want at least %d: %v", q, len(res), want, resultNames(res))
+		}
+	}
+}
+
+func resultNames(res []Result) []string {
+	out := make([]string, len(res))
+	for i, r := range res {
+		out[i] = r.Name
+	}
+	return out
+}

@@ -48,6 +48,34 @@
         ],
         "type": "object"
       },
+      "CategoryView": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "Readable name, such as smoked salmons.",
+            "type": "string"
+          },
+          "ranges": {
+            "additionalProperties": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "description": "Per nutrient (kcal, fat, protein, carbs, salt): the 5th percentile, the median and the 95th percentile.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "ranges"
+        ],
+        "type": "object"
+      },
       "ChallengeBody": {
         "additionalProperties": false,
         "properties": {
@@ -92,6 +120,196 @@
         },
         "required": [
           "recovery_codes"
+        ],
+        "type": "object"
+      },
+      "CorrectionBody": {
+        "additionalProperties": false,
+        "properties": {
+          "app_version": {
+            "maxLength": 40,
+            "type": "string"
+          },
+          "brand": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "carbs": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "countries": {
+            "maxLength": 60,
+            "type": "string"
+          },
+          "fat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "fiber": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "front_image": {
+            "contentEncoding": "base64",
+            "description": "Front of the pack, JPEG or PNG, at most 250 KB.",
+            "type": "string"
+          },
+          "ingredients_text": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "kcal": {
+            "format": "double",
+            "minimum": 0,
+            "type": "number"
+          },
+          "kj": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "label_image": {
+            "contentEncoding": "base64",
+            "description": "Cropped nutrition-table photo, JPEG or PNG, at most 400 KB.",
+            "type": "string"
+          },
+          "lang": {
+            "description": "Label language, such as de.",
+            "maxLength": 8,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "protein": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "quantity": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "revision_id": {
+            "description": "Chosen by the client; resending the same id is safe.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "salt": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "satfat": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_grams": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "serving_size": {
+            "maxLength": 100,
+            "type": "string"
+          },
+          "source": {
+            "description": "How the numbers were entered.",
+            "enum": [
+              "manual",
+              "ocr"
+            ],
+            "type": "string"
+          },
+          "sugar": {
+            "format": "double",
+            "minimum": 0,
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "revision_id",
+          "name",
+          "kcal",
+          "source"
+        ],
+        "type": "object"
+      },
+      "CorrectionOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "description": "The plausibility checks the numbers failed. Empty when none.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "origin": {
+            "enum": [
+              "off_correction",
+              "off_missing_fields",
+              "new_product"
+            ],
+            "type": "string"
+          },
+          "revision_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "description": "accepted: every account sees it. pending: only you, because a check failed.",
+            "enum": [
+              "pending",
+              "accepted",
+              "superseded",
+              "reverted"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision_id",
+          "status",
+          "origin",
+          "issues"
         ],
         "type": "object"
       },
@@ -204,6 +422,19 @@
         },
         "required": [
           "message"
+        ],
+        "type": "object"
+      },
+      "DisputeOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "reverted": {
+            "description": "Enough accounts disputed it, so the product went back to its previous facts.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reverted"
         ],
         "type": "object"
       },
@@ -616,6 +847,62 @@
         ],
         "type": "object"
       },
+      "FactOutBody": {
+        "additionalProperties": false,
+        "properties": {
+          "fact": {
+            "$ref": "#/components/schemas/FactView",
+            "description": "Absent when no community fact exists."
+          }
+        },
+        "type": "object"
+      },
+      "FactView": {
+        "additionalProperties": false,
+        "properties": {
+          "has_photo": {
+            "type": "boolean"
+          },
+          "mine": {
+            "description": "You submitted the served revision.",
+            "type": "boolean"
+          },
+          "origin": {
+            "enum": [
+              "off_correction",
+              "off_missing_fields",
+              "new_product"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "manual",
+              "ocr"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "accepted",
+              "upstream_confirmed"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "origin",
+          "source",
+          "updated_at",
+          "mine",
+          "has_photo"
+        ],
+        "type": "object"
+      },
       "FavoriteDoc": {
         "additionalProperties": false,
         "properties": {
@@ -820,6 +1107,12 @@
               "null"
             ]
           },
+          "community_rev": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "created_at": {
             "type": "string"
           },
@@ -998,6 +1291,14 @@
               "null"
             ]
           },
+          "category": {
+            "$ref": "#/components/schemas/CategoryView",
+            "description": "How this food's category looks per 100 g, so the client can tell when the values are far outside it."
+          },
+          "community": {
+            "description": "The nutrition comes from a community correction shared by every account.",
+            "type": "boolean"
+          },
           "fat": {
             "format": "double",
             "type": [
@@ -1133,7 +1434,8 @@
           "image_path",
           "ingredients",
           "allergens",
-          "updated_at"
+          "updated_at",
+          "community"
         ],
         "type": "object"
       },
@@ -3581,6 +3883,223 @@
         ]
       }
     },
+    "/foods/barcode/{code}/correction": {
+      "put": {
+        "description": "Numbers that pass the plausibility checks go live for everyone at once and replace what was served. A submission that fails a check is stored and stays private to its author.",
+        "operationId": "correct-product",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Submit the facts for a product, shared by every account",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/barcode/{code}/dispute": {
+      "post": {
+        "description": "Two accounts other than the contributor return the product to its previous facts. Disputing your own submission is a conflict.",
+        "operationId": "dispute-product-fact",
+        "parameters": [
+          {
+            "description": "6 to 14 digits; other characters are ignored.",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "description": "6 to 14 digits; other characters are ignored.",
+              "maxLength": 32,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisputeOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Say the community facts for a product are wrong",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/barcode/{code}/fact": {
+      "get": {
+        "operationId": "get-product-fact",
+        "parameters": [
+          {
+            "description": "6 to 14 digits; other characters are ignored.",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "description": "6 to 14 digits; other characters are ignored.",
+              "maxLength": 32,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactOutBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Is there a community fact for this barcode?",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
     "/foods/recent": {
       "get": {
         "operationId": "recent-foods",
@@ -4013,6 +4532,100 @@
           }
         ],
         "summary": "The image of a catalog product by barcode",
+        "tags": [
+          "images"
+        ]
+      }
+    },
+    "/images/fact/{revision}/{kind}": {
+      "get": {
+        "description": "Only the revision currently served for its barcode has public photos; an older, reverted or private revision answers 404. The URL names the revision, so its bytes never change.",
+        "operationId": "get-fact-photo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "front: the front of the pack. nutrition: the cropped nutrition table.",
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "description": "front: the front of the pack. nutrition: the cropped nutrition table.",
+              "enum": [
+                "front",
+                "nutrition"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/*": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The product image"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A photo shared with a community product fact",
         "tags": [
           "images"
         ]

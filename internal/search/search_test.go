@@ -102,3 +102,39 @@ func TestExactNameIgnoresCaseAndUmlauts(t *testing.T) {
 		t.Fatalf("got %v", names(got))
 	}
 }
+
+func TestVariantsCoverGermanSpellingsTypedWithoutUmlautKeys(t *testing.T) {
+	cases := map[string][]string{
+		"kaese":     {"kaese", "kase"},
+		"Mueller":   {"Mueller", "muller"},
+		"haehnchen": {"haehnchen", "hahnchen"},
+		"weissbrot": {"weissbrot", "weißbrot"},
+		"soße":      {"soße", "sosse"},
+		"brot":      {"brot"},
+		"Käse":      {"Käse"},
+	}
+	for in, want := range cases {
+		if got := Variants(in); !slices.Equal(got, want) {
+			t.Errorf("Variants(%q) = %v, want %v", in, got, want)
+		}
+	}
+}
+
+func TestMatchGroupsSpellingVariantsAndKeepsThePrefixOnEach(t *testing.T) {
+	if got := Match([]string{"kaese", "mild"}, false); got != `("kaese" OR "kase") AND "mild"` {
+		t.Fatalf("got %s", got)
+	}
+	if got := Match([]string{"hell", "kaes"}, true); got != `"hell" AND ("kaes"* OR "kas"*)` {
+		t.Fatalf("got %s", got)
+	}
+	if got := Match([]string{"mueller"}, true); got != `("mueller"* OR "muller"*)` {
+		t.Fatalf("got %s", got)
+	}
+}
+
+func TestExactAndPrefixRankingAcceptAnUmlautFreeSpelling(t *testing.T) {
+	items := []Item{{Name: "Käsekuchen", WholeWord: true, Order: 0}, {Name: "Käse", WholeWord: true, Order: 1}}
+	if got := Rank(items, "kaese"); got[0].Name != "Käse" {
+		t.Fatalf("got %v", names(got))
+	}
+}

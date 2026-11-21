@@ -12,7 +12,7 @@
     "lint": "oxlint && oxfmt --check",
     "fmt": "oxfmt",
     "gen:api": "openapi-typescript ../internal/httpapi/openapi.json -o src/api/schema.d.ts",
-    "prebuild": "node scripts/copy-wasm.mjs",
+    "prebuild": "node scripts/copy-wasm.mjs --gzip",
     "predev": "node scripts/copy-wasm.mjs",
     "pretest": "node scripts/copy-wasm.mjs"
   },
@@ -29,6 +29,7 @@
     "dexie-react-hooks": "^4.4.0",
     "lucide-react": "^1.72.0",
     "minisearch": "^7.2.0",
+    "onnxruntime-web": "^1.31.1",
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@gutenye/ocr-models": "^1.4.2",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/vite": "^4.3.5",
     "@testing-library/jest-dom": "^7.0.1",

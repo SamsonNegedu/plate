@@ -53,12 +53,18 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,woff2,wasm,svg,png,webmanifest}"],
+        // The label reader is 30 MB and fetched on first use, not with the app (see sw.ts).
+        globIgnores: ["ocr/**"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
       devOptions: { enabled: false },
     }),
   ],
-  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    // ONNX Runtime must not bundle its own copy of the WASM: the app serves it from /ocr/ (see food/ocr/engine.ts).
+    conditions: ["onnxruntime-web-use-extern-wasm"],
+  },
   build: {
     outDir: "../internal/webui/dist",
     emptyOutDir: true,

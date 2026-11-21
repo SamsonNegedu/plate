@@ -230,6 +230,7 @@ func (r *Repo) PutFood(ctx context.Context, f domain.Food) error {
 		SourceUpdatedAt: f.SourceUpdatedAt, SourceCheckedAt: f.SourceCheckedAt, ImageKey: f.ImageKey,
 		Ingredients: f.Ingredients, Allergens: f.Allergens, SearchName: f.SearchName,
 		CreatedAt: f.CreatedAt, UpdatedAt: f.UpdatedAt, DeletedAt: f.DeletedAt, ServerSeq: f.ServerSeq,
+		CommunityRev: f.CommunityRev, Category: optional(f.Category),
 	})
 	if err != nil {
 		return fmt.Errorf("saving food: %w", err)
@@ -252,6 +253,7 @@ func toFood(f sqlc.Food) domain.Food {
 		SourceUpdatedAt: f.SourceUpdatedAt, SourceCheckedAt: f.SourceCheckedAt, ImageKey: f.ImageKey,
 		Ingredients: f.Ingredients, Allergens: f.Allergens, SearchName: f.SearchName,
 		CreatedAt: f.CreatedAt, UpdatedAt: f.UpdatedAt, DeletedAt: f.DeletedAt, ServerSeq: f.ServerSeq,
+		CommunityRev: f.CommunityRev, Category: deref(f.Category),
 	}
 }
 

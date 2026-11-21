@@ -125,6 +125,21 @@ export const copy = {
     missingMacros: "Some foods have no protein, carbs or fat values, so these totals may be low.",
     add: "Add to",
   },
+  /** What a failed plausibility check means, in the words a person can act on. Keys are the server's issue codes. */
+  corrections: {
+    shared: "Saved for everyone who scans this barcode.",
+    queued: "Saved on this device. It is shared when you are back online.",
+    privateTitle: "Saved for you only.",
+    issues: {
+      energy_mismatch: "The calories do not match the fat, carbohydrate and protein.",
+      macros_over_100: "Fat, carbohydrate and protein add up to more than 100 g.",
+      saturates_over_fat: "Saturates are higher than total fat.",
+      sugars_over_carbohydrate: "Sugars are higher than total carbohydrate.",
+      kj_kcal_mismatch: "The kJ and kcal values do not match.",
+      out_of_range: "One of the values is out of range.",
+    } as Record<string, string>,
+    checkLabel: "Check the label, then save again to share it.",
+  },
   sheet: {
     addTo: "Add to",
     search: "Search foods",
@@ -142,9 +157,12 @@ export const copy = {
     meal: "Meal",
     nutrition: "Nutrition per 100 g",
     editNutrition: "Edit nutrition",
+    correctProduct: "Correct this product",
+    addProduct: "Add this product",
     viewOff: "View on Open Food Facts",
     fromOff: "From Open Food Facts. May be out of date.",
     fromCatalog: "From the product catalog.",
+    community: "Corrected by the community. Everyone who scans this barcode sees these values.",
     custom: "Custom food.",
     stale: "Not checked for a while.",
     checked: "Checked",
@@ -177,4 +195,36 @@ export const copy = {
   },
   sync: { now: "Sync now" },
   errors: { generic: "Something went wrong.", reload: "Reload", exportData: "Export my data" },
+} as const;
+
+/** The nutrition-label reader. */
+export const labelCopy = {
+  scan: "Scan the nutrition label",
+  firstUse: "The first scan downloads the label reader, 18 MB, once. After that it works offline.",
+  scanAgain: "Scan again",
+  type: "Type it in",
+  reading: "Reading the label…",
+  downloading: "Downloading the label reader. This happens once.",
+  filled: "Read from your photo. Check the values marked below against the label.",
+  perServing:
+    "This label only lists values per portion. Enter the per 100 g values, or the portion weight and work them out.",
+  nothing:
+    "Nothing could be read from that photo. Try again with the table filling the frame and no glare, or type the values.",
+  failed: "The photo could not be read on this device. You can type the values instead.",
+  notFoundTitle: "Not in the database yet",
+  notFoundBody:
+    "Add it once and everyone who scans this barcode gets it. A photo of the nutrition table is the quickest way.",
+} as const;
+
+/** Photos shared with a product (ADR-020). */
+export const photoCopy = {
+  title: "Photos for this product",
+  note: "Shared with the product so it can be added to Open Food Facts, which publishes photos under CC BY-SA. The label photo is cropped to the table. Leave a photo out if anything private shows.",
+  shareLabel: "Share the cropped photo of the nutrition table",
+  addFront: "Add a photo of the front of the pack (optional)",
+  changeFront: "Change the front photo",
+  removeFront: "Remove the front photo",
+  frontAlt: "The front of the pack",
+  labelAlt: "The nutrition table, cropped",
+  failed: "That photo could not be prepared. Try another one.",
 } as const;

@@ -30,3 +30,6 @@ SELECT coalesce(sum(bytes), 0) FROM image_cache;
 
 -- name: ListImagesLRU :many
 SELECT key, bytes FROM image_cache WHERE bytes > 0 ORDER BY last_used_at, key LIMIT ?;
+
+-- name: DeleteSearchCache :exec
+DELETE FROM search_cache WHERE key = ?;

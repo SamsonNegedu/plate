@@ -55,6 +55,16 @@ export interface Food extends Nutrients {
   updatedAt: string;
   deletedAt: string | null;
   serverSeq: number;
+  /** The nutrition is a community correction shared by every account (ADR-020). */
+  community?: boolean | undefined;
+  /** The category this food is compared with and its usual ranges, from the last lookup. Never synced. */
+  category?: CategoryInfo | undefined;
+}
+
+/** A category's ranges per 100 g: for each nutrient the 5th percentile, the median and the 95th percentile. */
+export interface CategoryInfo {
+  name: string;
+  ranges: Partial<Record<"kcal" | "fat" | "protein" | "carbs" | "salt", [number, number, number]>>;
 }
 
 export type Theme = "auto" | "light" | "dark";
@@ -199,4 +209,12 @@ export interface ConflictRow {
   entity: SyncEntity;
   entityId: string;
   serverSeq: number;
+}
+
+/** A correction waiting for the server because the device was offline. Local only, never synced. */
+export interface PendingCorrection {
+  revisionId: string;
+  barcode: string;
+  body: Record<string, unknown>;
+  createdAt: string;
 }

@@ -55,7 +55,7 @@ func (q *Queries) FoodExists(ctx context.Context, arg FoodExistsParams) (int64, 
 }
 
 const getFood = `-- name: GetFood :one
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE id = ? AND user_id = ?
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE id = ? AND user_id = ?
 `
 
 type GetFoodParams struct {
@@ -96,12 +96,14 @@ func (q *Queries) GetFood(ctx context.Context, arg GetFoodParams) (Food, error) 
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ServerSeq,
+		&i.CommunityRev,
+		&i.Category,
 	)
 	return i, err
 }
 
 const getFoodBySource = `-- name: GetFoodBySource :one
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE user_id = ? AND source = ? AND source_id = ? LIMIT 1
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE user_id = ? AND source = ? AND source_id = ? LIMIT 1
 `
 
 type GetFoodBySourceParams struct {
@@ -143,12 +145,14 @@ func (q *Queries) GetFoodBySource(ctx context.Context, arg GetFoodBySourceParams
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ServerSeq,
+		&i.CommunityRev,
+		&i.Category,
 	)
 	return i, err
 }
 
 const getLiveFoodByBarcode = `-- name: GetLiveFoodByBarcode :one
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE user_id = ? AND barcode = ? AND deleted_at IS NULL
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE user_id = ? AND barcode = ? AND deleted_at IS NULL
 `
 
 type GetLiveFoodByBarcodeParams struct {
@@ -189,6 +193,8 @@ func (q *Queries) GetLiveFoodByBarcode(ctx context.Context, arg GetLiveFoodByBar
 		&i.UpdatedAt,
 		&i.DeletedAt,
 		&i.ServerSeq,
+		&i.CommunityRev,
+		&i.Category,
 	)
 	return i, err
 }
@@ -221,7 +227,7 @@ func (q *Queries) ListFavoriteFoodIDs(ctx context.Context, userID string) ([]str
 }
 
 const listFoodsByBarcodes = `-- name: ListFoodsByBarcodes :many
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE user_id = ?1 AND deleted_at IS NULL AND barcode IN (/*SLICE:barcodes*/?)
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE user_id = ?1 AND deleted_at IS NULL AND barcode IN (/*SLICE:barcodes*/?)
 `
 
 type ListFoodsByBarcodesParams struct {
@@ -279,6 +285,8 @@ func (q *Queries) ListFoodsByBarcodes(ctx context.Context, arg ListFoodsByBarcod
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -294,7 +302,7 @@ func (q *Queries) ListFoodsByBarcodes(ctx context.Context, arg ListFoodsByBarcod
 }
 
 const listFoodsByIDs = `-- name: ListFoodsByIDs :many
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE user_id = ?1 AND id IN (/*SLICE:ids*/?) ORDER BY id
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE user_id = ?1 AND id IN (/*SLICE:ids*/?) ORDER BY id
 `
 
 type ListFoodsByIDsParams struct {
@@ -352,6 +360,8 @@ func (q *Queries) ListFoodsByIDs(ctx context.Context, arg ListFoodsByIDsParams) 
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -367,7 +377,7 @@ func (q *Queries) ListFoodsByIDs(ctx context.Context, arg ListFoodsByIDsParams) 
 }
 
 const listRecentFoods = `-- name: ListRecentFoods :many
-SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq
+SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq, f.community_rev, f.category
 FROM foods f
 JOIN (
     SELECT e.food_id AS food_id, max(e.created_at) AS last_at
@@ -425,6 +435,8 @@ func (q *Queries) ListRecentFoods(ctx context.Context, arg ListRecentFoodsParams
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -440,7 +452,7 @@ func (q *Queries) ListRecentFoods(ctx context.Context, arg ListRecentFoodsParams
 }
 
 const listUserFoods = `-- name: ListUserFoods :many
-SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq FROM foods WHERE user_id = ? AND source = 'user' ORDER BY id
+SELECT id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g, protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g, nutriscore, source, source_id, source_updated_at, source_checked_at, image_key, ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category FROM foods WHERE user_id = ? AND source = 'user' ORDER BY id
 `
 
 func (q *Queries) ListUserFoods(ctx context.Context, userID string) ([]Food, error) {
@@ -482,6 +494,8 @@ func (q *Queries) ListUserFoods(ctx context.Context, userID string) ([]Food, err
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -497,7 +511,7 @@ func (q *Queries) ListUserFoods(ctx context.Context, userID string) ([]Food, err
 }
 
 const searchFoods = `-- name: SearchFoods :many
-SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq
+SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq, f.community_rev, f.category
 FROM foods_fts
 JOIN foods f ON f.rowid = foods_fts.rowid
 WHERE foods_fts MATCH ?1 AND f.user_id = ?2 AND f.deleted_at IS NULL
@@ -550,6 +564,8 @@ func (q *Queries) SearchFoods(ctx context.Context, arg SearchFoodsParams) ([]Foo
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -565,7 +581,7 @@ func (q *Queries) SearchFoods(ctx context.Context, arg SearchFoodsParams) ([]Foo
 }
 
 const searchFoodsInfix = `-- name: SearchFoodsInfix :many
-SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq
+SELECT f.id, f.user_id, f.barcode, f.name, f.brand, f.quantity, f.serving_size, f.serving_grams, f.kcal_100g, f.protein_100g, f.carbs_100g, f.fat_100g, f.sugar_100g, f.satfat_100g, f.fiber_100g, f.salt_100g, f.nutriscore, f.source, f.source_id, f.source_updated_at, f.source_checked_at, f.image_key, f.ingredients, f.allergens, f.search_name, f.created_at, f.updated_at, f.deleted_at, f.server_seq, f.community_rev, f.category
 FROM foods_trgm
 JOIN foods f ON f.rowid = foods_trgm.rowid
 WHERE foods_trgm MATCH ?1 AND f.user_id = ?2 AND f.deleted_at IS NULL
@@ -618,6 +634,8 @@ func (q *Queries) SearchFoodsInfix(ctx context.Context, arg SearchFoodsInfixPara
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.ServerSeq,
+			&i.CommunityRev,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -637,8 +655,8 @@ INSERT INTO foods (
     id, user_id, barcode, name, brand, quantity, serving_size, serving_grams, kcal_100g,
     protein_100g, carbs_100g, fat_100g, sugar_100g, satfat_100g, fiber_100g, salt_100g,
     nutriscore, source, source_id, source_updated_at, source_checked_at, image_key,
-    ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ingredients, allergens, search_name, created_at, updated_at, deleted_at, server_seq, community_rev, category
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT (id) DO UPDATE SET
     barcode = excluded.barcode, name = excluded.name, brand = excluded.brand,
     quantity = excluded.quantity, serving_size = excluded.serving_size, serving_grams = excluded.serving_grams,
@@ -648,7 +666,8 @@ ON CONFLICT (id) DO UPDATE SET
     source = excluded.source, source_id = excluded.source_id, source_updated_at = excluded.source_updated_at,
     source_checked_at = excluded.source_checked_at, image_key = excluded.image_key,
     ingredients = excluded.ingredients, allergens = excluded.allergens, search_name = excluded.search_name,
-    updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq
+    updated_at = excluded.updated_at, deleted_at = excluded.deleted_at, server_seq = excluded.server_seq,
+    community_rev = excluded.community_rev, category = excluded.category
 WHERE foods.user_id = excluded.user_id
 `
 
@@ -682,6 +701,8 @@ type UpsertFoodParams struct {
 	UpdatedAt       string
 	DeletedAt       *string
 	ServerSeq       int64
+	CommunityRev    *string
+	Category        *string
 }
 
 func (q *Queries) UpsertFood(ctx context.Context, arg UpsertFoodParams) (int64, error) {
@@ -715,6 +736,8 @@ func (q *Queries) UpsertFood(ctx context.Context, arg UpsertFoodParams) (int64, 
 		arg.UpdatedAt,
 		arg.DeletedAt,
 		arg.ServerSeq,
+		arg.CommunityRev,
+		arg.Category,
 	)
 	if err != nil {
 		return 0, err

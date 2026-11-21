@@ -2,6 +2,7 @@ import { topSheet, useUi } from "@/lib/ui";
 import { EntryEditSheet } from "./EntryEditSheet";
 import { LogRecipeSheet } from "./LogRecipeSheet";
 import { ManualFoodSheet } from "./ManualFoodSheet";
+import { NotFoundSheet } from "./NotFoundSheet";
 import { NutrientsSheet } from "./NutrientsSheet";
 import { ProductSheet } from "./ProductSheet";
 import { QuickAddSheet } from "./QuickAddSheet";
@@ -44,6 +45,18 @@ export function SheetHost() {
           date={sheet.date}
           barcode={sheet.barcode}
           food={sheet.food}
+          name={sheet.name}
+          notLoggable={sheet.notLoggable}
+          scan={sheet.scan}
+        />
+      );
+    case "notFound":
+      return (
+        <NotFoundSheet
+          key={key}
+          meal={sheet.meal}
+          date={sheet.date}
+          barcode={sheet.barcode}
           name={sheet.name}
           notLoggable={sheet.notLoggable}
         />
