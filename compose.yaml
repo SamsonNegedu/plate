@@ -11,12 +11,13 @@ services:
       PLATE_LOG_LEVEL: ${PLATE_LOG_LEVEL:-info}
       PLATE_OFF_USER_AGENT: ${PLATE_OFF_USER_AGENT:-Plate/1.0 (self-hosted)}
       PLATE_SYNC_ENABLED: ${PLATE_SYNC_ENABLED:-true}
-      # The bundled /seed/off-catalog.db is imported when the catalog is empty.
+      # The bundled /seed/off-catalog.db is imported when the catalog is empty or the seed's dataset version is newer.
       PLATE_CATALOG_REIMPORT: ${PLATE_CATALOG_REIMPORT:-false}
     volumes:
       - plate-data:/data
     networks: [internal]
     read_only: true
+    tmpfs: [/tmp]
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
     stop_grace_period: 15s

@@ -30,6 +30,8 @@ func Open(path string) (*sql.DB, error) {
 		"busy_timeout(5000)",
 		"synchronous(NORMAL)",
 		"foreign_keys(ON)",
+		// The container root is read-only with no /tmp, so SQLite cannot spill sorts, indexes or big deletes to a temp file.
+		"temp_store(MEMORY)",
 	} {
 		q.Add("_pragma", p)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"io"
 	"log/slog"
 	"os"
@@ -156,5 +157,47 @@ func TestStartupImportsANewerBundledCatalog(t *testing.T) {
 	boot(write("2026-11-13", "Older"))
 	if got := name(); got != "New" {
 		t.Fatalf("an older seed must not replace a newer catalog, got %q", got)
+	}
+}
+
+func TestStartupSurvivesAFailedCatalogUpgrade(t *testing.T) {
+	ctx := context.Background()
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	db, _ := store.Open(filepath.Join(t.TempDir(), "plate.db"))
+	t.Cleanup(func() { _ = db.Close() })
+	if err := store.Migrate(ctx, db, ""); err != nil {
+		t.Fatal(err)
+	}
+	write := func(version string) string {
+		path := filepath.Join(t.TempDir(), "seed.db")
+		err := food.WriteSeed(path, []domain.CatalogFood{{Barcode: "3017620422003", Name: "Nutella", Per100: domain.Nutrients{Kcal: 539}}},
+			food.SeedMeta{DatasetVersion: version, BuiltAt: "2026-11-13T00:00:00Z", Source: "OFF"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+	boot := func(seed string) error {
+		cfg := config.Config{IntegrityCheck: true, ImportCatalog: seed}
+		return startupActions(ctx, cfg, log, db, auth.NewSessionStore(db))
+	}
+	if err := boot(write("2026-11-12")); err != nil {
+		t.Fatal(err)
+	}
+	// Newer, but its metadata fails validation, so the import cannot run.
+	broken := write("2026-11-21")
+	raw, err := sql.Open("sqlite", broken)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := raw.ExecContext(ctx, `UPDATE catalog_meta SET value = '0' WHERE key = 'row_count'`); err != nil {
+		t.Fatal(err)
+	}
+	_ = raw.Close()
+	if err := boot(broken); err != nil {
+		t.Fatalf("a failed upgrade must not stop startup: %v", err)
+	}
+	if c, err := store.NewRepo(db).CatalogByBarcode(ctx, "3017620422003"); err != nil || c.Name != "Nutella" {
+		t.Fatalf("the old catalog must still serve: %+v, %v", c, err)
 	}
 }

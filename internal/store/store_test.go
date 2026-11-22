@@ -114,3 +114,30 @@ func TestCoreJobsRun(t *testing.T) {
 		}
 	}
 }
+
+func TestEveryConnectionKeepsTempFilesInMemory(t *testing.T) {
+	db, err := Open(filepath.Join(t.TempDir(), "plate.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+	ctx := context.Background()
+	conns := make([]*sql.Conn, 0, poolSize)
+	for range poolSize {
+		c, err := db.Conn(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		conns = append(conns, c)
+		var mode int
+		if err := c.QueryRowContext(ctx, `PRAGMA temp_store`).Scan(&mode); err != nil {
+			t.Fatal(err)
+		}
+		if mode != 2 {
+			t.Fatalf("temp_store = %d, want 2 (memory): a read-only container has no temp directory", mode)
+		}
+	}
+	for _, c := range conns {
+		_ = c.Close()
+	}
+}

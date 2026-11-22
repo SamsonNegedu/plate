@@ -3,3 +3,12 @@ bin
 data/*
 !data/off-catalog.db
 web/node_modules
+# Not needed to build the image, and a change to any of them would otherwise rebuild the web and Go layers.
+docs
+.claude
+.github
+mockups.html
+README.md
+web/test-results
+web/.auth
+web/playwright-report

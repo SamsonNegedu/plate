@@ -36,6 +36,7 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 	if seed := catalogSeed(cfg); seed != "" {
 		repo := store.NewRepo(db)
 		importNow := cfg.CatalogReimport
+		upgrade := false
 		if !importNow {
 			n, err := repo.CountCatalog(ctx)
 			if err != nil {
@@ -46,7 +47,7 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 				have, _ := repo.CatalogMeta(ctx, "dataset_version")
 				// Dataset versions are dates, so a later one sorts after an earlier one. An unreadable seed leaves the catalog alone.
 				if want, err := food.SeedVersion(ctx, seed); err == nil && want > have {
-					importNow = true
+					importNow, upgrade = true, true
 					log.Info("bundled catalog is newer; importing",
 						slog.String("action", "import_catalog"), slog.String("have", have), slog.String("want", want))
 				} else {
@@ -57,10 +58,16 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 		}
 		if importNow {
 			if _, err := food.ImportCatalog(ctx, db, seed, log); err != nil {
-				return err
+				// A routine upgrade must never keep the app from starting: the old catalog is intact and still serves.
+				if !upgrade {
+					return err
+				}
+				log.Error("catalog upgrade failed; keeping the current catalog",
+					slog.String("action", "import_catalog"), slog.String("seed", seed), slog.Any("error", err))
+			} else {
+				log.Info("catalog import finished",
+					slog.String("action", "import_catalog"), slog.String("seed", seed))
 			}
-			log.Info("catalog import finished",
-				slog.String("action", "import_catalog"), slog.String("seed", seed))
 		}
 	}
 	if cfg.ImportBLSPath != "" {
