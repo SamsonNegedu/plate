@@ -112,7 +112,7 @@ Restart, confirm `reindex_fts` in the log, remove the flag, restart again.
 
 ## Re-import the catalog
 
-A non-empty catalog is left alone on boot. To replace it, set the reimport flag for one boot:
+A non-empty catalog is left alone on boot unless the bundled seed has a later `dataset_version` (a date), in which case it is imported automatically and the log says `bundled catalog is newer; importing`. An older or unreadable seed never replaces it. To force a replacement with the same version, set the reimport flag for one boot:
 
 ```
 PLATE_CATALOG_REIMPORT=true

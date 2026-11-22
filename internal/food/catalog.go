@@ -134,6 +134,28 @@ type CatalogImport struct {
 	Duration time.Duration
 }
 
+// SeedVersion reads only the dataset version from a seed file, opened read-only, so startup can tell whether the
+// bundled seed is newer than the imported catalog without importing it.
+func SeedVersion(ctx context.Context, path string) (string, error) {
+	info, err := os.Stat(path) // #nosec G703 -- the path is the operator's seed or the bundled one
+	if err != nil {
+		return "", fmt.Errorf("seed file: %w", err)
+	}
+	if !info.Mode().IsRegular() || info.Size() > MaxSeedBytes {
+		return "", errors.New("seed file is not a regular file within the size limit")
+	}
+	seed, err := sql.Open("sqlite", "file:"+url.PathEscape(path)+"?mode=ro&immutable=1")
+	if err != nil {
+		return "", fmt.Errorf("opening seed read-only: %w", err)
+	}
+	defer func() { _ = seed.Close() }()
+	var v string
+	if err := seed.QueryRowContext(ctx, `SELECT value FROM catalog_meta WHERE key = 'dataset_version'`).Scan(&v); err != nil {
+		return "", fmt.Errorf("reading seed version: %w", err)
+	}
+	return strings.TrimSpace(v), nil
+}
+
 // ImportCatalog replaces catalog_foods from a seed file in one transaction. The file is untrusted: it is opened read-only,
 // its structure is checked first (no triggers, views or unexpected tables), and rows are copied into the app-owned
 // table one by one, validated. Any failure leaves the previous catalog intact.

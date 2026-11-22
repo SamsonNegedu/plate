@@ -43,9 +43,16 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 			}
 			importNow = n == 0
 			if !importNow {
-				v, _ := repo.CatalogMeta(ctx, "dataset_version")
-				log.Info("catalog already present; skipping import",
-					slog.String("action", "import_catalog"), slog.Int64("rows", n), slog.String("version", v))
+				have, _ := repo.CatalogMeta(ctx, "dataset_version")
+				// Dataset versions are dates, so a later one sorts after an earlier one. An unreadable seed leaves the catalog alone.
+				if want, err := food.SeedVersion(ctx, seed); err == nil && want > have {
+					importNow = true
+					log.Info("bundled catalog is newer; importing",
+						slog.String("action", "import_catalog"), slog.String("have", have), slog.String("want", want))
+				} else {
+					log.Info("catalog already present; skipping import",
+						slog.String("action", "import_catalog"), slog.Int64("rows", n), slog.String("version", have))
+				}
 			}
 		}
 		if importNow {
