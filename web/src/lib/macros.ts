@@ -45,3 +45,27 @@ export function reconcile(goalKcal: number, g: MacroGrams): Reconciliation {
   const ratio = goalKcal > 0 ? kcal / goalKcal : 0;
   return { kcal, ratio, diff: kcal - goalKcal, matches: Math.abs(ratio - 1) <= 0.05 };
 }
+
+/** The split used when a target is left blank, so the summary still has something to measure against. */
+const DEFAULT_SHARE = { protein: 20, carbs: 50, fat: 30 } as const;
+const DEFAULT_FIBER_G_PER_1000_KCAL = 14;
+
+export interface Targets {
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
+
+/** Each blank (0) target filled from the calorie goal; a target the person set is kept as is. */
+export function withDefaultTargets(goalKcal: number, set: Targets): Targets {
+  if (goalKcal <= 0) return set;
+  const grams = (key: MacroKey) => Math.round(gramsFromPercent(goalKcal, DEFAULT_SHARE[key], key));
+  return {
+    protein: set.protein > 0 ? set.protein : grams("protein"),
+    carbs: set.carbs > 0 ? set.carbs : grams("carbs"),
+    fat: set.fat > 0 ? set.fat : grams("fat"),
+    fiber:
+      set.fiber > 0 ? set.fiber : Math.round((goalKcal / 1000) * DEFAULT_FIBER_G_PER_1000_KCAL),
+  };
+}

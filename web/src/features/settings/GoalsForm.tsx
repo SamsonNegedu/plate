@@ -8,7 +8,9 @@ import { useDb } from "@/db/context";
 import { saveSettings } from "@/db/settings";
 import type { Settings } from "@/db/types";
 import { optionalNumber, requiredNumber } from "@/features/log/schemas";
+import type { GoalSuggestion } from "@/lib/goals";
 import { useUi } from "@/lib/ui";
+import { GoalSuggest } from "./GoalSuggest";
 import { MacroTargets } from "./MacroTargets";
 import { cls } from "./ui";
 
@@ -65,8 +67,18 @@ export function GoalsForm({ settings }: { settings: Settings }) {
     toast({ message: "Goals saved" });
   });
 
+  const accept = (s: GoalSuggestion) => {
+    const opts = { shouldDirty: true, shouldValidate: true } as const;
+    form.setValue("goalKcal", String(s.kcal), opts);
+    form.setValue("proteinG", String(s.proteinG), opts);
+    form.setValue("carbsG", String(s.carbsG), opts);
+    form.setValue("fatG", String(s.fatG), opts);
+    form.setValue("fiberG", String(s.fiberG), opts);
+  };
+
   return (
     <form ref={formRef} onSubmit={submit} noValidate className={cls.form}>
+      <GoalSuggest onMedication={settings.medName !== null} onAccept={accept} />
       <Field
         label="Daily calories"
         inputMode="decimal"

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
+import { type Targets, withDefaultTargets } from "@/lib/macros";
 import { formatKcal } from "@/lib/numbers";
 import { type DayTotals, meterFill } from "@/lib/nutrition";
 import { MacroBar } from "./MacroBar";
@@ -8,7 +9,8 @@ import { Meter } from "./Meter";
 interface Props {
   totals: DayTotals;
   goalKcal: number;
-  targets: { protein: number; carbs: number; fat: number; fiber: number };
+  /** Targets from settings; a blank one is measured against a default share of the calorie goal. */
+  targets: Targets;
   /** Opens the full nutrient table for the day. */
   onDetails: () => void;
 }
@@ -17,6 +19,7 @@ interface Props {
 export function SummaryCard({ totals, goalKcal, targets, onDetails }: Props) {
   const eaten = Math.round(totals.kcal);
   const { fill, over, left } = meterFill(eaten, goalKcal);
+  const goals = withDefaultTargets(goalKcal, targets);
   return (
     <section className="rounded-card border border-line bg-surface p-4" aria-label="Day summary">
       <div className="flex items-end gap-x-4 gap-y-1">
@@ -43,10 +46,10 @@ export function SummaryCard({ totals, goalKcal, targets, onDetails }: Props) {
       />
       {totals.count > 0 ? (
         <div className="mt-3.5 grid grid-cols-4 gap-2.5">
-          <MacroBar label="Protein" value={totals.protein} target={targets.protein} />
-          <MacroBar label="Carbs" value={totals.carbs} target={targets.carbs} />
-          <MacroBar label="Fat" value={totals.fat} target={targets.fat} />
-          <MacroBar label="Fibre" value={totals.fiber} target={targets.fiber} />
+          <MacroBar label="Protein" value={totals.protein} target={goals.protein} />
+          <MacroBar label="Carbs" value={totals.carbs} target={goals.carbs} />
+          <MacroBar label="Fat" value={totals.fat} target={goals.fat} />
+          <MacroBar label="Fibre" value={totals.fiber} target={goals.fiber} />
         </div>
       ) : null}
       {totals.missing.length > 0 ? (
