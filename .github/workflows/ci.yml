@@ -16,8 +16,7 @@ permissions:
 env:
   CGO_ENABLED: "0"
 
-# Every job starts at once; only e2e waits, for the binary that `build` produces. Wall time is the slowest path
-# (build then e2e), not the sum of all jobs.
+# Every job starts at once, so wall time is the slowest job, not the sum. Playwright (`make test-e2e`) runs locally only.
 jobs:
   go-test:
     runs-on: ubuntu-latest
@@ -86,49 +85,6 @@ jobs:
         with: { go-version-file: go.mod, cache: true }
       - uses: ./.github/actions/setup-web
       - run: make build
-      # Same flags as make build, so the compiled dependencies are reused instead of rebuilt.
-      - run: go build -trimpath -ldflags="-s -w" -o bin/e2eseed ./tools/e2eseed
-      - uses: actions/upload-artifact@v4
-        with:
-          name: plate-linux-amd64
-          path: |
-            bin/plate
-            bin/e2eseed
-          retention-days: 7
-
-  e2e:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    name: e2e (${{ matrix.project }} ${{ matrix.shard }}/2)
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [mobile-400, desktop] # each project gets its own server and user, so they run side by side
-        shard: [1, 2] # half of the tests each; setup signs in once per shard
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-web
-      - uses: actions/download-artifact@v4
-        with: { name: plate-linux-amd64, path: bin }
-      - run: chmod +x bin/plate bin/e2eseed
-      - id: playwright
-        run: echo "version=$(pnpm --dir web exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
-        id: browsers
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      # The runner image already carries Chrome's system libraries, so a cached browser needs no apt step.
-      - if: steps.browsers.outputs.cache-hit != 'true'
-        run: pnpm --dir web exec playwright install --with-deps chromium
-      - run: pnpm --dir web exec playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }}/2
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-${{ matrix.project }}-${{ matrix.shard }}
-          path: web/test-results
-          retention-days: 7
 
   docker:
     runs-on: ubuntu-latest
@@ -181,7 +137,7 @@ jobs:
   # The image was built and smoke-tested once, in `docker`; this just moves the tag.
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [go-test, go-lint, audit, web, generated, e2e, docker]
+    needs: [go-test, go-lint, audit, web, generated, docker]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

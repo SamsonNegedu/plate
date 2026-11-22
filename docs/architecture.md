@@ -65,4 +65,4 @@ For what the app does feature by feature, see [features.md](features.md).
 
 ## Quality gates
 
-`make verify` runs golangci-lint, oxlint and oxfmt, the Go and Vitest suites, the build and a generated-files check. `make test-e2e` drives the real app in Playwright. `make docker-smoke` boots the production image and checks login, search, persistence across a restart, and the health probe. CI runs these in parallel; see `.github/workflows/ci.yml`.
+`make verify` runs golangci-lint, oxlint and oxfmt, the Go and Vitest suites, the build and a generated-files check. `make test-e2e` drives the real app in Playwright; it runs locally and is not part of CI. `make docker-smoke` boots the production image and checks login, search, persistence across a restart, and the health probe. CI runs the rest in parallel; see `.github/workflows/ci.yml`.
