@@ -280,7 +280,7 @@ export default function ScanPage() {
             {torchAvailable ? (
               <button
                 type="button"
-                className={`absolute bottom-3 grid size-14 ${hand === "left" ? "left-3" : "right-3"} place-items-center rounded-pill border border-frame-line bg-frame text-on-accent aria-pressed:bg-accent`}
+                className={`absolute bottom-3 grid size-14 ${hand === "left" ? "left-3" : "right-3"} place-items-center rounded-pill border border-white/40 bg-frame text-white aria-pressed:border-transparent aria-pressed:bg-accent aria-pressed:text-on-accent`}
                 onClick={() => void toggleTorch()}
                 aria-pressed={torchOn}
                 aria-label={torchOn ? copy.scan.torchOff : copy.scan.torchOn}

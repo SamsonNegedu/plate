@@ -314,7 +314,7 @@ export function LabelCamera({
           aria-label="Camera preview"
         />
         {state === "idle" || state === "starting" ? (
-          <p className="relative text-meta text-on-accent" role="status">
+          <p className="relative text-meta text-white" role="status">
             {labelCopy.cameraStart}
           </p>
         ) : null}
@@ -335,7 +335,7 @@ export function LabelCamera({
           <button
             type="button"
             data-torch
-            className="absolute right-3 bottom-3 grid size-12 place-items-center rounded-pill border border-frame-line bg-frame text-on-accent aria-pressed:bg-accent"
+            className="absolute right-3 bottom-3 grid size-12 place-items-center rounded-pill border border-white/40 bg-frame text-white aria-pressed:border-transparent aria-pressed:bg-accent aria-pressed:text-on-accent"
             onClick={() => void toggleTorch()}
             aria-pressed={torchOn}
             aria-label={torchOn ? copy.scan.torchOff : copy.scan.torchOn}
