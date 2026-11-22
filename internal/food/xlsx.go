@@ -18,6 +18,11 @@ const (
 // xlsxRows streams the first worksheet of an .xlsx file as rows of strings, indexed by column (A=0). It reads only what
 // the standard library gives us: the archive, the shared strings and one sheet. Unknown or hostile structure fails closed.
 func xlsxRows(path string, each func(row []string) error) error {
+	return xlsxSheetRows(path, "", each)
+}
+
+// xlsxSheetRows is xlsxRows for the worksheet called name; an empty name means the first worksheet.
+func xlsxSheetRows(path, name string, each func(row []string) error) error {
 	zr, err := zip.OpenReader(path)
 	if err != nil {
 		return fmt.Errorf("opening xlsx: %w", err)
@@ -27,9 +32,16 @@ func xlsxRows(path string, each func(row []string) error) error {
 	for _, f := range zr.File {
 		files[f.Name] = f
 	}
-	sheet, ok := files["xl/worksheets/sheet1.xml"]
+	sheetPath := "xl/worksheets/sheet1.xml"
+	if name != "" {
+		sheetPath, err = sheetPathByName(files, name)
+		if err != nil {
+			return err
+		}
+	}
+	sheet, ok := files[sheetPath]
 	if !ok {
-		return errors.New("xlsx has no first worksheet")
+		return fmt.Errorf("xlsx has no worksheet file %s", sheetPath)
 	}
 	var shared []string
 	if f, ok := files["xl/sharedStrings.xml"]; ok {
@@ -173,4 +185,53 @@ func columnIndex(ref string) int {
 		n = n*26 + int(r-'A') + 1
 	}
 	return n - 1
+}
+
+// sheetPathByName finds the part that holds the worksheet called name, through the workbook and its relationships.
+func sheetPathByName(files map[string]*zip.File, name string) (string, error) {
+	var book struct {
+		Sheets []struct {
+			Name string `xml:"name,attr"`
+			RID  string `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr"`
+		} `xml:"sheets>sheet"`
+	}
+	if err := decodeXLSXPart(files, "xl/workbook.xml", &book); err != nil {
+		return "", err
+	}
+	var rels struct {
+		Items []struct {
+			ID     string `xml:"Id,attr"`
+			Target string `xml:"Target,attr"`
+		} `xml:"Relationship"`
+	}
+	if err := decodeXLSXPart(files, "xl/_rels/workbook.xml.rels", &rels); err != nil {
+		return "", err
+	}
+	for _, s := range book.Sheets {
+		if s.Name != name {
+			continue
+		}
+		for _, r := range rels.Items {
+			if r.ID == s.RID {
+				return "xl/" + strings.TrimPrefix(strings.TrimPrefix(r.Target, "/"), "xl/"), nil
+			}
+		}
+	}
+	return "", fmt.Errorf("xlsx has no worksheet named %q", name)
+}
+
+func decodeXLSXPart(files map[string]*zip.File, name string, v any) error {
+	f, ok := files[name]
+	if !ok {
+		return fmt.Errorf("xlsx lacks %s", name)
+	}
+	rc, err := f.Open()
+	if err != nil {
+		return fmt.Errorf("opening %s: %w", name, err)
+	}
+	defer func() { _ = rc.Close() }()
+	if err := xml.NewDecoder(io.LimitReader(rc, maxXLSXStringBytes)).Decode(v); err != nil {
+		return fmt.Errorf("reading %s: %w", name, err)
+	}
+	return nil
 }

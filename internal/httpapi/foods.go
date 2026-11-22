@@ -114,7 +114,8 @@ func (d Deps) foodView(f domain.Food) FoodView {
 
 // SearchHit is one loggable search result. A catalog hit has no id until it is selected.
 type SearchHit struct {
-	ID           *string  `json:"id" nullable:"true" doc:"Null for catalog hits: look the barcode up to log it."`
+	ID           *string  `json:"id" nullable:"true" doc:"Null for catalog and reference hits: look the barcode or reference id up to log it."`
+	ReferenceID  *string  `json:"reference_id" nullable:"true" doc:"Set for a hit from the shared generic foods, which have no barcode: look it up with get-reference-food."`
 	Barcode      *string  `json:"barcode" nullable:"true"`
 	Name         string   `json:"name"`
 	Brand        string   `json:"brand"`
@@ -129,7 +130,7 @@ type SearchHit struct {
 
 func searchHit(r food.Result) SearchHit {
 	h := SearchHit{
-		ID: r.ID, Barcode: r.Barcode, Name: r.Name, Brand: r.Brand, Kcal: r.Kcal100, ServingSize: r.ServingSize,
+		ID: r.ID, ReferenceID: r.RefID, Barcode: r.Barcode, Name: r.Name, Brand: r.Brand, Kcal: r.Kcal100, ServingSize: r.ServingSize,
 		ServingGrams: r.ServingGrams, Source: string(r.Source), Nutriscore: r.Nutriscore, ImagePath: imagePath(r.ImageKey),
 		Favorite: r.Favorite,
 	}
@@ -142,6 +143,10 @@ func searchHit(r food.Result) SearchHit {
 
 type barcodeIn struct {
 	Code string `path:"code" maxLength:"32" doc:"6 to 14 digits; other characters are ignored."`
+}
+
+type referenceIn struct {
+	ID string `path:"id" maxLength:"64" doc:"The reference_id of a search hit, such as wafct:02_005."`
 }
 
 type foodOut struct{ Body FoodView }
@@ -346,6 +351,19 @@ func (d Deps) registerFoods(api huma.API) {
 			return nil, huma.ErrorWithHeaders(Err(http.StatusTooManyRequests, "rate_limited", "Too many barcode lookups. Try again shortly."), h)
 		}
 		f, err := d.Food.Barcode(ctx, UserID(ctx), in.Code)
+		if err != nil {
+			return nil, d.foodError(ctx, err)
+		}
+		return &foodOut{Body: d.foodViewWithPhoto(ctx, repo, f)}, nil
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-reference-food", Method: http.MethodGet, Path: "/foods/reference/{id}", Tags: []string{"foods"},
+		Summary: "Select a shared generic food", Security: sessionSecurity,
+		Description: "Adds the generic food (such as egusi or plantain) to the account the first time and returns it. Later calls return the same food.",
+		Errors:      []int{http.StatusNotFound},
+	}, func(ctx context.Context, in *referenceIn) (*foodOut, error) {
+		f, err := d.Food.Reference(ctx, UserID(ctx), in.ID)
 		if err != nil {
 			return nil, d.foodError(ctx, err)
 		}

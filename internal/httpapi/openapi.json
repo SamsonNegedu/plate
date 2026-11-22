@@ -2225,7 +2225,7 @@
             "type": "boolean"
           },
           "id": {
-            "description": "Null for catalog hits: look the barcode up to log it.",
+            "description": "Null for catalog and reference hits: look the barcode or reference id up to log it.",
             "type": [
               "string",
               "null"
@@ -2245,6 +2245,13 @@
             "type": "string"
           },
           "nutriscore": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reference_id": {
+            "description": "Set for a hit from the shared generic foods, which have no barcode: look it up with get-reference-food.",
             "type": [
               "string",
               "null"
@@ -2272,6 +2279,7 @@
         },
         "required": [
           "id",
+          "reference_id",
           "barcode",
           "name",
           "brand",
@@ -4131,6 +4139,76 @@
           }
         ],
         "summary": "Distinct foods logged most recently",
+        "tags": [
+          "foods"
+        ]
+      }
+    },
+    "/foods/reference/{id}": {
+      "get": {
+        "description": "Adds the generic food (such as egusi or plantain) to the account the first time and returns it. Later calls return the same food.",
+        "operationId": "get-reference-food",
+        "parameters": [
+          {
+            "description": "The reference_id of a search hit, such as wafct:02_005.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "The reference_id of a search hit, such as wafct:02_005.",
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Select a shared generic food",
         "tags": [
           "foods"
         ]

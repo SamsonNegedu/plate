@@ -70,6 +70,9 @@ func startupActions(ctx context.Context, cfg config.Config, log *slog.Logger, db
 		}
 		log.Warn("BLS imported; remove PLATE_IMPORT_BLS_PATH and restart", slog.String("action", "import_bls"))
 	}
+	if err := food.EnsureReference(ctx, db, log); err != nil {
+		return err
+	}
 	if cfg.ReindexFTS {
 		if err := store.RebuildFTS(ctx, db); err != nil {
 			return err

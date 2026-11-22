@@ -14,6 +14,9 @@ linters:
     - rowserrcheck
     - misspell
   settings:
+    misspell:
+      # "apon" is the Yoruba name for ogbono, not a typo of "upon".
+      ignore-rules: [apon]
     gosec:
       excludes:
         - G104

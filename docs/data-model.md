@@ -28,6 +28,7 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 | `product_fact_disputes` | which contributors disputed a served revision; two accounts other than the contributor revert it | no |
 | `catalog_foods` | the bundled Open Food Facts German seed, with nutrition; reference data | no |
 | `category_stats` | per Open Food Facts category, the 5th percentile, median and 95th percentile of kcal, fat, protein, carbohydrate and salt per 100 g over its German products (only categories with 30 or more); replaced with the catalog on import | no |
+| `reference_foods` | shared generic foods with no barcode (West African staples and soup ingredients from the FAO/INFOODS WAFCT 2019), with local names; reference data like the catalog | no |
 | `catalog_meta` | the seed's dataset version and import time | no |
 | `change_log` | per-user ordered stream of changes that clients pull | no |
 | `sync_state` | per user: `min_seq` and `head_seq` of the stream | no |
@@ -36,6 +37,7 @@ One SQLite file (WAL mode, `modernc.org/sqlite`, FTS5). Migrations are goose SQL
 | `image_cache` | metadata for product images stored on disk; least-recently-used files are evicted past the size limit | no |
 | `meta` | key/value, including `schema_version` | no |
 | `foods_fts`, `catalog_fts` | FTS5 indexes over name, brand and barcode, kept current by triggers | derived |
+| `reference_fts` | FTS5 index over a reference food's name, local names and scientific name | derived |
 | `foods_trgm`, `catalog_trgm` | trigram indexes for substring matches inside German compounds | derived |
 
 ## Rules worth knowing

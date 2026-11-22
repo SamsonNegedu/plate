@@ -1,0 +1,703 @@
+ref_id,name,local_names,scientific_name,category,kcal,protein,carbs,sugar,fat,satfat,fiber,salt,estimated,source
+wafct:01_002,"Fonio, black, whole grains, raw","Fonio, noir, grains entiers, cru",Digitaria iburua,Cereals and their products,332,8.3,59.8,,3,0.47,16.4,0.02,0,wafct-2019
+wafct:01_049,"Fonio, black, whole grains, boiled, drained","Fonio, noir, grains entiers, bouilli (sans sel), égoutté",Digitaria iburua,Cereals and their products,138,3.5,24.9,,1.3,0.2,6.9,0.0075,1,wafct-2019
+wafct:01_050,"Fonio, decorticated grains (bran removed), dry, raw","Fonio, grains décortiqués (sans son), sec, cru",Digitaria exilis,Cereals and their products,356,7.1,76.9,,1.7,0.25,2.2,0.0125,0,wafct-2019
+wafct:01_051,"Fonio, decorticated grains (bran removed), boiled, drained","Fonio, grains décortiqués (sans son), bouilli (sans sel), égoutté",Digitaria exilis,Cereals and their products,148,3,32,,0.7,0.11,0.9,0.0025,1,wafct-2019
+wafct:01_078,"Fonio, decorticated grains (bran removed), washed (mid wet), raw","Fonio, grains décortiqués (sans son), lavé (humide), cru",Digitaria exilis,Cereals and their products,241,4.4,52.8,,1.2,0.17,1,0.01,0,wafct-2019
+wafct:01_127,"Fonio, decorticated grains (bran removed), washed (mid wet), boiled, drained","Fonio, grains décortiqués (sans son), lavé (humide), bouilli (sans sel), égoutté",Digitaria exilis,Cereals and their products,151,2.7,33,,0.7,0.11,0.6,0.0025,1,wafct-2019
+wafct:01_001,"Fonio, white, whole grains, raw","Fonio, blanc, grains entiers, cru",Digitaria exilis,Cereals and their products,334,7.1,59.7,,3.8,0.59,16.4,0.02,0,wafct-2019
+wafct:01_003,"Fonio, white, whole grains, boiled, drained","Fonio, blanc, grains entiers, bouilli (sans sel), égoutté",Digitaria exilis,Cereals and their products,139,2.9,24.9,,1.6,0.25,6.9,0.0075,1,wafct-2019
+wafct:01_053,"Macaroni, boiled, drained","Macaroni, bouilli (sans sel), égoutté",,Cereals and their products,124,4.3,24.9,,0.5,0.09,1.1,0.0025,1,wafct-2019
+wafct:01_099,"Maize dough, fermented (kenkey), from whole white maize with salt added, cooked","Maïs, pâte, fermentée (kenkey) de maïs blanc complet, salée, cuite",Zea mays,Cereals and their products,139,3.7,25.2,,2.1,0.33,2.6,0.675,0,wafct-2019
+wafct:01_098,"Maize dough, fermented (tô), from decorticated white maize only, cooked","Maïs, pâte, fermentée (tô), pure, de maïs blanc décortiqué, cuite",Zea mays,Cereals and their products,76,2.1,13.4,,1,0.17,2.6,0.0025,0,wafct-2019
+wafct:01_100,"Maize porridge, fermented (ogi), from decorticated white maize only, cooked","ogi akamu pap koko fermented maize porridge Maïs, bouillie, fermentée (ogi), pure, de maïs blanc décortiqué, cuite",Zea mays,Cereals and their products,52,1.1,8.8,,1,0.16,1.4,0.0375,0,wafct-2019
+wafct:01_014,"Maize, combined varieties, whole kernel, dry, raw (Benin)","Maïs, mélange de variétés, grain entier, sec, cru (Bénin)",Zea mays,Cereals and their products,335,8.4,62.4,,3.2,0.48,11.5,0.0375,0,wafct-2019
+wafct:01_062,"Maize, combined varieties, whole kernel (Benin), boiled, drained","Maïs, mélange de variétés, grain entier (Bénin), bouilli (sans sel), égoutté",Zea mays,Cereals and their products,108,2.7,20.1,,1,0.16,3.7,0.01,1,wafct-2019
+wafct:01_060,"Maize, white, grit, degermed, raw","Maïs, blanc, gruau, dégermé, cru",Zea mays,Cereals and their products,346,8.1,73.7,,0.8,0.12,6.2,0.01,0,wafct-2019
+wafct:01_057,"Maize, white, meal, whole grains","Maïs, blanc, farine complète",Zea mays,Cereals and their products,346,9.7,62.6,,3.8,0.57,11.5,0.0375,0,wafct-2019
+wafct:01_004,"Maize, white, whole kernel, dry, raw","Maïs, blanc, grain entier, sec, cru",Zea mays,Cereals and their products,346,9.7,62.6,,3.8,0.57,11.5,0.0375,0,wafct-2019
+wafct:01_005,"Maize, white, whole kernel, boiled, drained","Maïs, blanc, grain entier, bouilli (sans sel), égoutté",Zea mays,Cereals and their products,112,3.1,20.2,,1.2,0.19,3.7,0.01,1,wafct-2019
+wafct:01_094,"Maize, white, whole kernel, dry, decorticated, raw","Maïs, blanc, grain entier, sec, décortiqué, cru",Zea mays,Cereals and their products,340,8.1,72.9,,0.7,0.13,5.2,0,0,wafct-2019
+wafct:01_118,"Maize, white, whole kernel, decorticated, boiled, drained","Maïs, blanc, grain entier, décortiqué, bouilli (sans sel), égoutté",Zea mays,Cereals and their products,110,2.6,23.5,,0.2,0.04,1.7,0,1,wafct-2019
+wafct:01_055,"Maize, yellow, grit, degermed, raw","Maïs, jaune, gruau, dégermé, cru",Zea mays,Cereals and their products,346,7.8,74,,0.7,0.11,6.2,0.01,0,wafct-2019
+wafct:01_006,"Maize, yellow, whole kernel, dry, raw","Maïs, jaune, grain entier, sec, cru",Zea mays,Cereals and their products,350,9.4,65.2,,3.7,0.55,9.4,0.057499999999999996,0,wafct-2019
+wafct:01_007,"Maize, yellow, whole kernel, boiled, drained","Maïs, jaune, grain entier, bouilli (sans sel), égoutté",Zea mays,Cereals and their products,113,3,21,,1.2,0.18,3,0.015,1,wafct-2019
+wafct:01_097,"Millet dough (tchobal/fura), from decorticated millet only, cooked","Mil, pâte (tchobal/fura), pure, de mil décortiqué, cuite",Pennisetum glaucum,Cereals and their products,175,3.8,33.2,,2.3,0.35,3.2,0.005,0,wafct-2019
+wafct:01_153,"Millet dough (tô), from whole millet only, cooked","Mil, pâte (tô), pure, de mil complet, cuite",Pennisetum glaucum,Cereals and their products,93,1.8,16.7,,1.5,0.24,2.7,0.0025,0,wafct-2019
+wafct:01_102,"Millet porridge, fermented (hausa koko/ben saalga), from whole millet grains only, cooked","Mil, bouillie, fermentée (hausa koko/ben saalga), pure, de mil complet, cuite",Pennisetum glaucum,Cereals and their products,69,0.9,8.9,,0.8,0.13,1.2,0,0,wafct-2019
+wafct:01_101,"Oats, rolled, raw","Avoine, flocons, cru",Avena sativa,Cereals and their products,377,11.9,59.7,,7.8,1.52,10.2,0.03,0,wafct-2019
+wafct:01_133,"Oats, porridge (without salt)","Avoine, bouillie (sans sel)",Avena sativa,Cereals and their products,65,2.1,10.3,,1.4,0.26,1.8,0.005,1,wafct-2019
+wafct:01_095,"Pearl millet, decorticated, raw","Mil à chandelle, décortiqué, cru",Pennisetum glaucum,Cereals and their products,370,8.3,70.8,,4.8,0.71,5.2,0.03,0,wafct-2019
+wafct:01_130,"Pearl millet, decorticated, boiled, drained","Mil à chandelle, décortiqué, bouilli (sans sel), égoutté",Pennisetum glaucum,Cereals and their products,154,3.5,29.5,,2,0.3,2.2,0.0075,1,wafct-2019
+wafct:01_063,"Pearl millet, flour (bran removed)","Mil à chandelle, farine (sans son)",Pennisetum glaucum,Cereals and their products,367,7.3,75,,3.2,0.47,4.6,0.03,0,wafct-2019
+wafct:01_017,"Pearl millet, whole grains (with bran), raw","Mil à chandelle, grain entier (avec son), cru",Pennisetum glaucum,Cereals and their products,365,9.3,64.2,,5.9,0.96,9,0.03,0,wafct-2019
+wafct:01_033,"Pearl millet, whole grains, boiled, drained","Mil à chandelle, grain entier, bouilli (sans sel), égoutté",Pennisetum glaucum,Cereals and their products,152,3.9,26.8,,2.5,0.4,3.8,0.01,1,wafct-2019
+wafct:01_061,"Porridge, soft, from degermed white maize grit (without salt)","Bouillie, liquide, de gruau de maïs blanc dégermé (sans sel)",Zea mays,Cereals and their products,47,1.1,10.1,,0.1,0.02,0.8,0.0025,1,wafct-2019
+wafct:01_056,"Porridge, soft, from degermed yellow maize grit (without salt)","Bouillie, liquide, de gruau de maïs jaune dégermé (sans sel)",Zea mays,Cereals and their products,47,1.1,10.1,,0.1,0.02,0.8,0.0025,1,wafct-2019
+wafct:01_106,"Porridge, soft, from wholegrain white maize meal (without salt)","Bouillie, liquide, de farine de maïs blanc complète (sans sel)",Zea mays,Cereals and their products,48,1.3,8.6,,0.5,0.08,1.6,0.005,1,wafct-2019
+wafct:01_122,"Porridge, soft, from wholegrain yellow maize meal (without salt)","Bouillie, liquide, de farine de maïs jaune complète (sans sel)",Zea mays,Cereals and their products,48,1.3,8.9,,0.5,0.07,1.3,0.0075,1,wafct-2019
+wafct:01_076,"Porridge, stiff, from degermed white maize grit (without salt)","Bouillie, épaisse, de gruau de maïs blanc dégermé (sans sel)",Zea mays,Cereals and their products,128,3,27.3,,0.3,0.04,2.3,0.0025,1,wafct-2019
+wafct:01_075,"Porridge, stiff, from degermed yellow maize grit (without salt)","Bouillie, épaisse, de gruau de maïs jaune dégermé (sans sel)",Zea mays,Cereals and their products,128,2.9,27.4,,0.3,0.04,2.3,0.0025,1,wafct-2019
+wafct:01_105,"Porridge, stiff, from wholegrain white maize meal (without salt)","Bouillie, épaisse, de farine de maïs blanc complète (sans sel)",Zea mays,Cereals and their products,128,3.6,23.2,,1.4,0.21,4.3,0.015,1,wafct-2019
+wafct:01_121,"Porridge, stiff, from wholegrain yellow maize meal (without salt)","Bouillie, épaisse, de farine de maïs jaune complète (sans sel)",Zea mays,Cereals and their products,130,3.5,24.2,,1.4,0.2,3.5,0.02,1,wafct-2019
+wafct:01_150,"Porridge, tô, from degermed white maize grit (without salt)","Bouillie, tô, de gruau de maïs blanc dégermé (sans sel)",Zea mays,Cereals and their products,69,1.6,14.7,,0.2,0.02,1.2,0.0025,1,wafct-2019
+wafct:01_155,"Porridge, tô, from degermed yellow maize grit (without salt)","Bouillie, tô, de gruau de maïs jaune dégermé (sans sel)",Zea mays,Cereals and their products,69,1.6,14.8,,0.1,0.02,1.2,0.0025,1,wafct-2019
+wafct:01_143,"Porridge, tô, from wholegrain white maize meal (without salt)","Bouillie, tô, de farine de maïs blanc complète (sans sel)",Zea mays,Cereals and their products,69,2,12.5,,0.8,0.11,2.3,0.0075,1,wafct-2019
+wafct:01_151,"Porridge, tô, from wholegrain yellow maize meal (without salt)","Bouillie, tô, de farine de maïs jaune complète (sans sel)",Zea mays,Cereals and their products,70,1.9,13,,0.7,0.11,1.9,0.0125,1,wafct-2019
+wafct:01_079,"Rice flour, white","Riz, farine, blanche",Oryza sativa,Cereals and their products,352,6,77.7,,1.4,0.39,2.4,0,0,wafct-2019
+wafct:01_034,"Rice, brown, raw","Riz, brun, cru",Oryza sativa,Cereals and their products,345,7.7,72.9,,1.6,0.48,4.4,0.01,0,wafct-2019
+wafct:01_035,"Rice, brown, boiled, drained","Riz, brun, bouilli (sans sel), égoutté",Oryza sativa,Cereals and their products,138,3.1,29.1,,0.6,0.19,1.8,0.0025,1,wafct-2019
+wafct:01_065,"Rice, red native, hulled, raw","Riz, rouge, indigène, décortiqué, cru",Oryza glaberrima,Cereals and their products,352,7.4,73.6,,2.2,0.45,4.1,0.005,0,wafct-2019
+wafct:01_066,"Rice, red native, hulled, boiled, drained","Riz, rouge, indigène, décortiqué, bouilli (sans sel), égoutté",Oryza glaberrima,Cereals and their products,141,3,29.4,,0.9,0.18,1.6,0.0025,1,wafct-2019
+wafct:01_067,"Rice, red native, milled, raw","Riz, rouge, indigène, blanchi, cru",Oryza glaberrima,Cereals and their products,349,6.3,78.8,,0.3,0.06,2.8,0.005,0,wafct-2019
+wafct:01_068,"Rice, red native, milled, boiled, drained","Riz, rouge, indigène, blanchi, bouilli (sans sel), égoutté",Oryza glaberrima,Cereals and their products,117,2.1,26.4,,0.1,0.02,0.9,0,1,wafct-2019
+wafct:01_036,"Rice, white, polished, raw","Riz, blanc, poli, cru",Oryza sativa,Cereals and their products,351,6.8,78.6,,0.6,0.15,1.9,0.015,0,wafct-2019
+wafct:01_069,"Rice, white, polished, boiled, drained","Riz, blanc, poli, bouilli (sans sel), égoutté",Oryza sativa,Cereals and their products,118,2.3,26.4,,0.2,0.05,0.6,0.0025,1,wafct-2019
+wafct:01_037,"Rice, white, raw","Riz, blanc, cru",Oryza sativa,Cereals and their products,344,7,75.9,,0.6,0.15,3.6,0.0075,0,wafct-2019
+wafct:01_038,"Rice, white, boiled, drained","Riz, blanc, bouilli (sans sel), égoutté",Oryza sativa,Cereals and their products,115,2.3,25.5,,0.2,0.05,1.2,0.0025,1,wafct-2019
+wafct:01_072,"Sorghum, flour, degermed","Sorgho, farine, dégermé",Sorghum bicolor,Cereals and their products,351,10.4,71.2,,1.7,0.3,4.7,0.0025,0,wafct-2019
+wafct:01_039,"Sorghum, whole grains, raw","Sorgho, grains entiers, cru",Sorghum bicolor,Cereals and their products,345,11.5,61.1,,3.5,0.48,11.9,0.0225,0,wafct-2019
+wafct:01_042,"Sorghum, whole grains, boiled, drained","Sorgho, grains entiers, bouilli (sans sel), égoutté",Sorghum bicolor,Cereals and their products,144,4.8,25.5,,1.5,0.2,4.9,0.0075,1,wafct-2019
+wafct:01_041,"Sorghum, whole grains, red, raw","Sorgho, grains entiers, rouge, cru",Sorghum bicolor,Cereals and their products,344,10.1,61.9,,3.6,0.5,11.9,0.0225,0,wafct-2019
+wafct:01_070,"Sorghum, whole grains, red, boiled, drained","Sorgho, grains entiers, rouge, bouilli (sans sel), égoutté",Sorghum bicolor,Cereals and their products,143,4.2,25.8,,1.5,0.21,4.9,0.0075,1,wafct-2019
+wafct:01_040,"Sorghum, whole grains, white, raw","Sorgho, grains entiers, blanc, cru",Sorghum bicolor,Cereals and their products,344,10.1,62.4,,3.4,0.47,11.9,0.015,0,wafct-2019
+wafct:01_071,"Sorghum, whole grains, white, boiled, drained","Sorgho, grains entiers, blanc, bouilli (sans sel), égoutté",Sorghum bicolor,Cereals and their products,144,4.2,26,,1.4,0.2,4.9,0.005,1,wafct-2019
+wafct:01_184,"Teff, whole grains, raw","Teff, grains entiers, cru",Eragrostis tef,Cereals and their products,351,13.3,65.1,,2.4,0.37,8,0.03,0,wafct-2019
+wafct:01_185,"Teff, whole grains, boiled, drained","Teff, grains entiers, bouilli (sans sel), égoutté",Eragrostis tef,Cereals and their products,197,7.5,36.6,,1.3,0.21,4.5,0.0125,1,wafct-2019
+wafct:01_073,"Wheat, bran, raw","Blé, son, cru",Triticum spp.,Cereals and their products,279,15.1,23.3,,4.6,0.73,42,0.01,0,wafct-2019
+wafct:01_074,"Wheat, whole grains, raw","Blé, grains entiers, cru",Triticum spp.,Cereals and their products,329,12,59.1,,2.2,0.31,12.2,0.0125,0,wafct-2019
+wafct:01_141,"Wheat, whole grains, boiled, drained","Blé, grains entiers, bouilli (sans sel), égoutté",Triticum spp.,Cereals and their products,185,6.7,33.2,,1.3,0.18,6.9,0.005,1,wafct-2019
+wafct:02_021,"Cassava, sweet, tuber, white flesh, dried","Manioc, doux, tubercule, chair blanche, séché",Manihot esculenta,"Starchy roots, tubers and their products",348,1.3,80,,0.5,0.14,9.1,0.0125,0,wafct-2019
+wafct:02_041,"Cassava, fermented paste from white cassava flour (wet fufu)","fufu wet fufu akpu Manioc, pâte fermentée de farine blanche de manioc (foufou humide)",Manihot esculenta,"Starchy roots, tubers and their products",165,1,38.7,,0.4,0.12,1.7,0.01,0,wafct-2019
+wafct:02_038,"Cassava, flour, from fermented white cassava (alibo/elubo/lafun)","cassava flour lafun elubo Manioc, farine, de manioc blanc fermenté (alibo/elubo/lafun)",Manihot esculenta,"Starchy roots, tubers and their products",344,1.5,81.2,,0.6,0.21,3.9,0.0025,0,wafct-2019
+wafct:02_040,"Cassava, flour, from fermented white cassava (dry fufu)","fufu flour dry fufu Manioc, farine, de manioc blanc fermenté (foufou sec)",Manihot esculenta,"Starchy roots, tubers and their products",346,2.1,80.9,,0.7,0.24,3.6,0.0175,0,wafct-2019
+wafct:02_004,"Cassava, flour, from white cassava","Manioc, farine, de manioc blanc",Manihot esculenta,"Starchy roots, tubers and their products",341,1.6,79.9,,0.7,0.25,4.3,0.0075,0,wafct-2019
+wafct:02_039,"Cassava, grated, from fermented white cassava, toasted without oil (white gari)","garri gari Manioc, rapé, de manioc blanc fermenté, grillé sans huile (gari blanc)",Manihot esculenta,"Starchy roots, tubers and their products",351,1.2,82.9,,0.5,0.11,5,0.005,0,wafct-2019
+wafct:02_001,"Cassava, tuber, white flesh, raw","Manioc, tubercule, chair blanche, cru",Manihot esculenta,"Starchy roots, tubers and their products",142,1.3,31.6,,0.3,0.09,3.7,0.005,0,wafct-2019
+wafct:02_003,"Cassava, tuber, white flesh, boiled, drained","Manioc, tubercule, chair blanche, bouilli (sans sel), égoutté",Manihot esculenta,"Starchy roots, tubers and their products",121,1.1,27,,0.3,0.07,3.2,0.0025,1,wafct-2019
+wafct:02_002,"Cassava, tuber, white flesh, dried","Manioc, tubercule, chair blanche, séché",Manihot esculenta,"Starchy roots, tubers and their products",344,1.7,79.3,,0.9,0.28,5.6,0.0125,0,wafct-2019
+wafct:02_037,"Cassava, tuber, yellow flesh, raw","Manioc, tubercule, chair jaune, cru",Manihot esculenta,"Starchy roots, tubers and their products",77,0.7,16.6,,0.2,0.05,2.9,0.0025,0,wafct-2019
+wafct:02_052,"Cassava, tuber, yellow flesh, boiled, drained","Manioc, tubercule, chair jaune, bouilli (sans sel), égoutté",Manihot esculenta,"Starchy roots, tubers and their products",66,0.6,14.2,,0.1,0.04,2.5,0.0025,1,wafct-2019
+wafct:02_005,"Cocoyam, tuber, white, raw","cocoyam ede koko Chou caraïbe, tubercule, blanc, cru",Xanthosoma sagittifolium,"Starchy roots, tubers and their products",136,3.3,28.9,,0.3,0.08,2,0.0225,0,wafct-2019
+wafct:02_006,"Cocoyam, tuber, white, boiled, drained","Chou caraïbe, tubercule, blanc, bouilli (sans sel), égoutté",Xanthosoma sagittifolium,"Starchy roots, tubers and their products",143,3.4,30.4,,0.3,0.08,2.1,0.02,1,wafct-2019
+wafct:02_043,"Cocoyam, tuber, yellow, raw","cocoyam ede koko Chou caraïbe, tubercule, jaune, cru",Xanthosoma sagittifolium,"Starchy roots, tubers and their products",112,3.3,23.2,,0.2,0.05,2,0.0225,0,wafct-2019
+wafct:02_055,"Cocoyam, tuber, yellow, boiled, drained","Chou caraïbe, tubercule, jaune, bouilli (sans sel), égoutté",Xanthosoma sagittifolium,"Starchy roots, tubers and their products",118,3.4,24.4,,0.2,0.05,2.1,0.02,1,wafct-2019
+wafct:02_042,"Plantain, ripe, ivory flesh, raw","ripe plantain ogede agbagba dodo Banane plantain, mûre, chair ivoire, crue",Musa paradisica,"Starchy roots, tubers and their products",143,1.4,32.9,,0.2,0.09,2.3,0.01,0,wafct-2019
+wafct:02_057,"Plantain, ripe, ivory flesh, boiled, drained","Banane plantain, mûre, chair ivoire, bouillie (sans sel), égouttée",Musa paradisica,"Starchy roots, tubers and their products",151,1.4,34.6,,0.2,0.09,2.5,0.0075,1,wafct-2019
+wafct:02_044,"Plantain, ripe, orange flesh, raw","ripe plantain ogede agbagba dodo Banane plantain, mûre, chair orange, crue",Musa spp.,"Starchy roots, tubers and their products",134,1.2,30.4,,0.3,0.14,2.3,0.01,0,wafct-2019
+wafct:02_059,"Plantain, ripe, orange flesh, boiled, drained","Banane plantain, mûre, chair orange, bouillie (sans sel), égouttée",Musa spp.,"Starchy roots, tubers and their products",127,1.1,28.9,,0.3,0.13,2.2,0.0075,1,wafct-2019
+wafct:02_046,"Plantain, unripe, ivory flesh, raw","unripe plantain ogede Banane plantain, verte, chair ivoire, crue",Musa spp.,"Starchy roots, tubers and their products",158,1.9,31.9,,1.1,0.29,6.5,0.085,0,wafct-2019
+wafct:02_064,"Plantain, unripe, ivory flesh, boiled, drained","Banane plantain, verte, chair ivoire, bouillie (sans sel), égouttée",Musa spp.,"Starchy roots, tubers and their products",151,1.8,30.3,,1.1,0.27,6.2,0.065,1,wafct-2019
+wafct:02_047,"Plantain, unripe, orange flesh, raw","unripe plantain ogede Banane plantain, verte, chair orange, crue",Musa spp.,"Starchy roots, tubers and their products",158,1.9,31.9,,1.1,0.29,6.5,0.085,0,wafct-2019
+wafct:02_066,"Plantain, unripe, orange flesh, boiled, drained","Banane plantain, verte, chair orange, bouillie (sans sel), égouttée",Musa spp.,"Starchy roots, tubers and their products",151,1.8,30.3,,1.1,0.27,6.2,0.065,1,wafct-2019
+wafct:02_045,"Plantain, unripe, pale flesh, raw","unripe plantain ogede Banane plantain, verte, chair claire, crue",Musa spp.,"Starchy roots, tubers and their products",158,1.9,31.9,,1.1,0.29,6.5,0.085,0,wafct-2019
+wafct:02_062,"Plantain, unripe, pale flesh, boiled, drained","Banane plantain, verte, chair claire, bouillie (sans sel), égouttée",Musa spp.,"Starchy roots, tubers and their products",151,1.8,30.3,,1.1,0.27,6.2,0.065,1,wafct-2019
+wafct:02_048,"Plantain, unripe, pale flesh, flour","Banane plantain, verte, chair claire, farine",Musa spp.,"Starchy roots, tubers and their products",329,4.2,64.7,,3,0.75,13.1,0.17,0,wafct-2019
+wafct:02_009,"Potato, raw","Pomme de terre, crue",Solanum tuberosum,"Starchy roots, tubers and their products",79,1.5,17.4,,0.1,0.01,1.7,0.02,0,wafct-2019
+wafct:02_010,"Potato, boiled, drained","Pomme de terre, bouillie (sans sel), égouttée",Solanum tuberosum,"Starchy roots, tubers and their products",79,1.5,17.4,,0.1,0.01,1.7,0.015,1,wafct-2019
+wafct:02_011,"Sweet potato, deep yellow flesh, raw","Patate douce, chair jaune foncé, crue",Ipomoea spp.,"Starchy roots, tubers and their products",116,1.6,25.5,,0.2,0.06,3,0.0775,0,wafct-2019
+wafct:02_012,"Sweet potato, deep yellow flesh, boiled, drained","Patate douce, chair jaune foncé, bouillie (sans sel), égouttée",Ipomoea spp.,"Starchy roots, tubers and their products",116,1.6,25.5,,0.2,0.06,3,0.0625,1,wafct-2019
+wafct:02_049,"Sweet potato, orange flesh, raw","Patate douce, chair orange, crue",Ipomoea batatas,"Starchy roots, tubers and their products",91,1,19.8,,0.2,0.06,3,0.05,0,wafct-2019
+wafct:02_072,"Sweet potato, orange flesh, boiled, drained","Patate douce, chair orange, bouillie (sans sel), égouttée",Ipomoea batatas,"Starchy roots, tubers and their products",91,1,19.8,,0.2,0.06,3,0.04,1,wafct-2019
+wafct:02_022,"Sweet potato, pale flesh (white/cream/pale yellow), raw","Patate douce, chair claire (blanche/crème/jaune pâle), crue",Ipomoea batatas,"Starchy roots, tubers and their products",96,1.5,20.5,,0.2,0.06,3,0.0775,0,wafct-2019
+wafct:02_023,"Sweet potato, pale flesh (white/cream/pale yellow), boiled, drained","Patate douce, chair claire (blanche/crème/jaune pâle), bouillie (sans sel), égouttée",Ipomoea batatas,"Starchy roots, tubers and their products",96,1.5,20.5,,0.2,0.06,3,0.0625,1,wafct-2019
+wafct:02_013,"Sweet potato, yellow flesh, raw","Patate douce, chair jaune, crue",Ipomoea batatas,"Starchy roots, tubers and their products",116,1.5,25.5,,0.2,0.06,3,0.05,0,wafct-2019
+wafct:02_014,"Sweet potato, yellow flesh, boiled, drained","Patate douce, chair jaune, bouillie (sans sel), égouttée",Ipomoea batatas,"Starchy roots, tubers and their products",116,1.5,25.5,,0.2,0.06,3,0.04,1,wafct-2019
+wafct:02_015,"Taro, tuber, white, raw","Taro, tubercule, blanc, cru",Colocasia esculenta,"Starchy roots, tubers and their products",127,2.7,25.2,,0.8,0.19,4.1,0.0425,0,wafct-2019
+wafct:02_016,"Taro, tuber, white, boiled, drained","Taro, tubercule, blanc, bouilli (sans sel), égoutté",Colocasia esculenta,"Starchy roots, tubers and their products",125,2.6,24.9,,0.8,0.18,4.1,0.0325,1,wafct-2019
+wafct:02_026,"Tiger nut, tuber, dried","Souchet comestible (« noix tigrée »), tubercule, séché",Colocasia esculenta,"Starchy roots, tubers and their products",467,4.8,48.5,,25.6,6.15,11.7,0.065,0,wafct-2019
+wafct:02_024,"Tiger nut, tuber, raw","Souchet comestible (« noix tigrée »), tubercule, cru",Colocasia esculenta,"Starchy roots, tubers and their products",344,4.4,32.1,,20.2,4.85,8.4,0.027499999999999997,0,wafct-2019
+wafct:02_025,"Tiger nut, tuber, boiled, drained","Souchet comestible (« noix tigrée »), tubercule, bouilli (sans sel), égoutté",Colocasia esculenta,"Starchy roots, tubers and their products",362,4.6,33.8,,21.2,5.1,8.9,0.0225,1,wafct-2019
+wafct:02_017,"Water yam, tuber, raw","Grande igname, tubercule, crue",Dioscorea alata,"Starchy roots, tubers and their products",117,2.4,21.6,,0.1,0.03,9.7,0.015,0,wafct-2019
+wafct:02_018,"Water yam, tuber, boiled, drained","Grande igname, tubercule, bouillie (sans sel), égouttée",Dioscorea alata,"Starchy roots, tubers and their products",123,2.5,22.7,,0.1,0.04,10.2,0.0125,1,wafct-2019
+wafct:02_036,"Yam, tuber, flour, from white yam tuber","yam flour elubo isu Igname, tubercule, blanc, farine",Dioscorea spp.,"Starchy roots, tubers and their products",327,6.8,66.3,,0.6,0.16,14.4,0.0475,0,wafct-2019
+wafct:02_019,"Yam, tuber, pale, raw","yam isu Igname, tubercule, chair pâle, cru",Dioscorea spp.,"Starchy roots, tubers and their products",126,2.3,25.5,,0.4,0.1,5.6,0.0175,0,wafct-2019
+wafct:02_020,"Yam, tuber, pale, boiled, drained","Igname, tubercule, chair pâle, bouilli (sans sel), égoutté",Dioscorea spp.,"Starchy roots, tubers and their products",132,2.4,26.8,,0.4,0.1,5.9,0.015,1,wafct-2019
+wafct:02_027,"Yam, tuber, Isu akoko, raw (Nigeria)","Igname, tubercule, Isu akoko, cru (Nigéria), n=1",Dioscorea spp.,"Starchy roots, tubers and their products",139,2,29.3,,0.2,0.05,6.1,0.0125,0,wafct-2019
+wafct:02_028,"Yam, tuber, Isu oko, raw (Nigeria)","Igname, tubercule, Isu oko, cru (Nigéria), n=1",Dioscorea spp.,"Starchy roots, tubers and their products",114,1.6,24.1,,0.1,0.03,5,0.0125,0,wafct-2019
+wafct:02_029,"Yam, tuber, Amara, raw (Nigeria)","Igname, tubercule, Amara, cru (Nigéria), n=1",Dioscorea dumetorum,"Starchy roots, tubers and their products",145,1.9,30.7,,0.2,0.04,6.4,0.01,0,wafct-2019
+wafct:02_030,"Yam, tuber, Chika, kundu, raw (Nigeria)","Igname, tubercule, Chika, kundu, cru (Nigéria), n=1",Dioscorea dumetorum,"Starchy roots, tubers and their products",126,1.6,27,,0.1,0.03,5.6,0.015,0,wafct-2019
+wafct:02_033,"Yam, tuber, Giwa, raw (Nigeria)","Igname, tubercule, Giwa, cru (Nigéria), n=1",Dioscorea dumetorum,"Starchy roots, tubers and their products",133,1.9,28.1,,0.2,0.05,5.9,0.0125,0,wafct-2019
+wafct:02_031,"Yam, tuber, Isu Abuja, raw (Nigeria)","Igname, tubercule, Isu Abuja, cru (Nigéria), n=1",Dioscorea spp.,"Starchy roots, tubers and their products",107,1.6,22.5,,0.1,0.03,4.7,0.0075,0,wafct-2019
+wafct:02_032,"Yam, tuber, Pepa, raw (Nigeria)","Igname, tubercule, Pepa, cru (Nigéria), n=1",Dioscorea dumetorum,"Starchy roots, tubers and their products",138,2,29,,0.2,0.04,6.1,0.0125,0,wafct-2019
+wafct:02_034,"Yam, tuber, combined cultivars, raw (Nigeria)","yam isu Igname, tubercule, cultivars combinés, cru (Nigéria)",Dioscorea spp.,"Starchy roots, tubers and their products",129,1.8,27.2,,0.1,0.04,5.7,0.0125,0,wafct-2019
+wafct:02_035,"Yam, tuber, combined cultivars (Nigeria), boiled, drained","Igname, tubercule, cultivars combinés (Nigéria), bouilli (sans sel), égoutté",Dioscorea spp.,"Starchy roots, tubers and their products",136,1.9,28.7,,0.2,0.04,6,0.01,1,wafct-2019
+wafct:02_050,"Yam, tuber, three-leaved, pale, raw","Igname, tubercule, à trois feuilles, chair pâle, cru",Dioscorea dumetorum,"Starchy roots, tubers and their products",114,1.8,23.8,,0.2,0.04,5.1,0.0125,0,wafct-2019
+wafct:02_080,"Yam, tuber, three-leaved, pale, boiled","Igname, tubercule, à trois feuilles, chair pâle, bouilli (ingrédient de recette)",Dioscorea dumetorum,"Starchy roots, tubers and their products",120,1.9,25.1,,0.2,0.05,5.4,0.0125,1,wafct-2019
+wafct:02_079,"Yam, tuber, three-leaved, pale, boiled (without salt, drained)","Igname, tubercule, à trois feuilles, chair pâle, bouilli (sans sel), égoutté",Dioscorea dumetorum,"Starchy roots, tubers and their products",120,1.9,25.1,,0.2,0.05,5.4,0.01,1,wafct-2019
+wafct:03_009,"African locust bean, dry, raw","locust bean dawadawa seeds Néré, sec, cru",Parkia biglobosa,Legumes and their products,406,29,37.8,,13.8,1.75,7.2,0.1225,0,wafct-2019
+wafct:03_042,"African locust bean, fermented (soumbala)","iru dawadawa soumbala locust bean fermented Néré, fermenté (soumbala)",Parkia biglobosa,Legumes and their products,375,33.1,18.4,,15.6,2.91,14.5,0.11249999999999999,0,wafct-2019
+wafct:03_063,"African locust bean, not soaked, boiled, drained","Néré, non trempé, bouilli (sans sel), égoutté",Parkia biglobosa,Legumes and their products,155,11.1,14.5,,5.3,0.67,2.8,0.035,1,wafct-2019
+wafct:03_064,"African locust bean, not soaked, boiled (without salt), with cooking liquid","Néré, non trempé, bouilli (sans sel), avec liquide de cuisson",Parkia biglobosa,Legumes and their products,98,7,9.2,,3.3,0.42,1.7,0.03,1,wafct-2019
+wafct:03_065,"African locust bean, soaked, boiled in different water (without salt), drained","Néré, trempé, bouilli dans différentes eaux (sans sel), égoutté",Parkia biglobosa,Legumes and their products,176,12.6,16.4,,6,0.76,3.1,0.04,1,wafct-2019
+wafct:03_066,"African locust bean, soaked, boiled in different water (without salt), with cooking liquid","Néré, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Parkia biglobosa,Legumes and their products,127,9.1,11.8,,4.3,0.55,2.2,0.0375,1,wafct-2019
+wafct:03_010,"African yam bean, dry, raw","azama african yam bean Haricot igname, sec, cru",Sphenostylis stenocarpa,Legumes and their products,316,20.5,46.7,,1.5,0.33,16.7,0.005,0,wafct-2019
+wafct:03_011,"African yam bean, not soaked, boiled, drained","Haricot igname, non trempé, bouilli (sans sel), égoutté",Sphenostylis stenocarpa,Legumes and their products,121,7.9,17.8,,0.6,0.13,6.4,0.0025,1,wafct-2019
+wafct:03_060,"African yam bean, not soaked, boiled (without salt), with cooking liquid","Haricot igname, non trempé, bouilli (sans sel), avec liquide de cuisson",Sphenostylis stenocarpa,Legumes and their products,76,5,11.3,,0.4,0.08,4,0.0025,1,wafct-2019
+wafct:03_061,"African yam bean, soaked, boiled in different water (without salt), drained","Haricot igname, trempé, bouilli dans différentes eaux (sans sel), égoutté",Sphenostylis stenocarpa,Legumes and their products,137,9,20.2,,0.7,0.15,7.3,0.0025,1,wafct-2019
+wafct:03_062,"African yam bean, soaked, boiled in different water (without salt), with cooking liquid","Haricot igname, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Sphenostylis stenocarpa,Legumes and their products,99,6.5,14.5,,0.5,0.1,5.2,0.0025,1,wafct-2019
+wafct:03_044,"Afzelia africana, shelled, roasted, milled","Afzelia africana, égréné, grillé, moulu",Afzelia africana,Legumes and their products,392,18,7.5,,25.1,,32.2,,0,wafct-2019
+wafct:03_001,"Bambara groundnut, dry, raw","bambara nut okpa gurjiya Pois bambara, sec, cru",Vigna subterranea,Legumes and their products,323,19.5,33.6,,5.9,1.64,28.9,0.005,0,wafct-2019
+wafct:03_012,"Bambara groundnut, not soaked, boiled, drained","Pois bambara, non trempé, bouilli (sans sel), égoutté",Vigna subterranea,Legumes and their products,161,9.8,16.8,,2.9,0.82,14.5,0.0025,1,wafct-2019
+wafct:03_068,"Bambara groundnut, soaked, boiled in different water (without salt), drained","Pois bambara, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna subterranea,Legumes and their products,161,9.8,16.8,,2.9,0.82,14.5,0.0025,1,wafct-2019
+wafct:03_018,"Bambara groundnut, combined varieties, dry, raw (Ghana)","Pois bambara, mélange de variétés, sec, cru (Ghana)",Vigna subterranea,Legumes and their products,319,20.8,32.1,,5.5,1.53,28.9,0.005,0,wafct-2019
+wafct:03_019,"Bambara groundnut, combined varieties (Ghana), not soaked, boiled, drained","Pois bambara, mélange de variétés (Ghana), non trempé, bouilli (sans sel), égoutté",Vigna subterranea,Legumes and their products,159,10.4,16,,2.7,0.77,14.5,0.0025,1,wafct-2019
+wafct:03_071,"Bambara groundnut, combined varieties (Ghana), soaked, boiled in different water (without salt), drained","Pois bambara, mélange de variétés (Ghana), trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna subterranea,Legumes and their products,159,10.4,16,,2.7,0.77,14.5,0.0025,1,wafct-2019
+wafct:03_002,"Bambara groundnut, red, dry, raw","Pois bambara, rouge, sec, cru",Vigna subterranea,Legumes and their products,317,18.4,30.4,,6,1.67,34,0.005,0,wafct-2019
+wafct:03_020,"Bambara groundnut, red, not soaked, boiled, drained","Pois bambara, rouge, non trempé, bouilli (sans sel), égoutté",Vigna subterranea,Legumes and their products,158,9.2,15.2,,3,0.84,17,0.0025,1,wafct-2019
+wafct:03_074,"Bambara groundnut, red, soaked, boiled in different water (without salt), drained","Pois bambara, rouge, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna subterranea,Legumes and their products,158,9.2,15.2,,3,0.84,17,0.0025,1,wafct-2019
+wafct:03_003,"Bambara groundnut, white, dry, raw","Pois bambara, blanc, sec, cru",Vigna subterranea,Legumes and their products,335,20,35.7,,6.5,1.66,26.8,0.005,0,wafct-2019
+wafct:03_021,"Bambara groundnut, white, not soaked, boiled, drained","Pois bambara, blanc, non trempé, bouilli (sans sel), égoutté",Vigna subterranea,Legumes and their products,167,10,17.9,,3.3,0.83,13.4,0.0025,1,wafct-2019
+wafct:03_077,"Bambara groundnut, white, soaked, boiled in different water (without salt), drained","Pois bambara, blanc, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna subterranea,Legumes and their products,167,10,17.9,,3.3,0.83,13.4,0.0025,1,wafct-2019
+wafct:03_022,"Bean, white, dry, raw","Haricot blanc, sec, cru",Phaseolus vulgaris,Legumes and their products,320,21.3,44.2,,2.3,0.44,18.6,0.0825,0,wafct-2019
+wafct:03_023,"Bean, white, not soaked, boiled, drained","Haricot blanc, non trempé, bouilli (sans sel), égoutté",Phaseolus vulgaris,Legumes and their products,123,8.2,17,,0.9,0.17,7.1,0.0225,1,wafct-2019
+wafct:03_079,"Bean, white, not soaked, boiled (without salt), with cooking liquid","Haricot blanc, non trempé, bouilli (sans sel), avec liquide de cuisson",Phaseolus vulgaris,Legumes and their products,74,4.9,10.2,,0.5,0.1,4.3,0.02,1,wafct-2019
+wafct:03_081,"Bean, white, soaked, boiled in different water (without salt), drained","Haricot blanc, trempé, bouilli dans différentes eaux (sans sel), égoutté",Phaseolus vulgaris,Legumes and their products,123,8.2,17,,0.9,0.17,7.1,0.0225,1,wafct-2019
+wafct:03_082,"Bean, white, soaked, boiled in different water (without salt), with cooking liquid","Haricot blanc, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Phaseolus vulgaris,Legumes and their products,74,4.9,10.2,,0.5,0.1,4.3,0.02,1,wafct-2019
+wafct:03_024,"Broad bean, dry, raw","Fève, sèche, crue",Vicia faba,Legumes and their products,327,25.2,40.7,,2.2,0.34,21.6,0.065,0,wafct-2019
+wafct:03_025,"Broad bean, not soaked, boiled, drained","Fève, non trempée, bouillie (sans sel), égouttée",Vicia faba,Legumes and their products,117,9,14.5,,0.8,0.12,7.7,0.0175,1,wafct-2019
+wafct:03_083,"Broad bean, not soaked, boiled (without salt), with cooking liquid","Fève, non trempée, bouillie (sans sel), avec liquide de cuisson",Vicia faba,Legumes and their products,71,5.5,8.8,,0.5,0.07,4.7,0.015,1,wafct-2019
+wafct:03_084,"Broad bean, soaked, boiled in different water (without salt), drained","Fève, trempée, bouillie dans différentes eaux (sans sel), égouttée",Vicia faba,Legumes and their products,117,9,14.5,,0.8,0.12,7.7,0.0175,1,wafct-2019
+wafct:03_085,"Broad bean, soaked, boiled in different water (without salt), with cooking liquid","Fève, trempée, bouillie dans différentes eaux (sans sel), avec liquide de cuisson",Vicia faba,Legumes and their products,71,5.5,8.8,,0.5,0.07,4.7,0.015,1,wafct-2019
+wafct:03_004,"Cowpea, dry, raw","beans black eyed beans cowpea ewa wake Niébé, sec, cru",Vigna unguiculata,Legumes and their products,325,22.6,49,,1.5,0.36,12.6,0.05499999999999999,0,wafct-2019
+wafct:03_007,"Cowpea, not soaked, boiled, drained","Niébé, non trempé, bouilli (sans sel), égoutté",Vigna unguiculata,Legumes and their products,122,8.5,18.3,,0.5,0.13,4.7,0.015,1,wafct-2019
+wafct:03_089,"Cowpea, not soaked, boiled (without salt), with cooking liquid","Niébé, non trempé, bouilli (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,73,5.1,11.1,,0.3,0.08,2.8,0.0125,1,wafct-2019
+wafct:03_090,"Cowpea, soaked, boiled in different water (without salt), drained","Niébé, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna unguiculata,Legumes and their products,122,8.5,18.3,,0.5,0.13,4.7,0.015,1,wafct-2019
+wafct:03_091,"Cowpea, soaked, boiled in different water (without salt), with cooking liquid","Niébé, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,73,5.1,11.1,,0.3,0.08,2.8,0.0125,1,wafct-2019
+wafct:03_005,"Cowpea, black, dry, raw","beans black eyed beans cowpea ewa wake Niébé, noir, sec, cru",Vigna unguiculata,Legumes and their products,301,20.5,40.8,,1.6,0.38,21,0.05499999999999999,0,wafct-2019
+wafct:03_026,"Cowpea, black, not soaked, boiled, drained","Niébé, noir, non trempé, bouilli (sans sel), égoutté",Vigna unguiculata,Legumes and their products,113,8.2,14.8,,0.6,0.14,7.9,0.015,1,wafct-2019
+wafct:03_092,"Cowpea, black, not soaked, boiled (without salt), with cooking liquid","Niébé, noir, non trempé, bouilli (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,68,4.9,8.9,,0.4,0.09,4.7,0.0125,1,wafct-2019
+wafct:03_093,"Cowpea, black, soaked, boiled in different water (without salt), drained","Niébé, noir, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna unguiculata,Legumes and their products,113,8.2,14.8,,0.6,0.14,7.9,0.015,1,wafct-2019
+wafct:03_094,"Cowpea, black, soaked, boiled in different water (without salt), with cooking liquid","Niébé, noir, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,68,4.9,8.9,,0.4,0.09,4.7,0.0125,1,wafct-2019
+wafct:03_027,"Cowpea, brown, dry, raw","beans brown beans cowpea ewa wake Niébé, brun, sec, cru",Vigna unguiculata,Legumes and their products,326,23.6,47.1,,1.9,0.47,12.8,0.057499999999999996,0,wafct-2019
+wafct:03_028,"Cowpea, brown, not soaked, boiled, drained","Niébé, brun, non trempé, bouilli (sans sel), égoutté",Vigna unguiculata,Legumes and their products,122,8.9,17.6,,0.7,0.18,4.8,0.0175,1,wafct-2019
+wafct:03_095,"Cowpea, brown, not soaked, boiled (without salt), with cooking liquid","Niébé, brun, non trempé, bouilli (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,74,5.3,10.7,,0.4,0.11,2.9,0.0125,1,wafct-2019
+wafct:03_096,"Cowpea, brown, soaked, boiled in different water (without salt), drained","Niébé, brun, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna unguiculata,Legumes and their products,122,8.9,17.6,,0.7,0.18,4.8,0.0175,1,wafct-2019
+wafct:03_097,"Cowpea, brown, soaked, boiled in different water (without salt), with cooking liquid","Niébé, brun, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,74,5.3,10.7,,0.4,0.11,2.9,0.0125,1,wafct-2019
+wafct:03_006,"Cowpea, white, dry, raw","beans black eyed beans cowpea ewa wake Niébé, blanc, sec, cru",Vigna unguiculata,Legumes and their products,331,23,50.3,,1.8,0.44,10.6,0.06,0,wafct-2019
+wafct:03_029,"Cowpea, white, not soaked, boiled, drained","Niébé, blanc, non trempé, bouilli (sans sel), égoutté",Vigna unguiculata,Legumes and their products,124,8.6,18.8,,0.7,0.16,4,0.0175,1,wafct-2019
+wafct:03_098,"Cowpea, white, not soaked, boiled (without salt), with cooking liquid","Niébé, blanc, non trempé, bouilli (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,75,5.2,11.4,,0.4,0.1,2.4,0.0125,1,wafct-2019
+wafct:03_099,"Cowpea, white, soaked, boiled in different water (without salt), drained","Niébé, blanc, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna unguiculata,Legumes and their products,124,8.6,18.8,,0.7,0.16,4,0.0175,1,wafct-2019
+wafct:03_100,"Cowpea, white, soaked, boiled in different water (without salt), with cooking liquid","Niébé, blanc, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,75,5.2,11.4,,0.4,0.1,2.4,0.0125,1,wafct-2019
+wafct:03_045,"Cowpea, dehulled, raw","beans peeled beans cowpea ewa wake Niébé, décortiqué, cru",Vigna unguiculata,Legumes and their products,334,23.1,50.6,,1.4,0.34,13.1,0.025,0,wafct-2019
+wafct:03_101,"Cowpea, dehulled, not soaked, boiled, drained","Niébé, décortiqué, non trempé, bouilli (sans sel), égoutté",Vigna unguiculata,Legumes and their products,125,8.6,19,,0.5,0.13,4.9,0.0075,1,wafct-2019
+wafct:03_102,"Cowpea, dehulled, not soaked, boiled (without salt), with cooking liquid","Niébé, décortiqué, non trempé, bouilli (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,76,5.2,11.5,,0.3,0.08,3,0.005,1,wafct-2019
+wafct:03_103,"Cowpea, dehulled, soaked, boiled in different water (without salt), drained","Niébé, décortiqué, trempé, bouilli dans différentes eaux (sans sel), égoutté",Vigna unguiculata,Legumes and their products,125,8.6,19,,0.5,0.13,4.9,0.0075,1,wafct-2019
+wafct:03_104,"Cowpea, dehulled, soaked, boiled in different water (without salt), with cooking liquid","Niébé, décortiqué, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Vigna unguiculata,Legumes and their products,76,5.2,11.5,,0.3,0.08,3,0.005,1,wafct-2019
+wafct:03_057,"Ground bean, dry, raw","Haricot de terre, sec, cru",Macrotyloma geocarpum,Legumes and their products,322,23.8,43.2,,2,0.38,17.9,0.0225,0,wafct-2019
+wafct:03_113,"Ground bean, not soaked, boiled, drained","Haricot de terre, non trempé, bouilli (sans sel), égoutté",Macrotyloma geocarpum,Legumes and their products,123,9.1,16.5,,0.8,0.15,6.9,0.0075,1,wafct-2019
+wafct:03_114,"Ground bean, not soaked, boiled (without salt), with cooking liquid","Haricot de terre, non trempé, bouilli (sans sel), avec liquide de cuisson",Macrotyloma geocarpum,Legumes and their products,78,5.8,10.5,,0.5,0.09,4.3,0.005,1,wafct-2019
+wafct:03_115,"Ground bean, soaked, boiled in different water (without salt), drained","Haricot de terre, trempé, bouilli dans différentes eaux (sans sel), égoutté",Macrotyloma geocarpum,Legumes and their products,123,9.1,16.5,,0.8,0.15,6.9,0.0075,1,wafct-2019
+wafct:03_116,"Ground bean, soaked, boiled in different water (without salt), with cooking liquid","Haricot de terre, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Macrotyloma geocarpum,Legumes and their products,78,5.8,10.5,,0.5,0.09,4.3,0.005,1,wafct-2019
+wafct:03_052,"Jack bean, whole, dry, raw","Haricot-sabre, entier, sec, cru",Canavalia ensiformis,Legumes and their products,335,24.1,42.4,,4.2,0.73,15.6,0.015,0,wafct-2019
+wafct:03_109,"Jack bean, not soaked, boiled, drained","Haricot-sabre, non trempé, bouilli (sans sel), égoutté",Canavalia ensiformis,Legumes and their products,128,9.2,16.3,,1.6,0.28,6,0.005,1,wafct-2019
+wafct:03_110,"Jack bean, not soaked, boiled (without salt), with cooking liquid","Haricot-sabre, non trempé, bouilli (sans sel), avec liquide de cuisson",Canavalia ensiformis,Legumes and their products,81,5.8,10.3,,1,0.18,3.8,0.005,1,wafct-2019
+wafct:03_111,"Jack bean, soaked, boiled in different water (without salt), drained","Haricot-sabre, trempé, bouilli dans différentes eaux (sans sel), égoutté",Canavalia ensiformis,Legumes and their products,128,9.2,16.3,,1.6,0.28,6,0.005,1,wafct-2019
+wafct:03_112,"Jack bean, soaked, boiled in different water (without salt), with cooking liquid","Haricot-sabre, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Canavalia ensiformis,Legumes and their products,81,5.8,10.3,,1,0.18,3.8,0.005,1,wafct-2019
+wafct:03_030,"Lentil, dry, raw","Lentille, sèche, crue",Lens culinaris,Legumes and their products,328,23.6,46.3,,1.7,0.23,17,0.125,0,wafct-2019
+wafct:03_031,"Lentil, not soaked, boiled, drained","Lentille, non trempée, bouillie (sans sel), égouttée",Lens culinaris,Legumes and their products,124,8.9,17.5,,0.6,0.09,6.4,0.035,1,wafct-2019
+wafct:03_086,"Lentil, not soaked, boiled (without salt), with cooking liquid","Lentille, non trempée, bouillie (sans sel), avec liquide de cuisson",Lens culinaris,Legumes and their products,77,5.6,10.9,,0.4,0.05,4,0.03,1,wafct-2019
+wafct:03_087,"Lentil, soaked, boiled in different water (without salt), drained","Lentille, trempée, bouillie dans différentes eaux (sans sel), égouttée",Lens culinaris,Legumes and their products,124,8.9,17.5,,0.6,0.09,6.4,0.035,1,wafct-2019
+wafct:03_088,"Lentil, soaked, boiled in different water (without salt), with cooking liquid","Lentille, trempée, bouillie dans différentes eaux (sans sel), avec liquide de cuisson",Lens culinaris,Legumes and their products,77,5.6,10.9,,0.4,0.05,4,0.03,1,wafct-2019
+wafct:03_058,"Lima bean, dry, raw","Haricot de Lima, sec, cru",Phaseolus lunatus,Legumes and their products,315,21.6,44.8,,1.5,0.4,17.9,0.0125,0,wafct-2019
+wafct:03_117,"Lima bean, not soaked, boiled, drained","Haricot de Lima, non trempé, bouilli (sans sel), égoutté",Phaseolus lunatus,Legumes and their products,126,8.6,17.9,,0.6,0.16,7.2,0.005,1,wafct-2019
+wafct:03_118,"Lima bean, not soaked, boiled (without salt), with cooking liquid","Haricot de Lima, non trempé, bouilli (sans sel), avec liquide de cuisson",Phaseolus lunatus,Legumes and their products,73,5,10.3,,0.3,0.09,4.1,0.0025,1,wafct-2019
+wafct:03_119,"Lima bean, soaked, boiled in different water (without salt), drained","Haricot de Lima, trempé, bouilli dans différentes eaux (sans sel), égoutté",Phaseolus lunatus,Legumes and their products,126,8.6,17.9,,0.6,0.16,7.2,0.005,1,wafct-2019
+wafct:03_120,"Lima bean, soaked, boiled in different water (without salt), with cooking liquid","Haricot de Lima, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Phaseolus lunatus,Legumes and their products,73,5,10.3,,0.3,0.09,4.1,0.0025,1,wafct-2019
+wafct:03_032,"Pigeon pea, dry, raw","Pois d’Angole, sec, cru",Cajanus cajan,Legumes and their products,310,20.8,41.6,,2.1,0.45,21,0.0075,0,wafct-2019
+wafct:03_033,"Pigeon pea, not soaked, boiled, drained","Pois d’Angole, non trempé, bouilli (sans sel), égoutté",Cajanus cajan,Legumes and their products,135,9,18.1,,0.9,0.19,9.1,0.0025,1,wafct-2019
+wafct:03_121,"Pigeon pea, not soaked, boiled (without salt), with cooking liquid","Pois d’Angole, non trempé, bouilli (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,6.5,13,,0.6,0.14,6.6,0.0025,1,wafct-2019
+wafct:03_122,"Pigeon pea, soaked, boiled in different water (without salt), drained","Pois d’Angole, trempé, bouilli dans différentes eaux (sans sel), égoutté",Cajanus cajan,Legumes and their products,135,9,18.1,,0.9,0.19,9.1,0.0025,1,wafct-2019
+wafct:03_123,"Pigeon pea, soaked, boiled in different water (without salt), with cooking liquid","Pois d’Angole, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,6.5,13,,0.6,0.14,6.6,0.0025,1,wafct-2019
+wafct:03_055,"Pigeon pea, brown, dry, raw","Pois d’Angole, brun, sec, cru",Cajanus cajan,Legumes and their products,309,20.6,41.8,,2,0.43,20.9,0.005,0,wafct-2019
+wafct:03_132,"Pigeon pea, brown, not soaked, boiled, drained","Pois d’Angole, brun, non trempé, bouilli (sans sel), égoutté",Cajanus cajan,Legumes and their products,134,9,18.2,,0.9,0.19,9.1,0.0025,1,wafct-2019
+wafct:03_133,"Pigeon pea, brown, not soaked, boiled (without salt), with cooking liquid","Pois d’Angole, brun, non trempé, bouilli (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,6.5,13.1,,0.6,0.13,6.5,0.0025,1,wafct-2019
+wafct:03_134,"Pigeon pea, brown, soaked, boiled in different water (without salt), drained","Pois d’Angole, brun, trempé, bouilli dans différentes eaux (sans sel), égoutté",Cajanus cajan,Legumes and their products,134,9,18.2,,0.9,0.19,9.1,0.0025,1,wafct-2019
+wafct:03_135,"Pigeon pea, brown, soaked, boiled in different water (without salt), with cooking liquid","Pois d’Angole, brun, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,6.5,13.1,,0.6,0.13,6.5,0.0025,1,wafct-2019
+wafct:03_054,"Pigeon pea, cream, dry, raw","Pois d’Angole, crème, sec, cru",Cajanus cajan,Legumes and their products,303,18.4,42.7,,2,0.43,20.1,0.005,0,wafct-2019
+wafct:03_128,"Pigeon pea, cream, not soaked, boiled, drained","Pois d’Angole, crème, non trempé, bouilli (sans sel), égoutté",Cajanus cajan,Legumes and their products,132,8,18.6,,0.9,0.19,8.8,0.0025,1,wafct-2019
+wafct:03_129,"Pigeon pea, cream, not soaked, boiled (without salt), with cooking liquid","Pois d’Angole, crème, non trempé, bouilli (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,95,5.8,13.3,,0.6,0.14,6.3,0.0025,1,wafct-2019
+wafct:03_130,"Pigeon pea, cream, soaked, boiled in different water (without salt), drained","Pois d’Angole, crème, trempé, bouilli dans différentes eaux (sans sel), égoutté",Cajanus cajan,Legumes and their products,132,8,18.6,,0.9,0.19,8.8,0.0025,1,wafct-2019
+wafct:03_131,"Pigeon pea, cream, soaked, boiled in different water (without salt), with cooking liquid","Pois d’Angole, crème, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,95,5.8,13.3,,0.6,0.14,6.3,0.0025,1,wafct-2019
+wafct:03_053,"Pigeon pea, white, dry, raw","Pois d’Angole, blanc, sec, cru",Cajanus cajan,Legumes and their products,310,16.6,42.4,,3.7,0.79,20.6,0.0075,0,wafct-2019
+wafct:03_124,"Pigeon pea, white, not soaked, boiled, drained","Pois d’Angole, blanc, non trempé, bouilli (sans sel), égoutté",Cajanus cajan,Legumes and their products,135,7.2,18.4,,1.6,0.34,8.9,0.0025,1,wafct-2019
+wafct:03_125,"Pigeon pea, white, not soaked, boiled (without salt), with cooking liquid","Pois d’Angole, blanc, non trempé, bouilli (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,5.2,13.2,,1.1,0.25,6.4,0.0025,1,wafct-2019
+wafct:03_126,"Pigeon pea, white, soaked, boiled in different water (without salt), drained","Pois d’Angole, blanc, trempé, bouilli dans différentes eaux (sans sel), égoutté",Cajanus cajan,Legumes and their products,135,7.2,18.4,,1.6,0.34,8.9,0.0025,1,wafct-2019
+wafct:03_127,"Pigeon pea, white, soaked, boiled in different water (without salt), with cooking liquid","Pois d’Angole, blanc, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Cajanus cajan,Legumes and their products,97,5.2,13.2,,1.1,0.25,6.4,0.0025,1,wafct-2019
+wafct:03_008,"Soya bean, dry, raw","Soja, sec, cru",Glycine max,Legumes and their products,381,31.3,14.2,,17,2.51,23.4,0.0125,0,wafct-2019
+wafct:03_034,"Soya bean, not soaked, boiled, drained","Soja, non trempé, bouilli (sans sel), égoutté",Glycine max,Legumes and their products,157,12.9,5.8,,7,1.03,9.6,0.005,1,wafct-2019
+wafct:03_136,"Soya bean, soaked, boiled in different water (without salt), drained","Soja, trempé, bouilli dans différentes eaux (sans sel), égoutté",Glycine max,Legumes and their products,157,12.9,5.8,,7,1.03,9.6,0.005,1,wafct-2019
+wafct:03_039,"Soya bean, combined varieties, dry, raw (Ghana)","Soja, mélange de variétés, sec, cru (Ghana)",Glycine max,Legumes and their products,385,34.7,13.8,,15.9,2.35,23.8,0.0125,0,wafct-2019
+wafct:03_040,"Soya bean, combined varieties (Ghana), not soaked, boiled, drained","Soja, mélange de variétés (Ghana), non trempé, bouilli (sans sel), égoutté",Glycine max,Legumes and their products,158,14.3,5.7,,6.5,0.97,9.8,0.005,1,wafct-2019
+wafct:03_137,"Soya bean, combined varieties (Ghana), soaked, boiled in different water (without salt), drained","Soja, mélange de variétés (Ghana), trempé, bouilli dans différentes eaux (sans sel), égoutté",Glycine max,Legumes and their products,158,14.3,5.7,,6.5,0.97,9.8,0.005,1,wafct-2019
+wafct:03_051,"Sweet dattock, whole, raw","Détar sucré, entier, cru",Detarium microcarpum,Legumes and their products,372,10.6,33.9,,17.2,2.61,19.6,0.3,0,wafct-2019
+wafct:03_105,"Sweet dattock, not soaked, boiled, drained","Détar sucré, non trempé, bouilli (sans sel), égoutté",Detarium microcarpum,Legumes and their products,143,4.1,13,,6.6,1,7.5,0.08750000000000001,1,wafct-2019
+wafct:03_106,"Sweet dattock, not soaked, boiled (without salt), with cooking liquid","Détar sucré, non trempé, bouilli (sans sel), avec liquide de cuisson",Detarium microcarpum,Legumes and their products,90,2.6,8.2,,4.2,0.63,4.7,0.07250000000000001,1,wafct-2019
+wafct:03_107,"Sweet dattock, soaked, boiled in different water (without salt), drained","Détar sucré, trempé, bouilli dans différentes eaux (sans sel), égoutté",Detarium microcarpum,Legumes and their products,143,4.1,13,,6.6,1,7.5,0.08750000000000001,1,wafct-2019
+wafct:03_108,"Sweet dattock, soaked, boiled in different water (without salt), with cooking liquid","Détar sucré, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Detarium microcarpum,Legumes and their products,90,2.6,8.2,,4.2,0.63,4.7,0.07250000000000001,1,wafct-2019
+wafct:03_059,"Velvet bean, dry, raw","Haricot velouté, sec, cru",Mucuna pruriens,Legumes and their products,334,28.8,33.9,,4.7,1.34,20.4,0,0,wafct-2019
+wafct:03_138,"Velvet bean, not soaked, boiled, drained","Haricot velouté, non trempé, bouilli (sans sel), égoutté",Mucuna pruriens,Legumes and their products,128,11,13,,1.8,0.51,7.8,0,1,wafct-2019
+wafct:03_139,"Velvet bean, not soaked, boiled (without salt), with cooking liquid","Haricot velouté, non trempé, bouilli (sans sel), avec liquide de cuisson",Mucuna pruriens,Legumes and their products,81,7,8.2,,1.1,0.32,4.9,0,1,wafct-2019
+wafct:03_140,"Velvet bean, soaked, boiled in different water (without salt), drained","Haricot velouté, trempé, bouilli dans différentes eaux (sans sel), égoutté",Mucuna pruriens,Legumes and their products,128,11,13,,1.8,0.51,7.8,0,1,wafct-2019
+wafct:03_141,"Velvet bean, soaked, boiled in different water (without salt), with cooking liquid","Haricot velouté, trempé, bouilli dans différentes eaux (sans sel), avec liquide de cuisson",Mucuna pruriens,Legumes and their products,81,7,8.2,,1.1,0.32,4.9,0,1,wafct-2019
+wafct:04_023,"Amaranth, leaves, fresh, raw","efo tete tete inine amaranth callaloo green Amaranthe, feuilles, fraîches, crues",Amaranthus spp.,Vegetables and their products,40,4.1,3,,0.4,0.11,3.8,0.0175,0,wafct-2019
+wafct:04_024,"Amaranth, leaves, fresh, boiled, drained","Amaranthe, feuilles, fraîches, bouillies (sans sel), égouttées",Amaranthus spp.,Vegetables and their products,41,4.2,3.1,,0.4,0.11,3.9,0.0125,1,wafct-2019
+wafct:04_002,"Baobab, leaves, dried","baobab leaves kuka dried Baobab, feuilles, séchées",Adansonia digitata,Vegetables and their products,241,13.7,19.8,,2.3,0.64,42.9,0.41500000000000004,0,wafct-2019
+wafct:04_001,"Baobab, leaves, fresh, raw","baobab leaves kuka Baobab, feuilles, fraîches, crues",Adansonia digitata,Vegetables and their products,62,3.9,5.4,,0.4,0.1,10.8,0.10500000000000001,0,wafct-2019
+wafct:04_025,"Baobab, leaves, fresh, boiled, drained","Baobab, feuilles, fraîches, bouillies (sans sel), égouttées",Adansonia digitata,Vegetables and their products,64,4,5.5,,0.4,0.11,11,0.08,1,wafct-2019
+wafct:04_081,"Bay, leaves, dried","Laurier, feuilles, séchées",Laurus nobilis,Vegetables and their products,353,7.6,48.7,,8.4,2.27,26.3,0.057499999999999996,0,wafct-2019
+wafct:04_003,"Bean, green, raw","Haricot vert, cru",Phaseolus vulgaris,Vegetables and their products,40,2,5.2,,0.3,0.07,4.4,0.005,0,wafct-2019
+wafct:04_026,"Bean, green, boiled, drained","Haricot vert, bouilli (sans sel), égoutté",Phaseolus vulgaris,Vegetables and their products,44,2.2,5.8,,0.3,0.08,4.8,0.005,1,wafct-2019
+wafct:04_005,"Cabbage, white, raw","Chou, blanc, cru",Brassica oleracea var. capitata,Vegetables and their products,26,1.6,3.6,,0.1,0.02,2.2,0.0325,0,wafct-2019
+wafct:04_089,"Cabbage, white, boiled, drained","Chou, blanc, bouilli (sans sel), égoutté",Brassica oleracea var. capitata,Vegetables and their products,27,1.7,3.7,,0.1,0.02,2.3,0.025,1,wafct-2019
+wafct:04_006,"Carrot, raw","Carotte, crue",Daucus carota,Vegetables and their products,34,0.9,5.5,,0.2,0.03,3.2,0.08750000000000001,0,wafct-2019
+wafct:04_007,"Carrot, boiled, drained","Carotte, bouillie (sans sel), égouttée",Daucus carota,Vegetables and their products,36,1,5.9,,0.2,0.03,3.4,0.05,1,wafct-2019
+wafct:04_008,"Cassava, leaves, fresh, raw","Manioc, feuilles, fraîches, crues",Manihot esculenta,Vegetables and their products,93,7.6,9.1,,1.1,0.31,7.9,0.015,0,wafct-2019
+wafct:04_028,"Cassava, leaves, fresh, boiled, drained","Manioc, feuilles, fraîches, bouillies (sans sel), égouttées",Manihot esculenta,Vegetables and their products,95,7.7,9.3,,1.2,0.32,8.1,0.01,1,wafct-2019
+wafct:04_009,"Cocoyam, leaves, fresh, raw","Chou caraïbe, feuilles, fraîches, crues",Xanthosoma sagittifolium,Vegetables and their products,39,3.5,2.4,,0.7,0.2,4.5,0.005,0,wafct-2019
+wafct:04_029,"Cocoyam, leaves, fresh, boiled, drained","Chou caraïbe, feuilles, fraîches, bouillies (sans sel), égouttées",Xanthosoma sagittifolium,Vegetables and their products,39,3.6,2.4,,0.7,0.21,4.5,0.005,1,wafct-2019
+wafct:04_031,"Cowpea, leaves, dried","Niébé, feuilles, séchées",Vigna unguiculata,Vegetables and their products,262,24.4,19.9,,1.8,0.49,34.1,0.725,0,wafct-2019
+wafct:04_010,"Cowpea, leaves, fresh, raw","Niébé, feuilles, fraîches, crues",Vigna unguiculata,Vegetables and their products,37,4.4,1.7,,0.3,0.08,4.9,0.08,0,wafct-2019
+wafct:04_030,"Cowpea, leaves, fresh, boiled, drained","Niébé, feuilles, fraîches, bouillies (sans sel), égouttées",Vigna unguiculata,Vegetables and their products,37,4.5,1.8,,0.3,0.08,5,0.06,1,wafct-2019
+wafct:04_032,"Cucumber, unpeeled, raw","Concombre, non pelé, cru",Cucumis sativus,Vegetables and their products,12,0.7,0.9,,0.1,0.04,2.1,0.025,0,wafct-2019
+wafct:04_012,"Eggplant, fruit, raw","Aubergine, fruit, cru",Solanum melongena,Vegetables and their products,31,1.1,4,,0.3,0.07,4,0.01,0,wafct-2019
+wafct:04_034,"Eggplant, fruit, boiled, drained","Aubergine, fruit, bouilli (sans sel), égoutté",Solanum melongena,Vegetables and their products,33,1.2,4.3,,0.3,0.08,4.3,0.0075,1,wafct-2019
+wafct:04_013,"Eggplant, leaves, fresh, raw","Aubergine, feuilles, fraîches, crues",Solanum melongena,Vegetables and their products,48,4.4,3.7,,0.8,0.22,4.2,0.065,0,wafct-2019
+wafct:04_035,"Eggplant, leaves, fresh, boiled, drained","Aubergine, feuilles, fraîches, bouillies (sans sel), égouttées",Solanum melongena,Vegetables and their products,49,4.5,3.7,,0.8,0.22,4.3,0.05,1,wafct-2019
+wafct:04_014,"False sesame, leaves, dried","Faux sésame, feuilles, séchées",Ceratotheca sesamoides,Vegetables and their products,269,17.7,29.1,,3.6,1,24.5,0.3875,0,wafct-2019
+wafct:04_036,"False sesame, leaves, fresh, raw","Faux sésame, feuilles, fraîches, crues",Ceratotheca sesamoides,Vegetables and their products,61,5.3,5.4,,0.8,0.21,5.5,0.08750000000000001,0,wafct-2019
+wafct:04_037,"False sesame, leaves, fresh, boiled, drained","Faux sésame, feuilles, fraîches, bouillies (sans sel), égouttées",Ceratotheca sesamoides,Vegetables and their products,62,5.4,5.5,,0.8,0.21,5.6,0.0675,1,wafct-2019
+wafct:04_015,"Garlic, flesh, raw","Ail, chair, cru",Allium sativum,Vegetables and their products,126,6.5,21.6,,0.3,0.07,5.3,0.025,0,wafct-2019
+wafct:04_082,"Ginger, root, raw","Gingembre, racine, crue",Zingiber officinale,Vegetables and their products,63,2.2,9,,0.9,0.23,5.4,0.025,0,wafct-2019
+wafct:04_131,"Green leafy vegetable, average, fresh, raw","Légumes-feuilles verts, non spécifiés, frais, crus",Brassica nigra,Vegetables and their products,43,3.3,4.1,,0.7,0.18,3.9,0.0625,0,wafct-2019
+wafct:04_132,"Green leafy vegetable, average, fresh, boiled, drained","Légumes-feuilles verts, non spécifiés, frais, bouillis (sans sel), égouttés",Brassica nigra,Vegetables and their products,44,3.4,4.2,,0.7,0.18,4,0.0475,1,wafct-2019
+wafct:04_073,"Hibiscus cannabinus, leaves, fresh, raw","Hibiscus cannabinus, feuilles, fraîches, crues",Hibiscus cannabinus,Vegetables and their products,47,2.8,5.2,,0.6,0.14,4.6,0.03,0,wafct-2019
+wafct:04_099,"Hibiscus cannabinus, leaves, fresh, boiled, drained","Hibiscus cannabinus, feuilles, fraîches, bouillies (sans sel), égouttées",Hibiscus cannabinus,Vegetables and their products,48,2.9,5.3,,0.6,0.14,4.7,0.0225,1,wafct-2019
+wafct:04_016,"Hibiscus, leaves, fresh, raw","yakuwa roselle sorrel leaves zobo leaves Oseille de Guinée, feuilles, fraîches, crues",Hibiscus sabdariffa,Vegetables and their products,40,2.7,4.5,,0.3,0.06,4.2,0.0325,0,wafct-2019
+wafct:04_056,"Hibiscus, leaves, fresh, boiled, drained","Oseille de Guinée, feuilles, fraîches, bouillies (sans sel), égouttées",Hibiscus sabdariffa,Vegetables and their products,41,2.8,4.6,,0.3,0.06,4.3,0.025,1,wafct-2019
+wafct:04_075,"Jute mallow (bush-okra), leaves, dried","ewedu jute leaves molokhia dried Corète potagère, feuilles, séchées",Corchorus spp.,Vegetables and their products,264,22.4,20.7,,2.5,0.43,34.9,0.1575,0,wafct-2019
+wafct:04_038,"Jute mallow (bush-okra), leaves, fresh, raw","ewedu jute leaves molokhia Corète potagère, feuilles, fraîches, crues",Corchorus spp.,Vegetables and their products,48,4.2,3.2,,0.3,0.06,8.3,0.03,0,wafct-2019
+wafct:04_039,"Jute mallow (bush-okra), leaves, fresh, boiled, drained","Corète potagère, feuilles, fraîches, bouillies (sans sel), égouttées",Corchorus spp.,Vegetables and their products,50,4.4,3.2,,0.3,0.06,8.4,0.0225,1,wafct-2019
+wafct:04_040,"Lettuce, raw","Laitue, crue",Lactuca sativa,Vegetables and their products,17,1,1.7,,0.3,0.07,1.8,0.03,0,wafct-2019
+wafct:04_076,"Maize, seeds, fresh, raw","Maïs, grains, frais, cru",Zea mays,Vegetables and their products,178,5.8,23.8,,3.4,0.56,16.1,0.005,0,wafct-2019
+wafct:04_108,"Maize, seeds, fresh, boiled, drained","Maïs, grains, frais, bouilli (sans sel), égoutté",Zea mays,Vegetables and their products,189,6,24.8,,3.6,0.59,16.8,0.005,1,wafct-2019
+wafct:04_085,"Mint, leaves, raw","Menthe, feuilles, crues",Mentha spp.,Vegetables and their products,46,4.7,2.3,,0.7,0.15,5.9,0.0425,0,wafct-2019
+wafct:04_011,"Moringa (drumstick), leaves, fresh, raw","moringa zogale Moringa (ben oléifère), feuilles, fraîches, crues",Moringa oleifera,Vegetables and their products,81,8.4,4.5,,1.4,0.49,8.2,0.0225,0,wafct-2019
+wafct:04_033,"Moringa (drumstick), leaves, fresh, boiled, drained","Moringa (ben oléifère), feuilles, fraîches, bouillies (sans sel), égouttées",Moringa oleifera,Vegetables and their products,82,8.5,4.6,,1.5,0.5,8.4,0.0175,1,wafct-2019
+wafct:04_074,"Native eggplant, fruit, raw","Aubergine indigène, fruit, cru",Solanum macrocarpon,Vegetables and their products,32,1.3,3.9,,0.4,0.09,4,0.01,0,wafct-2019
+wafct:04_103,"Native eggplant, fruit, boiled, drained","Aubergine indigène, fruit, bouilli (sans sel), égoutté",Solanum macrocarpon,Vegetables and their products,35,1.4,4.2,,0.4,0.1,4.3,0.0075,1,wafct-2019
+wafct:04_004,"Okra, leaves, fresh, raw","Gombo, feuilles, fraîches, crues",Abelmoschus esculentus,Vegetables and their products,45,2.5,5.1,,0.6,0.16,4.9,0.015,0,wafct-2019
+wafct:04_041,"Okra, leaves, fresh, boiled, drained","Gombo, feuilles, fraîches, bouillies (sans sel), égouttées",Abelmoschus esculentus,Vegetables and their products,46,2.5,5.2,,0.6,0.16,5,0.01,1,wafct-2019
+wafct:04_077,"Okra, fruit, dried","dried okra okro kubewa Gombo, fruit, séché",Abelmoschus esculentus,Vegetables and their products,245,12.8,21.8,,1.7,0.52,45.3,0.1925,0,wafct-2019
+wafct:04_017,"Okra, fruit, fresh, raw","okra okro ila kubewa Gombo, fruit, frais, cru",Abelmoschus esculentus,Vegetables and their products,34,1.7,4.2,,0.2,0.07,4.1,0.027499999999999997,0,wafct-2019
+wafct:04_042,"Okra, fruit, fresh, boiled, drained","Gombo, fruit, frais, bouilli (sans sel), égoutté",Abelmoschus esculentus,Vegetables and their products,31,1.5,3.8,,0.2,0.06,3.7,0.02,1,wafct-2019
+wafct:04_044,"Onion, dried","Oignon, séché",Allium cepa,Vegetables and their products,354,9.6,71.1,,1.1,0.21,10.7,0.052500000000000005,0,wafct-2019
+wafct:04_018,"Onion, fresh, raw","Oignon, frais, cru",Allium cepa,Vegetables and their products,37,1.1,7.1,,0.1,0.03,1.8,0.025,0,wafct-2019
+wafct:04_043,"Onion, fresh, boiled, drained","Oignon, frais, bouilli (sans sel), égoutté",Allium cepa,Vegetables and their products,46,1.4,8.7,,0.1,0.03,2.2,0.015,1,wafct-2019
+wafct:04_045,"Parsley, fresh, raw","Persil, frais, cru",Petroselinum crispum,Vegetables and their products,42,3.5,3.9,,0.3,0.1,4.8,0.1325,0,wafct-2019
+wafct:04_049,"Pepper, sweet, green, fresh, raw","Poivron vert, frais, cru",Capsicum annuum,Vegetables and their products,34,0.9,5.6,,0.4,0.09,2.4,0.025,0,wafct-2019
+wafct:04_050,"Pepper, sweet, green, fresh, boiled, drained","Poivron vert, frais, bouilli (sans sel), égoutté",Capsicum annuum,Vegetables and their products,39,1,6.4,,0.5,0.11,2.7,0.0225,1,wafct-2019
+wafct:04_047,"Pepper, sweet, red, fresh, raw","tatashe red bell pepper Poivron rouge, frais, cru",Capsicum annuum,Vegetables and their products,48,2,7.1,,0.8,0.16,2.5,0.025,0,wafct-2019
+wafct:04_048,"Pepper, sweet, red, fresh, boiled, drained","Poivron rouge, frais, bouilli (sans sel), égoutté",Capsicum annuum,Vegetables and their products,56,2.3,8.1,,0.9,0.18,2.9,0.0225,1,wafct-2019
+wafct:04_046,"Pepper, chilli, fresh, raw","chilli pepper ata rodo scotch bonnet Piment, frais, cru",Capsicum spp.,Vegetables and their products,47,1.8,7.5,,0.3,0.05,3.5,0.005,0,wafct-2019
+wafct:04_055,"Pumpkin, leaves, dried","Citrouille, feuilles, séchées",Cucurbita pepo,Vegetables and their products,286,38.3,18.3,,2.7,0.95,17.7,0.21749999999999997,0,wafct-2019
+wafct:04_053,"Pumpkin, leaves, fresh, raw","Citrouille, feuilles, fraîches, crues",Cucurbita pepo/Curcurbita maxima,Vegetables and their products,32,4.1,2.4,,0.2,0.06,2.3,0.027499999999999997,0,wafct-2019
+wafct:04_054,"Pumpkin, leaves, fresh, boiled, drained","Citrouille, feuilles, fraîches, bouillies (sans sel), égouttées",Cucurbita pepo/Curcurbita maxima,Vegetables and their products,32,4,2.4,,0.2,0.06,2.2,0.02,1,wafct-2019
+wafct:04_051,"Pumpkin, squash, light orange flesh, raw","Courge, chair orange clair, crue",Cucurbita pepo,Vegetables and their products,34,1,6,,0.1,0.02,2.4,0,0,wafct-2019
+wafct:04_052,"Pumpkin, squash, light orange flesh, boiled, drained","Courge, chair orange clair, bouillie (sans sel), égouttée",Cucurbita pepo,Vegetables and their products,37,1.1,6.6,,0.1,0.03,2.6,0,1,wafct-2019
+wafct:04_071,"Sicklepod, leaves, dried","tafasa sicklepod dried Casse fétide, feuilles, séchées",Senna tora/Senna obtusifolia,Vegetables and their products,286,21.4,37.8,,0.9,0.24,20.9,0.41500000000000004,0,wafct-2019
+wafct:04_084,"Sicklepod, leaves, fresh, raw","tafasa sicklepod Casse fétide, feuilles, fraîches, crues",Senna tora/Senna obtusifolia,Vegetables and their products,95,5.9,13.9,,0.2,0.04,7.2,0.14250000000000002,0,wafct-2019
+wafct:04_093,"Sicklepod, leaves, fresh, boiled, drained","Casse fétide, feuilles, fraîches, bouillies (sans sel), égouttées",Senna tora/Senna obtusifolia,Vegetables and their products,97,6.1,14.2,,0.2,0.04,7.3,0.10999999999999999,1,wafct-2019
+wafct:04_072,"Spider plant, leaves, fresh, raw","Plante-araignée, feuilles, fraîches, crues",Cleome gynandra,Vegetables and their products,44,4.8,1.9,,0.9,0.18,4.3,0.0475,0,wafct-2019
+wafct:04_095,"Spider plant, leaves, fresh, boiled, drained","Plante-araignée, feuilles, fraîches, bouillies (sans sel), égouttées",Cleome gynandra,Vegetables and their products,44,4.9,2,,0.9,0.19,4.4,0.0375,1,wafct-2019
+wafct:04_057,"Spinach, leaves, fresh, raw","Épinard, feuilles, fraîches, crues",Spinacia oleracea,Vegetables and their products,23,2.9,0.7,,0.4,0.11,2.7,0.1975,0,wafct-2019
+wafct:04_058,"Spinach, leaves, fresh, boiled, drained","Épinard, feuilles, fraîches, bouillies (sans sel), égouttées",Spinacia oleracea,Vegetables and their products,25,3,0.8,,0.4,0.12,2.8,0.155,1,wafct-2019
+wafct:04_059,"Sweet potato, leaves, fresh, raw","Patate douce, feuilles, fraîches, crues",Ipomoea batatas,Vegetables and their products,50,4.6,4.9,,0.2,0.05,5.3,0.015,0,wafct-2019
+wafct:04_060,"Sweet potato, leaves, fresh, boiled, drained","Patate douce, feuilles, fraîches, bouillies (sans sel), égouttées",Ipomoea batatas,Vegetables and their products,53,4.8,5.1,,0.2,0.05,5.5,0.0125,1,wafct-2019
+wafct:04_062,"Tamarind, leaves, dried","Tamarin, feuilles, séchées",Tamarindus indica,Vegetables and their products,286,14,26.4,,3.5,0.96,46.7,0.035,0,wafct-2019
+wafct:04_019,"Tamarind, leaves, fresh, raw","Tamarin, feuilles, fraîches, crues",Tamarindus indica,Vegetables and their products,64,3.1,5.8,,0.8,0.21,10.7,0.0325,0,wafct-2019
+wafct:04_061,"Tamarind, leaves, fresh, boiled, drained","Tamarin, feuilles, fraîches, bouillies (sans sel), égouttées",Tamarindus indica,Vegetables and their products,66,3.2,5.9,,0.8,0.22,10.9,0.025,1,wafct-2019
+wafct:04_020,"Taro, leaves, fresh, raw","Taro, feuilles, fraîches, crues",Colocasia esculenta,Vegetables and their products,39,2.5,2.7,,0.8,0.24,5.6,0.03,0,wafct-2019
+wafct:04_063,"Taro, leaves, fresh, boiled, drained","Taro, feuilles, fraîches, bouillies (sans sel), égouttées",Colocasia esculenta,Vegetables and their products,40,2.6,2.7,,0.8,0.24,5.7,0.0225,1,wafct-2019
+wafct:04_083,"Thyme, dried","Thym, séché",Brassica nigra,Vegetables and their products,298,9.1,30.2,,7.4,3.7,37,0.06,0,wafct-2019
+wafct:04_066,"Tomato, paste, concentrated, without salt","Concentré de tomate, sans sel",,Vegetables and their products,80,3.2,13.6,,0.5,0.08,4.1,0.0775,0,wafct-2019
+wafct:04_067,"Tomato, powder","Tomate, en poudre",,Vegetables and their products,321,12.9,58.2,,0.4,0.07,16.5,0.335,0,wafct-2019
+wafct:04_021,"Tomato, red, ripe, raw","Tomate, rouge, mûre, crue",Solanum lycopersicum,Vegetables and their products,22,1.1,3.4,,0.2,0.03,1.4,0.0325,0,wafct-2019
+wafct:04_064,"Tomato, red, ripe, boiled, drained","Tomate, rouge, mûre, bouillie (sans sel), égouttée",Solanum lycopersicum,Vegetables and their products,28,1.4,4.4,,0.2,0.04,1.8,0.03,1,wafct-2019
+wafct:04_068,"Turnip, raw","Navet, cru",Brassica rapa,Vegetables and their products,28,1,4.4,,0.2,0.03,2.5,0.10999999999999999,0,wafct-2019
+wafct:04_069,"Turnip, boiled, drained","Navet, bouilli (sans sel), égoutté",Brassica rapa,Vegetables and their products,31,1.1,4.8,,0.2,0.03,2.8,0.0675,1,wafct-2019
+wafct:04_022,"Vernonia, leaves, bitter, fresh, raw","bitter leaf bitterleaf onugbu ewuro shiwaka Vernonie, feuilles, amères, fraîches, crues",Gymnanthemum amygdalinum,Vegetables and their products,65,5,6.7,,0.9,0.25,5.1,0.027499999999999997,0,wafct-2019
+wafct:04_070,"Vernonia, leaves, bitter, fresh, boiled, drained","Vernonie, feuilles, amères, fraîches, bouillies (sans sel), égouttées",Gymnanthemum amygdalinum,Vegetables and their products,66,5.1,6.8,,0.9,0.25,5.2,0.0225,1,wafct-2019
+wafct:04_079,"Vernonia, leaves, sweet, fresh, raw","Vernonie, feuilles, douces, fraîches, crues",Baccharoides calvoana subsp. calvoana,Vegetables and their products,56,2.5,8.9,,0.4,0.1,3.3,0.075,0,wafct-2019
+wafct:04_127,"Vernonia, leaves, sweet, fresh, boiled, drained","Vernonie, feuilles, douces, fraîches, bouillies (sans sel), égouttées",Baccharoides calvoana subsp. calvoana,Vegetables and their products,57,2.5,9.1,,0.4,0.11,3.4,0.057499999999999996,1,wafct-2019
+wafct:04_078,"Waterleaf, leaves, fresh, raw","waterleaf gbure Feuille d’eau, feuilles, fraîches, crues",Talinum fruticosum,Vegetables and their products,40,2.3,4.3,,0.7,0.18,3.9,0.095,0,wafct-2019
+wafct:04_119,"Waterleaf, leaves, fresh, boiled, drained","Feuille d’eau, feuilles, fraîches, bouillies (sans sel), égouttées",Talinum fruticosum,Vegetables and their products,41,2.4,4.4,,0.7,0.18,4,0.07250000000000001,1,wafct-2019
+wafct:04_080,"Wild spinach, leaves, fresh, raw","afang okazi ukazi gnetum Épinard sauvage, feuilles, fraîches, crues",Gnetum africanum,Vegetables and their products,45,5.1,2.5,,0.7,0.18,4.3,0.0675,0,wafct-2019
+wafct:04_129,"Wild spinach, leaves, fresh, boiled, drained","Épinard sauvage, feuilles, fraîches, bouillies (sans sel), égouttées",Gnetum africanum,Vegetables and their products,45,5.2,2.5,,0.7,0.18,4.3,0.052500000000000005,1,wafct-2019
+wafct:05_055,"African black plum/chocolate berry, ripe, raw","Prune noire africaine, mûre, crue",Vitex doniana,Fruits and their products,112,0.4,26.4,,0.2,,1.4,0.02,0,wafct-2019
+wafct:05_023,"African fan palm, fruit, raw","Fruit du palmier rônier, cru",Borassus aethiopum,Fruits and their products,43,0.5,8.8,,0.1,0.02,2.4,0.0025,0,wafct-2019
+wafct:05_024,"African locust bean, flour from fruit","Néré, farine du fruit",Parkia biglobosa,Fruits and their products,299,4.6,52.2,,1.3,,30.1,0.015,0,wafct-2019
+wafct:05_001,"African locust bean, fruit, raw","Néré, fruit, cru",Parkia biglobosa,Fruits and their products,285,3.3,49.8,,1.8,,28.2,0.015,0,wafct-2019
+wafct:05_053,"African star apple, fruit, raw","agbalumo udara african star apple cherry Pomme-étoile africaine, fruit, cru",Chrysophyllum albidum,Fruits and their products,132,3.4,16.4,,5.2,,3.1,0.0075,0,wafct-2019
+wafct:05_025,"Akee, fruit, raw","Akée, fruit, cru",Blighia sapida,Fruits and their products,208,4.4,4.7,,18.8,,1.4,,0,wafct-2019
+wafct:05_046,"Apple, green, with skin, raw","Pomme, verte, non épluchée, crue",Malus domestica,Fruits and their products,59,0.2,12.1,,0.5,0.12,2.6,0.0125,0,wafct-2019
+wafct:05_047,"Apple, red, with skin, raw","Pomme, rouge, non épluchée, crue",Malus domestica,Fruits and their products,62,0.2,12.7,,0.6,0.16,2.3,0.0025,0,wafct-2019
+wafct:05_026,"Apple, with skin, raw","Pomme, non épluchée, crue",Malus domestica,Fruits and their products,59,0.3,12.2,,0.4,0.12,2.3,0.01,0,wafct-2019
+wafct:05_027,"Apple, without skin, raw","Pomme, épluchée, crue",Malus domestica,Fruits and their products,59,0.2,13.2,,0.2,0.06,1.7,0,0,wafct-2019
+wafct:05_002,"Avocado, fruit, raw","Avocat, fruit, cru",Persea americana,Fruits and their products,156,1.6,2.1,,14.8,1.57,4,0.01,0,wafct-2019
+wafct:05_048,"Banana, sweet, flesh, unripe (green), raw","Banane, chair, sucrée, non mûre (verte), crue",Musa spp.,Fruits and their products,115,1,24.9,,0.5,0.12,3.6,0,0,wafct-2019
+wafct:05_003,"Banana, white flesh, ripe, raw","Banane, chair blanche, mûre, crue",Musa spp.,Fruits and their products,121,1.3,27.7,,0.2,0.07,1.9,0.005,0,wafct-2019
+wafct:05_028,"Banana, yellow flesh, ripe, raw","Banane, chair jaune, mûre, crue",Musa spp.,Fruits and their products,89,1.3,19.2,,0.2,0.07,2.7,0.005,0,wafct-2019
+wafct:05_004,"Baobab, fruit/monkey bread, raw","Baobab, fruit/pain de singe, cru",Adansonia digitata,Fruits and their products,305,2.1,70,,0.3,,7,0.057499999999999996,0,wafct-2019
+wafct:05_005,"Breadfruit, fruit, raw","Arbre à pain, fruit, cru",Artocarpus altilis,Fruits and their products,96,1.4,17.9,,0.3,0.06,8.3,0.005,0,wafct-2019
+wafct:05_050,"Carambola (star fruit), raw","Carambole (fruit-étoile), cru",Averrhoa carambola,Fruits and their products,30,0.8,4.6,,0.3,0.02,2.8,0.005,0,wafct-2019
+wafct:05_006,"Cashew apple, fruit, raw","Pomme de cajou, fruit, cru",Anacardium occidentale,Fruits and their products,55,1,10.9,,0.4,,1.7,0.0075,0,wafct-2019
+wafct:05_029,"Clementine, raw","Clémentine, crue",Citrus clementina,Fruits and their products,49,0.9,10.3,,0.2,0.03,1.7,0.0025,0,wafct-2019
+wafct:05_031,"Date, dried, raw","Date, séchée, crue",Phoenix dactylifera,Fruits and their products,282,2.2,64.1,,0.1,0.04,7.8,0.02,0,wafct-2019
+wafct:05_030,"Date, soft, raw","Date, molle, crue",Phoenix dactylifera,Fruits and their products,202,1.6,45.8,,0.1,0.06,5.6,0.0125,0,wafct-2019
+wafct:05_008,"Dattock, fruit, dried","Détar, fruit, séché",Detarium senegalense,Fruits and their products,322,3.4,71.2,,1,0.31,7.1,0.0125,0,wafct-2019
+wafct:05_007,"Dattock, fruit, raw","Détar, fruit, cru",Detarium senegalense,Fruits and their products,125,1.9,27.3,,0.4,0.16,2.3,0.005,0,wafct-2019
+wafct:05_033,"Fig, dried","Figue, sèche",Ficus carica,Fruits and their products,266,3.1,56,,1.2,0.21,9.3,0.027499999999999997,0,wafct-2019
+wafct:05_032,"Fig, raw","Figue, crue",Ficus carica,Fruits and their products,74,1,13.9,,0.6,0.17,4.6,0.01,0,wafct-2019
+wafct:05_009,"Fig, sycomorus, raw","Figue, sycomore, crue",Ficus sycomorus,Fruits and their products,67,1.4,12.4,,0.9,0.27,2.3,0.015,0,wafct-2019
+wafct:05_035,"Grapefruit, white, raw","Pamplemousse, blanc, cru",Citrus × paradisi,Fruits and their products,32,0.7,6.2,,0.1,0.02,1.6,0.01,0,wafct-2019
+wafct:05_051,"Grapes, raw","Raisins, crus",Vitis vinifera,Fruits and their products,71,0.6,16,,0.3,0.1,1.3,0.005,0,wafct-2019
+wafct:05_010,"Guava, fruit, raw","Goyave, fruit, crue",Psidium guajava,Fruits and their products,68,1,12.3,,0.4,0.06,5.7,0.0075,0,wafct-2019
+wafct:05_011,"Gumvine, fruit, raw","Liane goïne, fruit, cru",Saba senegalensis,Fruits and their products,75,0.6,17,,0.2,,1.3,,0,wafct-2019
+wafct:05_012,"Jujube, raw","Jujube, cru",Ziziphus spp.,Fruits and their products,29,0.7,4.6,,0.1,0.03,3.7,0.015,0,wafct-2019
+wafct:05_013,"Landolphia, fruit, raw","Liane à caoutchouc, fruit, crue",Landolphia spp.,Fruits and their products,86,0.7,19.8,,0.2,,0.8,0.0125,0,wafct-2019
+wafct:05_014,"Lemon, raw","Citron, cru",Citrus limon,Fruits and their products,36,0.7,5.8,,0.6,0.16,2.5,0.01,0,wafct-2019
+wafct:05_036,"Mango, deep orange flesh, raw","Mangue, chair orange foncé, crue",Mangifera indica,Fruits and their products,77,0.4,17.7,,0.2,0.06,1.6,0.005,0,wafct-2019
+wafct:05_015,"Mango, orange flesh, ripe, raw","Mangue, chair orange, mûre, crue",Mangifera indica,Fruits and their products,70,0.6,15.3,,0.2,0.08,1.8,0.0075,0,wafct-2019
+wafct:05_037,"Mango, pale flesh, raw","Mangue, chair pâle, crue",Mangifera indica,Fruits and their products,52,0.9,10.7,,0.2,0.07,2.1,0,0,wafct-2019
+wafct:05_039,"Melon, cantaloupe, orange flesh, raw","Melon, cantaloup, chair orange, cru",Cucumis melo,Fruits and their products,38,0.8,8,,0.1,0.03,1,0.0425,0,wafct-2019
+wafct:05_038,"Melon, honeydew, pale green flesh, raw","Melon, miellat, chair vert pâle, cru",Cucumis melo,Fruits and their products,43,0.7,9,,0.2,0.06,1.1,0.027499999999999997,0,wafct-2019
+wafct:05_052,"Mombin/hog-plum, fruit, raw","Mombin/prune, fruit, cru",Spondias mombin,Fruits and their products,63,1.6,12.6,,0.3,,1.9,0.04,0,wafct-2019
+wafct:05_040,"Oil palm, fruit, raw","Noix de palme, crue",Elaeis guineensis,Fruits and their products,540,1.9,12.9,,52.6,18.01,3.6,0.04,0,wafct-2019
+wafct:05_016,"Orange, raw","Orange, crue",Citrus aurantium,Fruits and their products,44,0.7,8.7,,0.4,0.1,1.7,0.005,0,wafct-2019
+wafct:05_017,"Papaya, fruit, ripe, raw","Papaye, fruit, mûr, cru",Carica papaya,Fruits and their products,59,0.4,13,,0.1,0.05,2.1,0.01,0,wafct-2019
+wafct:05_018,"Pineapple, fruit, raw","Ananas, fruit, cru",Ananas comosus,Fruits and their products,53,0.4,11.4,,0.2,0.06,1.8,0.005,0,wafct-2019
+wafct:05_041,"Pomegranate, fruit, raw","Grenade, fruit, crue",Punica granatum,Fruits and their products,76,1.3,14.9,,0.3,0.08,4,0.01,0,wafct-2019
+wafct:05_044,"Shea, fruit, raw","Noix de karité, crue",Vitellaria paradoxa,Fruits and their products,101,1.5,19.8,,0.9,,3.8,0.015,0,wafct-2019
+wafct:05_019,"Soapberry, fruit, raw","Pomme de savon, fruit, crue",Lepisanthes senegalensis,Fruits and their products,110,1.6,25.5,,0.1,,0.5,,0,wafct-2019
+wafct:05_054,"Soursop, fruit, raw","Corossol, fruit, cru",Annona spp.,Fruits and their products,77,1.2,13.9,,0.8,0.27,5,0.0175,0,wafct-2019
+wafct:05_045,"Sweet apple, fruit, raw","Pomme-cannelle, fruit, crue",Annona squamosa,Fruits and their products,93,1.5,18.8,,0.2,0.06,5.1,0.0225,0,wafct-2019
+wafct:05_020,"Tamarind, immature fruit, raw","Tamarin, fruit, non mûr, cru",Tamarindus indica,Fruits and their products,59,2,8.2,,0.2,0.05,8.4,0.0075,0,wafct-2019
+wafct:05_021,"Tamarind, fruit, ripe, raw","Tamarin, fruit, mûr, cru",Tamarindus indica,Fruits and their products,278,3.7,61.3,,0.9,0.26,4.9,0.015,0,wafct-2019
+wafct:05_022,"Watermelon, fruit, raw","Pastèque, fruit, cru",Citrullus lanatus,Fruits and their products,25,0.5,5,,0.1,0.03,0.9,0.01,0,wafct-2019
+wafct:06_031,"African breadfruit, seed without hull, dried","ukwa african breadfruit breadnut Fruit de l’arbre à pain africain, graine sans coque, séchée",Treculia Africana,"Nuts, seeds and their products",351,13.3,70.9,,1.1,0.31,2.4,0.01,0,wafct-2019
+wafct:06_039,"Benniseed, dried, raw","beniseed benniseed sesame ridi Graine de sésame, séchée, crue",Sesamum radiatum,"Nuts, seeds and their products",530,17.4,17.1,,40.5,5.9,13.6,0.5700000000000001,0,wafct-2019
+wafct:06_033,"Bitter cola, seeds, dried, raw","orogbo aki ilu bitter kola Petit cola (amer), graines, séché, cru",Garcinia kola,"Nuts, seeds and their products",373,5.2,76.3,,4.4,1.58,3.9,0.0225,0,wafct-2019
+wafct:06_032,"Bitter cola, seeds, fresh, raw","Petit cola (amer), graines, frais, cru",Garcinia kola,"Nuts, seeds and their products",183,2.6,37.3,,2.1,0.77,1.9,0.01,0,wafct-2019
+wafct:06_001,"Cashew nut, raw","Noix de cajou, crue",Anacardium occidentale,"Nuts, seeds and their products",591,16.1,27.8,,45.4,7.85,3.5,0.2375,0,wafct-2019
+wafct:06_005,"Coconut, kernel, dried, raw","Noix de coco, amande, séchée, crue",Cocos nucifera,"Nuts, seeds and their products",579,7.3,14.2,,51.3,43.63,15.9,0.08750000000000001,0,wafct-2019
+wafct:06_004,"Coconut, immature kernel, fresh, raw","Noix de coco, amande, non mûre, fraîche, crue",Cocos nucifera,"Nuts, seeds and their products",147,1.5,6.1,,12.2,10.44,3.3,0.02,0,wafct-2019
+wafct:06_002,"Coconut, mature kernel, fresh, raw","Noix de coco, amande, mûre, fraîche, crue",Cocos nucifera,"Nuts, seeds and their products",383,3.3,5,,36.8,31.04,9.5,0.05,0,wafct-2019
+wafct:06_019,"Cola nut, dried, raw","kola nut obi oji goro Noix de cola, séchée, crue",Cola nitida,"Nuts, seeds and their products",282,7,40.9,,2.1,0.89,35.7,0.0125,0,wafct-2019
+wafct:06_018,"Cola nut, fresh, raw","Noix de cola, fraîche, crue",Cola nitida,"Nuts, seeds and their products",135,2.8,20.2,,1,0.42,17,0.0075,0,wafct-2019
+wafct:06_008,"Dikanut, kernel, dried, raw","ogbono apon bush mango seed irvingia Noix dika, amande, séchée, crue",Irvingia gabonensis,"Nuts, seeds and their products",650,7.6,5.5,,62.6,,17.3,0.005,0,wafct-2019
+wafct:06_009,"False sesame seeds, dried, raw","Graines de faux sésame, séchées, crues",Ceratotheca sesamoides,"Nuts, seeds and their products",454,15.4,20.4,,29.3,,23.3,0.07,0,wafct-2019
+wafct:06_028,"Groundnut flour, partially defatted","Farine d’arachide, partiellement dégraissée",Arachis hypogaea,"Nuts, seeds and their products",381,42.5,22.6,,9.9,1.38,15.8,0.22749999999999998,0,wafct-2019
+wafct:06_027,"Groundnut flour, with fat","Farine d’arachide, non dégraissée",Arachis hypogaea,"Nuts, seeds and their products",579,25.9,9.6,,46.4,9.35,9.9,0.045,0,wafct-2019
+wafct:06_026,"Groundnut paste, from groundnuts only","Arachide, pâte pure",Arachis hypogaea,"Nuts, seeds and their products",605,23.9,11,,49.9,10.06,8.3,0.015,0,wafct-2019
+wafct:06_025,"Groundnut, combined varieties, shelled, dried, raw (Ghana)","Arachide, mélange de variétés, décortiquées, séchées, crues (Ghana)",Arachis hypogaea,"Nuts, seeds and their products",566,22.4,14.7,,44.5,8.96,8.6,0.015,0,wafct-2019
+wafct:06_012,"Groundnut, red, shelled, dried, raw (Benin)","Arachide, rouge, décortiquée, séchée, crue (Bénin)",Arachis hypogaea,"Nuts, seeds and their products",577,21.7,16.5,,45.1,9.09,9.4,0.015,0,wafct-2019
+wafct:06_011,"Groundnut, rose, shelled, dried, raw (Benin)","Arachide, rose, décortiquée, séchée, crue (Bénin)",Arachis hypogaea,"Nuts, seeds and their products",567,20.4,20.3,,43.2,8.72,7.7,0.015,0,wafct-2019
+wafct:06_010,"Groundnut, shelled, dried, raw","Arachide, décortiquée, séchée, crue",Arachis hypogaea,"Nuts, seeds and their products",574,22.4,17.4,,44.2,8.92,8.3,0.015,0,wafct-2019
+wafct:06_030,"Hibiscus seed, red, dried, raw","Graines d’oseille de Guinée (datou), rouges, séchées, crues",Hibiscus sabdariffa,"Nuts, seeds and their products",417,0.6,58.1,,17.8,,11,0.07,0,wafct-2019
+wafct:06_035,"Melon seed (citrullus spp.), kernel only, dried, raw","egusi egusi melon agusi Graines de pastèque (citrullus spp.), séchées, crues",Citrullus spp.,"Nuts, seeds and their products",565,19.5,19,,44.4,10.94,6,0.5825,0,wafct-2019
+wafct:06_013,"Melon seed, kernel only, dried, raw","egusi egusi melon agusi Graines d’égousi/pistache africaine, séchées, crues",Cucumeropsis edulis/cucumeropsis mannii,"Nuts, seeds and their products",574,27.6,11.6,,45,11.11,6,0.0925,0,wafct-2019
+wafct:06_036,"Melon seed, small, elongated, kernel only, dried, raw","egusi egusi melon agusi Graines de pastèque, petites et allongées, séchées, crues",Citrullus spp.,"Nuts, seeds and their products",566,15.1,29,,41.9,10.34,6,0.5825,0,wafct-2019
+wafct:06_037,"Melon seed, small, flat, kernel only, dried, raw","egusi egusi melon agusi Graines d’égousi/pistache africaine, petites et plates, séchées, crues",Cucumeropsis edulis,"Nuts, seeds and their products",587,23.3,12.6,,47.9,11.83,6,0.2475,0,wafct-2019
+wafct:06_029,"Oil palm, nut (kernel), shelled, raw","Noix de palme (amande), décortiquée, crue",Elaeis guineensis,"Nuts, seeds and their products",558,6.2,28.1,,45.8,37.78,4,0.17,0,wafct-2019
+wafct:06_038,"Pumpkin seed, kernel only, dried, raw","Graines de courge, séchées, crues",Curcubita spp.,"Nuts, seeds and their products",567,27.7,9,,45.4,8.19,6,0.0125,0,wafct-2019
+wafct:06_015,"Sesame seed, whole, dried, raw","Sésame, graines complètes, séchées, crues",Sesame spp.,"Nuts, seeds and their products",601,16.6,4.9,,54.1,7.89,14.3,0.11249999999999999,0,wafct-2019
+wafct:06_016,"Shea nut, kernel, dried, raw","Karité, noix, séchée, crue",Vitellaria paradoxa,"Nuts, seeds and their products",567,6.8,34.1,,43.5,20.23,5.9,0.07,0,wafct-2019
+wafct:07_008,"Ant, flying, dried","Fourmi, volante, séchée",Various species,"Meat, poultry and their products",514,42.2,11.2,,31.9,14.4,6.7,0.43999999999999995,0,wafct-2019
+wafct:07_026,"Bamboo caterpillar, deep fried, salted","Chenille de bambou, frite, salée",Omphisa fuscidentalis,"Meat, poultry and their products",644,25.5,11,,55.3,,,1.5225,0,wafct-2019
+wafct:07_019,"Beef kidney, raw","Rognon de bœuf, cru",Bos taurus,"Meat, poultry and their products",98,16.4,0,,3.6,1.14,0,0.4475,0,wafct-2019
+wafct:07_090,"Beef kidney, boiled, drained","Rognon de bœuf, bouilli (sans sel), égoutté",Bos taurus,"Meat, poultry and their products",156,26,0.1,,5.8,1.82,0,0.42500000000000004,1,wafct-2019
+wafct:07_091,"Beef kidney, grilled (without salt or fat)","Rognon de bœuf, grillé (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",154,25.6,0.1,,5.7,1.79,0,0.595,1,wafct-2019
+wafct:07_020,"Beef kidney, stewed","Rognon de bœuf, mijoté (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",156,26,0.1,,5.8,1.82,0,0.71,1,wafct-2019
+wafct:07_001,"Beef liver, raw","Foie de bœuf, cru",Bos taurus,"Meat, poultry and their products",128,19.3,3.4,,4.2,1.43,0,0.1875,0,wafct-2019
+wafct:07_018,"Beef liver, boiled, drained","Foie de bœuf, bouilli (sans sel), égoutté",Bos taurus,"Meat, poultry and their products",194,29.2,5.2,,6.3,2.16,0,0.17,1,wafct-2019
+wafct:07_088,"Beef liver, grilled (without salt or fat)","Foie de bœuf, grillé (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",158,23.8,4.2,,5.2,1.76,0,0.1975,1,wafct-2019
+wafct:07_089,"Beef liver, stewed","Foie de bœuf, mijoté (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",171,25.7,4.5,,5.6,1.9,0,0.25,1,wafct-2019
+wafct:07_014,"Beef meat, fatty, ca. 30% fat, raw","Viande de bœuf, grasse, environ 30% de matière grasse, crue",Bos taurus,"Meat, poultry and their products",321,17.5,0,,27.9,14.4,0,0.22749999999999998,0,wafct-2019
+wafct:07_015,"Beef meat, fatty, ca. 30% fat, boiled, drained","Viande de bœuf, grasse, environ 30% de matière grasse, bouillie (sans sel), égouttée",Bos taurus,"Meat, poultry and their products",456,29.1,0,,37.8,19.5,0,0.17250000000000001,1,wafct-2019
+wafct:07_016,"Beef meat, fatty, ca. 30% fat, grilled (without salt or fat)","Viande de bœuf, grasse, environ 30% de matière grasse, grillée (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",400,24.3,0,,33.7,17.3,0,0.27,1,wafct-2019
+wafct:07_087,"Beef meat, fatty, ca. 30% fat, stewed","Viande de bœuf, grasse, environ 30% de matière grasse, mijotée (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",452,24.6,0,,39.3,20.2,0,0.3225,1,wafct-2019
+wafct:07_023,"Beef meat, ground, ca. 10% fat, raw","Viande de bœuf, hachée, environ 10% de matière grasse, crue",Bos taurus,"Meat, poultry and their products",174,20.3,0,,10.3,4.87,0,0.2375,0,wafct-2019
+wafct:07_024,"Beef meat, ground, ca. 10% fat, grilled (without salt or fat)","Viande de bœuf, hachée, environ 10% de matière grasse, grillée (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",217,28.1,0,,11.6,5.48,0,0.28,1,wafct-2019
+wafct:07_134,"Beef meat, ground, ca. 10% fat, stewed","Viande de bœuf, hachée, environ 10% de matière grasse, mijotée (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",242,28.1,0,,14.3,6.76,0,0.3275,1,wafct-2019
+wafct:07_009,"Beef meat, lean, ca. 5% fat, raw","Viande de bœuf, maigre, environ 5% de matière grasse, crue",Bos taurus,"Meat, poultry and their products",131,22.5,0,,4.6,2.23,0,0.2475,0,wafct-2019
+wafct:07_010,"Beef meat, lean, ca. 5% fat, boiled, drained","Viande de bœuf, maigre, environ 5% de matière grasse, bouillie (sans sel), égouttée",Bos taurus,"Meat, poultry and their products",219,37.5,0,,7.6,3.71,0,0.1875,1,wafct-2019
+wafct:07_011,"Beef meat, lean, ca. 5% fat, grilled (without salt or fat)","Viande de bœuf, maigre, environ 5% de matière grasse, grillée (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",182,31.3,0,,6.3,3.09,0,0.29250000000000004,1,wafct-2019
+wafct:07_085,"Beef meat, lean, ca. 5% fat, stewed","Viande de bœuf, maigre, environ 5% de matière grasse, mijotée (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",185,31.7,0,,6.4,3.13,0,0.35000000000000003,1,wafct-2019
+wafct:07_017,"Beef meat, lean, cured, dried","Viande de bœuf, maigre, fumée, séchée",Bos taurus,"Meat, poultry and their products",142,31.1,0,,1.9,0.91,0,6.975,0,wafct-2019
+wafct:07_002,"Beef meat, moderately fat, ca. 20% fat, raw","Viande de bœuf, teneur modérée en matière grasse (env. 20%), crue",Bos taurus,"Meat, poultry and their products",239,18.6,0,,18.2,8.51,0,0.22749999999999998,0,wafct-2019
+wafct:07_012,"Beef meat, moderately fat, ca. 20% fat, boiled, drained","Viande de bœuf, teneur modérée en matière grasse (env. 20%), bouillie (sans sel), égouttée",Bos taurus,"Meat, poultry and their products",320,31,0,,21.7,10.1,0,0.17,1,wafct-2019
+wafct:07_013,"Beef meat, moderately fat, ca. 20% fat, grilled (without salt or fat)","Viande de bœuf, teneur modérée en matière grasse (env. 20%), grillée (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",286,25.9,0,,20.3,9.46,0,0.2675,1,wafct-2019
+wafct:07_086,"Beef meat, moderately fat, ca. 20% fat, stewed","Viande de bœuf, teneur modérée en matière grasse (env. 20%), mijotée (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",336,26.2,0,,25.7,12,0,0.32,1,wafct-2019
+wafct:07_021,"Beef tripe, raw","shaki tripe Tripes de bœuf, crues",Bos taurus,"Meat, poultry and their products",84,12,0,,4,2.19,0,0.11499999999999999,0,wafct-2019
+wafct:07_022,"Beef tripe, boiled, drained","Tripes de bœuf, bouillies (sans sel), égouttées",Bos taurus,"Meat, poultry and their products",118,16.8,0,,5.6,3.09,0,0.0975,1,wafct-2019
+wafct:07_133,"Beef tripe, grilled (without salt or fat)","Tripes de bœuf, grillées (sans sel ni graisse)",Bos taurus,"Meat, poultry and their products",118,16.8,0,,5.6,3.09,0,0.1375,1,wafct-2019
+wafct:07_092,"Beef tripe, stewed","Tripes de bœuf, mijotées (ingrédient de recette)",Bos taurus,"Meat, poultry and their products",118,16.8,0,,5.6,3.09,0,0.1625,1,wafct-2019
+wafct:07_064,"Camel meat, raw","Viande de chameau, crue",Camelus dromedarius,"Meat, poultry and their products",149,19.9,0,,7.7,3.84,0,0.17500000000000002,0,wafct-2019
+wafct:07_093,"Camel meat, boiled, drained","Viande de chameau, bouillie (sans sel), égouttée",Camelus dromedarius,"Meat, poultry and their products",206,33.1,0,,8.2,4.07,0,0.17500000000000002,1,wafct-2019
+wafct:07_094,"Camel meat, grilled (without salt or fat)","Viande de chameau, grillée (sans sel ni graisse)",Camelus dromedarius,"Meat, poultry and their products",182,27.6,0,,8,3.97,0,0.20750000000000002,1,wafct-2019
+wafct:07_095,"Camel meat, stewed","Viande de chameau, mijotée (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",210,28,0,,10.8,5.4,0,0.2475,1,wafct-2019
+wafct:07_039,"Chicken giblets, raw","Poulet, abats, crus",Gallus gallus domesticus,"Meat, poultry and their products",134,17.6,1,,6.6,2.36,0,0.2,0,wafct-2019
+wafct:07_106,"Chicken giblets, boiled, drained","Poulet, abats, bouillis (sans sel), égouttés",Gallus gallus domesticus,"Meat, poultry and their products",167,25.9,1.5,,6.4,2.3,0,0.17500000000000002,1,wafct-2019
+wafct:07_107,"Chicken giblets, grilled (without salt or fat)","Poulet, abats, grillés (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",166,25.5,1.4,,6.5,2.3,0,0.245,1,wafct-2019
+wafct:07_040,"Chicken giblets, stewed","Poulet, abats, mijotés (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",194,25.5,1.4,,9.6,3.42,0,0.28750000000000003,1,wafct-2019
+wafct:07_041,"Chicken liver, raw","Foie de poulet, cru",Gallus gallus domesticus,"Meat, poultry and their products",114,18.3,1.3,,4,1.22,0,0.17250000000000001,0,wafct-2019
+wafct:07_108,"Chicken liver, boiled, drained","Foie de poulet, bouilli (sans sel), égoutté",Gallus gallus domesticus,"Meat, poultry and their products",173,27.7,2,,6.1,1.85,0,0.155,1,wafct-2019
+wafct:07_109,"Chicken liver, grilled (without salt or fat)","Foie de poulet, grillé (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",141,22.6,1.6,,4.9,1.5,0,0.18,1,wafct-2019
+wafct:07_042,"Chicken liver, stewed","Foie de poulet, mijoté (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",152,24.4,1.7,,5.3,1.62,0,0.22999999999999998,1,wafct-2019
+wafct:07_030,"Chicken, dark meat with skin, raw","Poulet, chair brune avec la peau, crue",Gallus gallus domesticus,"Meat, poultry and their products",232,16.7,0,,18.3,5.4,0,0.1825,0,wafct-2019
+wafct:07_031,"Chicken, dark meat with skin, boiled, drained","Poulet, chair brune avec la peau, bouillie (sans sel), égoutté",Gallus gallus domesticus,"Meat, poultry and their products",268,22,0,,20,5.9,0,0.095,1,wafct-2019
+wafct:07_032,"Chicken, dark meat with skin, grilled (without salt or fat)","Poulet, chair brune avec la peau, grillée (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",264,21.4,0,,19.8,5.85,0,0.1875,1,wafct-2019
+wafct:07_103,"Chicken, dark meat with skin, stewed","Poulet, chair brune avec la peau, mijotée (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",331,23.8,0,,26.2,7.72,0,0.26,1,wafct-2019
+wafct:07_003,"Chicken, dark meat without skin, raw","Poulet, chair brune sans la peau, crue",Gallus gallus domesticus,"Meat, poultry and their products",146,19.4,0,,7.6,2.07,0,0.21250000000000002,0,wafct-2019
+wafct:07_028,"Chicken, dark meat without skin, boiled, drained","Poulet, chair brune sans la peau, bouillie (sans sel), égoutté",Gallus gallus domesticus,"Meat, poultry and their products",172,25.5,0,,7.8,2.12,0,0.11249999999999999,1,wafct-2019
+wafct:07_029,"Chicken, dark meat without skin, grilled (without salt or fat)","Poulet, chair brune sans la peau, grillée (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",169,24.8,0,,7.8,2.11,0,0.21749999999999997,1,wafct-2019
+wafct:07_102,"Chicken, dark meat without skin, stewed","Poulet, chair brune sans la peau, mijotée (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",209,27.7,0,,10.9,2.95,0,0.3025,1,wafct-2019
+wafct:07_036,"Chicken, light meat with skin, raw","Poulet, blanc avec la peau, cru",Gallus gallus domesticus,"Meat, poultry and their products",165,20.1,0,,9.4,2.9,0,0.0975,0,wafct-2019
+wafct:07_037,"Chicken, light meat with skin, boiled, drained","Poulet, blanc avec la peau, bouilli (sans sel), égoutté",Gallus gallus domesticus,"Meat, poultry and their products",197,26.4,0,,10.2,3.14,0,0.052500000000000005,1,wafct-2019
+wafct:07_038,"Chicken, light meat with skin, grilled (without salt or fat)","Poulet, blanc avec la peau, grillé (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",194,25.8,0,,10.1,3.11,0,0.1,1,wafct-2019
+wafct:07_104,"Chicken, light meat with skin, stewed","Poulet, blanc avec la peau, mijoté (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",236,28.7,0,,13.4,4.15,0,0.14,1,wafct-2019
+wafct:07_033,"Chicken, light meat without skin, raw","Poulet, blanc sans la peau, cru",Gallus gallus domesticus,"Meat, poultry and their products",116,23,0,,2.7,0.77,0,0.10749999999999998,0,wafct-2019
+wafct:07_034,"Chicken, light meat without skin, boiled, drained","Poulet, blanc sans la peau, bouilli (sans sel), égoutté",Gallus gallus domesticus,"Meat, poultry and their products",153,30.3,0,,3.6,1.02,0,0.057499999999999996,1,wafct-2019
+wafct:07_035,"Chicken, light meat without skin, grilled (without salt or fat)","Poulet, blanc sans la peau, grillé (sans sel ni graisse)",Gallus gallus domesticus,"Meat, poultry and their products",149,29.5,0,,3.5,0.99,0,0.10999999999999999,1,wafct-2019
+wafct:07_105,"Chicken, light meat without skin, stewed","Poulet, blanc sans la peau, mijoté (ingrédient de recette)",Gallus gallus domesticus,"Meat, poultry and their products",166,32.9,0,,3.9,1.1,0,0.1525,1,wafct-2019
+wafct:07_075,"Cricket, dried, raw","Sauterelle, séchée, crue",various species,"Meat, poultry and their products",435,54.5,1.5,,21.2,6.48,10,0.8150000000000001,0,wafct-2019
+wafct:07_074,"Cricket, fresh, raw","Sauterelle, frais, crue",various species,"Meat, poultry and their products",151,19,0.4,,7.4,2.3,3.5,0.28500000000000003,0,wafct-2019
+wafct:07_076,"Cricket, bush (katydid), raw","Sauterelle (katydid), crue",Ruspolia differens,"Meat, poultry and their products",189,13.6,0.9,,14.3,5.04,1.4,0.23249999999999998,0,wafct-2019
+wafct:07_044,"Crocodile meat, raw","Viande de crocodile, crue",Crocodylus  spp.,"Meat, poultry and their products",121,19.4,0,,4.8,1.39,0,0.1525,0,wafct-2019
+wafct:07_045,"Crocodile meat, boiled, drained","Viande de crocodile, bouillie (sans sel), égouttée",Crocodylus  spp.,"Meat, poultry and their products",209,33.5,0,,8.3,2.4,0,0.10500000000000001,1,wafct-2019
+wafct:07_110,"Crocodile meat, grilled (without salt or fat)","Viande de crocodile, grillée (sans sel ni graisse)",Crocodylus  spp.,"Meat, poultry and their products",209,33.5,0,,8.3,2.4,0,0.20750000000000002,1,wafct-2019
+wafct:07_111,"Crocodile meat, stewed","Viande de crocodile, mijotée (ingrédient de recette)",Crocodylus  spp.,"Meat, poultry and their products",209,33.5,0,,8.3,2.4,0,0.26,1,wafct-2019
+wafct:07_027,"Game meat, dried, salted","Viande de gibier, séchée, salée",,"Meat, poultry and their products",330,66.7,0,,7,2.92,0,5.525,0,wafct-2019
+wafct:07_069,"Goat meat, lean, raw","Viande de chèvre, maigre, crue",Capra aegagrus hircus,"Meat, poultry and their products",115,19.2,0,,4.3,2.01,0,0.39,0,wafct-2019
+wafct:07_113,"Goat meat, lean, boiled, drained","Viande de chèvre, maigre, bouillie (sans sel), égouttée",Capra aegagrus hircus,"Meat, poultry and their products",172,28.6,0,,6.4,2.99,0,0.34750000000000003,1,wafct-2019
+wafct:07_114,"Goat meat, lean, grilled (without salt or fat)","Viande de chèvre, maigre, grillée (sans sel ni graisse)",Capra aegagrus hircus,"Meat, poultry and their products",167,27.8,0,,6.2,2.91,0,0.48,1,wafct-2019
+wafct:07_115,"Goat meat, lean, stewed","Viande de chèvre, maigre, mijotée (ingrédient de recette)",Capra aegagrus hircus,"Meat, poultry and their products",202,33.6,0,,7.5,3.52,0,0.6825000000000001,1,wafct-2019
+wafct:07_046,"Goat meat, moderately fat, ca. 10% fat, raw","Viande de chèvre, teneur modérée en matière grasse (env. 10%), crue",Capra aegagrus hircus,"Meat, poultry and their products",160,17.6,0,,10,4.91,0,0.2525,0,wafct-2019
+wafct:07_047,"Goat meat, moderately fat, ca. 10% fat, boiled, drained","Viande de chèvre, teneur modérée en matière grasse (env. 10%), bouillie (sans sel), égouttée",Capra aegagrus hircus,"Meat, poultry and their products",208,26.3,0,,11.4,5.64,0,0.22749999999999998,1,wafct-2019
+wafct:07_048,"Goat meat, moderately fat, ca. 10% fat, grilled (without salt or fat)","Viande de chèvre, teneur modérée en matière grasse (env. 10%), grillée (sans sel ni graisse)",Capra aegagrus hircus,"Meat, poultry and their products",204,25.6,0,,11.3,5.57,0,0.3125,1,wafct-2019
+wafct:07_112,"Goat meat, moderately fat, ca. 10% fat, stewed","Viande de chèvre, teneur modérée en matière grasse (env. 10%), mijotée (ingrédient de recette)",Capra aegagrus hircus,"Meat, poultry and their products",281,31,0,,17.5,8.62,0,0.44499999999999995,1,wafct-2019
+wafct:07_070,"Guinea fowl meat, raw","Viande de pintade, crue",Numida meleagris,"Meat, poultry and their products",106,21.5,0,,2.2,0.71,0,0.0425,0,wafct-2019
+wafct:07_116,"Guinea fowl meat, boiled, drained","Viande de pintade, bouillie (sans sel), égouttée",Numida meleagris,"Meat, poultry and their products",140,28.3,0,,2.9,0.94,0,0.0225,1,wafct-2019
+wafct:07_117,"Guinea fowl meat, grilled (without salt or fat)","Viande de pintade, grillée (sans sel ni graisse)",Numida meleagris,"Meat, poultry and their products",136,27.6,0,,2.9,0.91,0,0.05499999999999999,1,wafct-2019
+wafct:07_118,"Guinea fowl meat, stewed","Viande de pintade, mijotée (ingrédient de recette)",Numida meleagris,"Meat, poultry and their products",152,30.7,0,,3.2,1.02,0,0.0625,1,wafct-2019
+wafct:07_051,"Lamb brain, raw","Cervelle d’agneau, crue",Ovis aries,"Meat, poultry and their products",118,13.1,0.1,,7.3,2.04,0,0.305,0,wafct-2019
+wafct:07_129,"Lamb brain, boiled, drained","Cervelle d’agneau, bouillie (sans sel), égouttée",Ovis aries,"Meat, poultry and their products",132,16.3,0.1,,7.4,2.06,0,0.22999999999999998,1,wafct-2019
+wafct:07_130,"Lamb brain, grilled (without salt or fat)","Cervelle d’agneau, grillée (sans sel ni graisse)",Ovis aries,"Meat, poultry and their products",132,16.3,0.1,,7.4,2.06,0,0.325,1,wafct-2019
+wafct:07_052,"Lamb brain, stewed","Cervelle d’agneau, mijotée (ingrédient de recette)",Ovis aries,"Meat, poultry and their products",148,16.3,0.1,,9.1,2.55,0,0.3825,1,wafct-2019
+wafct:07_053,"Lamb liver, raw","Foie d’agneau, cru",Ovis aries,"Meat, poultry and their products",165,19.5,7,,6.6,2.48,0,0.1625,0,wafct-2019
+wafct:07_054,"Lamb liver, boiled, drained","Foie d’agneau, bouilli (sans sel), égoutté",Ovis aries,"Meat, poultry and their products",218,29.5,10.6,,6.4,2.4,0,0.1475,1,wafct-2019
+wafct:07_131,"Lamb liver, grilled (without salt or fat)","Foie d’agneau, grillé (sans sel ni graisse)",Ovis aries,"Meat, poultry and their products",189,24,8.6,,6.5,2.44,0,0.17,1,wafct-2019
+wafct:07_132,"Lamb liver, stewed","Foie d’agneau, mijoté (ingrédient de recette)",Ovis aries,"Meat, poultry and their products",220,26,9.3,,8.8,3.3,0,0.21749999999999997,1,wafct-2019
+wafct:07_072,"Lamb/mutton meat, lean, ca. 10% fat, raw","Viande d’agneau/mouton, maigre, environ 10% de matière grasse, crue",Ovis aries,"Meat, poultry and their products",139,19.3,0,,6.9,3.22,0,0.20750000000000002,0,wafct-2019
+wafct:07_126,"Lamb/mutton meat, lean, ca. 10% fat, boiled, drained","Viande d’agneau/mouton, maigre, environ 10% de matière grasse, bouillie (sans sel), égouttée",Ovis aries,"Meat, poultry and their products",177,28.7,0,,6.9,3.21,0,0.1875,1,wafct-2019
+wafct:07_127,"Lamb/mutton meat, lean, ca. 10% fat, grilled (without salt or fat)","Viande d’agneau/mouton, maigre, environ 10% de matière grasse, grillée (sans sel ni graisse)",Ovis aries,"Meat, poultry and their products",174,27.9,0,,6.9,3.21,0,0.255,1,wafct-2019
+wafct:07_128,"Lamb/mutton meat, lean, ca. 10% fat, stewed","Viande d’agneau/mouton, maigre, environ 10% de matière grasse, mijotée (ingrédient de recette)",Ovis aries,"Meat, poultry and their products",221,30.6,0,,11,5.12,0,0.33,1,wafct-2019
+wafct:07_004,"Lamb/mutton meat, moderately fat, ca. 20% fat, raw","Viande d’agneau/mouton, teneur modérée en matière grasse (env. 20%), crue",Ovis aries,"Meat, poultry and their products",255,16.3,0,,21.1,10.1,0,0.1525,0,wafct-2019
+wafct:07_049,"Lamb/mutton meat, moderately fat, ca. 20% fat, boiled, drained","Viande d’agneau/mouton, teneur modérée en matière grasse (env. 20%), bouillie (sans sel), égouttée",Ovis aries,"Meat, poultry and their products",324,24.3,0,,25.1,12,0,0.1375,1,wafct-2019
+wafct:07_050,"Lamb/mutton meat, moderately fat, ca. 20% fat, grilled (without salt or fat)","Viande d’agneau/mouton, teneur modérée en matière grasse (env. 20%), grillée (sans sel ni graisse)",Ovis aries,"Meat, poultry and their products",318,23.6,0,,24.8,11.9,0,0.1875,1,wafct-2019
+wafct:07_125,"Lamb/mutton meat, moderately fat, ca. 20% fat, stewed","Viande d’agneau/mouton, teneur modérée en matière grasse (env. 20%), mijotée (ingrédient de recette)",Ovis aries,"Meat, poultry and their products",405,25.9,0,,33.5,16,0,0.2425,1,wafct-2019
+wafct:07_079,"Larvae, fresh, raw","Larves, fraîches, crues",Various species,"Meat, poultry and their products",190,15.2,2.8,,12.6,,2.4,0.17250000000000001,0,wafct-2019
+wafct:07_067,"Ostrich meat, raw","Viande d’autruche, crue",Struthio camelus,"Meat, poultry and their products",105,21,0,,2.4,0.57,0,0.21000000000000002,0,wafct-2019
+wafct:07_099,"Ostrich meat, boiled, drained","Viande d’autruche, bouillie (sans sel), égouttée",Struthio camelus,"Meat, poultry and their products",139,27.6,0,,3.1,0.75,0,0.10999999999999999,1,wafct-2019
+wafct:07_100,"Ostrich meat, grilled (without salt or fat)","Viande d’autruche, grillée (sans sel ni graisse)",Struthio camelus,"Meat, poultry and their products",135,26.9,0,,3,0.73,0,0.27,1,wafct-2019
+wafct:07_101,"Ostrich meat, stewed","Viande d’autruche, mijotée (ingrédient de recette)",Struthio camelus,"Meat, poultry and their products",150,30,0,,3.4,0.82,0,0.3,1,wafct-2019
+wafct:07_005,"Pork meat, fatty, ca. 40% fat, raw","Viande de porc, grasse, environ 40% de matière grasse, crue",Sus domesticus,"Meat, poultry and their products",392,12.5,0,,38,14,0,0.10500000000000001,0,wafct-2019
+wafct:07_059,"Pork meat, fatty, ca. 40% fat, boiled, drained","Viande de porc, grasse, environ 40% de matière grasse, bouillie (sans sel), égouttée",Sus domesticus,"Meat, poultry and their products",540,19.2,0,,51.5,19,0,0.07250000000000001,1,wafct-2019
+wafct:07_060,"Pork meat, fatty, ca. 40% fat, grilled (without salt or fat)","Viande de porc, grasse, environ 40% de matière grasse, grillée (sans sel ni graisse)",Sus domesticus,"Meat, poultry and their products",510,17.9,0,,48.7,18,0,0.135,1,wafct-2019
+wafct:07_123,"Pork meat, fatty, ca. 40% fat, stewed","Viande de porc, grasse, environ 40% de matière grasse, mijotée (ingrédient de recette)",Sus domesticus,"Meat, poultry and their products",603,19.2,0,,58.5,21.5,0,0.1625,1,wafct-2019
+wafct:07_071,"Pork meat, lean, ca. 10% fat, raw","Viande de porc, maigre, environ 10% de matière grasse, crue",Sus domesticus,"Meat, poultry and their products",152,18.6,0,,8.6,3.07,0,0.20750000000000002,0,wafct-2019
+wafct:07_119,"Pork meat, lean, ca. 10% fat, boiled, drained","Viande de porc, maigre, environ 10% de matière grasse, bouillie (sans sel), égouttée",Sus domesticus,"Meat, poultry and their products",199,28.5,0,,9.5,3.38,0,0.14500000000000002,1,wafct-2019
+wafct:07_120,"Pork meat, lean, ca. 10% fat, grilled (without salt or fat)","Viande de porc, maigre, environ 10% de matière grasse, grillée (sans sel ni graisse)",Sus domesticus,"Meat, poultry and their products",190,26.5,0,,9.3,3.32,0,0.2675,1,wafct-2019
+wafct:07_121,"Pork meat, lean, ca. 10% fat, stewed","Viande de porc, maigre, environ 10% de matière grasse, mijotée (ingrédient de recette)",Sus domesticus,"Meat, poultry and their products",202,24.7,0,,11.5,4.1,0,0.2775,1,wafct-2019
+wafct:07_006,"Pork meat, moderately fat, ca. 20% fat, raw","Viande de porc, teneur modérée en matière grasse (env. 20%), crue",Sus domesticus,"Meat, poultry and their products",277,16.3,0,,23.5,9,0,0.1375,0,wafct-2019
+wafct:07_057,"Pork meat, moderately fat, ca. 20% fat, boiled, drained","Viande de porc, teneur modérée en matière grasse (env. 20%), bouillie (sans sel), égouttée",Sus domesticus,"Meat, poultry and their products",362,25,0,,29.2,11.2,0,0.095,1,wafct-2019
+wafct:07_058,"Pork meat, moderately fat, ca. 20% fat, grilled (without salt or fat)","Viande de porc, teneur modérée en matière grasse (env. 20%), grillée (sans sel ni graisse)",Sus domesticus,"Meat, poultry and their products",345,23.2,0,,28,10.7,0,0.1775,1,wafct-2019
+wafct:07_122,"Pork meat, moderately fat, ca. 20% fat, stewed","Viande de porc, teneur modérée en matière grasse (env. 20%), mijotée (ingrédient de recette)",Sus domesticus,"Meat, poultry and their products",425,25,0,,36.2,13.9,0,0.21250000000000002,1,wafct-2019
+wafct:07_007,"Rabbit meat, raw","Viande de lapin, crue",Oryctolagus cuniculus,"Meat, poultry and their products",142,21.3,0,,6.3,2.47,0,0.13,0,wafct-2019
+wafct:07_124,"Rabbit meat, boiled, drained","Viande de lapin, bouillie (sans sel), égouttée",Oryctolagus cuniculus,"Meat, poultry and their products",177,30.9,0,,6,2.34,0,0.075,1,wafct-2019
+wafct:07_062,"Rabbit meat, grilled (without salt or fat)","Viande de lapin, grillée (sans sel ni graisse)",Oryctolagus cuniculus,"Meat, poultry and their products",177,30.9,0,,6,2.34,0,0.15,1,wafct-2019
+wafct:07_061,"Rabbit meat, stewed","Viande de lapin, mijotée (ingrédient de recette)",Oryctolagus cuniculus,"Meat, poultry and their products",205,30.9,0,,9.1,3.58,0,0.1875,1,wafct-2019
+wafct:07_083,"Snail, raw","snail igbin ejuna giant african snail Escargot, cru",Achatina spp.,"Meat, poultry and their products",88,14.6,3.6,,1.7,0.39,0,0.34500000000000003,0,wafct-2019
+wafct:07_084,"Snail, cooked","snail igbin ejuna giant african snail cooked Escargot, cuit",Achatina spp.,"Meat, poultry and their products",138,25.2,8.3,,0.5,0.08,0,0.1375,0,wafct-2019
+wafct:07_066,"Springbok meat, raw","Viande de springbok, crue",Antidorcas marsupialis,"Meat, poultry and their products",111,23.1,0,,2,0.83,0,0.1275,0,wafct-2019
+wafct:07_096,"Springbok meat, boiled, drained","Viande de springbok, bouillie (sans sel), égouttée",Antidorcas marsupialis,"Meat, poultry and their products",185,38.5,0,,3.4,1.38,0,0.1275,1,wafct-2019
+wafct:07_097,"Springbok meat, grilled (without salt or fat)","Viande de springbok, grillée (sans sel ni graisse)",Antidorcas marsupialis,"Meat, poultry and their products",154,32.1,0,,2.8,1.15,0,0.15,1,wafct-2019
+wafct:07_098,"Springbok meat, stewed","Viande de springbok, mijotée (ingrédient de recette)",Antidorcas marsupialis,"Meat, poultry and their products",156,32.6,0,,2.9,1.17,0,0.18,1,wafct-2019
+wafct:07_082,"Termite, dried, raw","Termite, séchée, crue",Macrotermes spp.,"Meat, poultry and their products",518,34.1,8.7,,37.7,17.4,3.8,0.1825,0,wafct-2019
+wafct:07_081,"Termite, fresh, raw","Termite, fraîche, crue",Various species,"Meat, poultry and their products",153,11.9,3.2,,9.7,4.27,2.7,0.125,0,wafct-2019
+wafct:08_005,"Egg, chicken, local breed, raw","Œuf, poule, race locale, cru",Gallus gallus domesticus,Eggs and their products,148,12.7,0.8,,10.4,3.03,0,0.41250000000000003,0,wafct-2019
+wafct:08_010,"Egg, chicken, local breed, boiled (without salt)","Œuf, poule, race locale, bouilli (sans sel)",Gallus gallus,Eggs and their products,147.6,12.7,0.8,,10.4,3.03,0,0.3925,1,wafct-2019
+wafct:08_001,"Egg, chicken, raw","Œuf, poule, cru",Gallus gallus domesticus,Eggs and their products,150,13.5,0.2,,10.6,2.89,0,0.41250000000000003,0,wafct-2019
+wafct:08_002,"Egg, chicken, boiled (without salt)","Œuf, poule, bouilli (sans sel)",Gallus gallus domesticus,Eggs and their products,150.2,13.5,0.2,,10.6,2.89,0,0.3925,1,wafct-2019
+wafct:08_003,"Egg, chicken, fried in oil","Œuf, poule, frit dans l’huile",Gallus gallus domesticus,Eggs and their products,197,13.6,2,,14.9,3,0,0.405,0,wafct-2019
+wafct:08_009,"Egg, duck, raw","Œuf, canne, cru",Anas platyrhynchos,Eggs and their products,179,11.8,2.4,,13.6,3.41,0,0.28250000000000003,0,wafct-2019
+wafct:08_014,"Egg, duck, boiled (without salt)","Œuf, canne, bouilli (sans sel)",Anas platyrhynchos,Eggs and their products,179.2,11.8,2.4,,13.6,3.41,0,0.2675,1,wafct-2019
+wafct:08_008,"Egg, guinea fowl, raw","Œuf, pintade, cru",Numida meleagris,Eggs and their products,184,12.9,2.2,,13.8,3.4,0,0.625,0,wafct-2019
+wafct:08_013,"Egg, guinea fowl, boiled (without salt)","Œuf, pintade, bouilli (sans sel)",Numida meleagris,Eggs and their products,184.60000000000002,12.9,2.2,,13.8,3.4,0,0.595,1,wafct-2019
+wafct:08_006,"Egg, quail, raw","Œuf, caille, cru",Coturnix japonica,Eggs and their products,180,15.6,2.7,,11.9,2.93,0,0.4475,0,wafct-2019
+wafct:08_011,"Egg, quail, boiled (without salt)","Œuf, caille, bouilli (sans sel)",Coturnix japonica,Eggs and their products,180.3,15.6,2.7,,11.9,2.93,0,0.42500000000000004,1,wafct-2019
+wafct:08_007,"Egg, turkey, raw","Œuf, dinde, cru",Meleagris gallopavo,Eggs and their products,184,11.5,5.1,,13,3.97,0,0.5075000000000001,0,wafct-2019
+wafct:08_012,"Egg, turkey, boiled (without salt)","Œuf, dinde, bouilli (sans sel)",Meleagris gallopavo,Eggs and their products,183.4,11.5,5.1,,13,3.97,0,0.48250000000000004,1,wafct-2019
+wafct:08_004,"Omelette, from chicken egg","Omelette, d’œufs de poule",,Eggs and their products,150,10.6,0.6,,11.7,2.95,0,0.3875,0,wafct-2019
+wafct:09_007,"African carp, fillet, raw","Carpe d’Afrique, filet, cru",Labeo spp.,Fish and its products,90,18.2,0,,1.9,0.51,0,0.1275,0,wafct-2019
+wafct:09_061,"African carp, fillet, boiled","Carpe d’Afrique, filet, bouilli (ingrédient de recette)",Labeo spp.,Fish and its products,108.7,22,0,,2.3,0.62,0,0.155,1,wafct-2019
+wafct:09_009,"African carp, fillet, grilled (without salt or fat)","Carpe d’Afrique, filet, grillé (sans sel ni graisse)",Labeo spp.,Fish and its products,129.9,26.4,0,,2.7,0.74,0,0.1575,1,wafct-2019
+wafct:09_008,"African carp, fillet, steamed (without salt)","Carpe d’Afrique, filet, cuit à la vapeur (sans sel)",Labeo spp.,Fish and its products,108.7,22,0,,2.3,0.62,0,0.13,1,wafct-2019
+wafct:09_001,"Anchovy, fillet, raw","Anchois, filet, cru",Engraulis encrasicolus,Fish and its products,116,18.9,0,,4.4,1.36,0,0.395,0,wafct-2019
+wafct:09_062,"Anchovy, fillet, boiled","Anchois, filet, bouilli (ingrédient de recette)",Engraulis encrasicolus,Fish and its products,138.9,22.8,0,,5.3,1.64,0,0.475,1,wafct-2019
+wafct:09_011,"Anchovy, fillet, grilled (without salt or fat)","Anchois, filet, grillé (sans sel ni graisse)",Engraulis encrasicolus,Fish and its products,167.2,27.4,0,,6.4,1.97,0,0.48750000000000004,1,wafct-2019
+wafct:09_010,"Anchovy, fillet, steamed (without salt)","Anchois, filet, cuit à la vapeur (sans sel)",Engraulis encrasicolus,Fish and its products,138.9,22.8,0,,5.3,1.64,0,0.405,1,wafct-2019
+wafct:09_048,"Atlantic cod (Northeast Atlantic), fillet, raw","Morue de l’Atlantique Nord-Est, filet, cru",Gadus morhua,Fish and its products,80,18.6,0,,0.6,0.1,0,0.2,0,wafct-2019
+wafct:09_068,"Atlantic cod (Northeast Atlantic), fillet, boiled","Morue de l’Atlantique Nord-Est, filet, bouilli (ingrédient de recette)",Gadus morhua,Fish and its products,98,22.7,0,,0.8,0.13,0,0.245,1,wafct-2019
+wafct:09_067,"Atlantic cod (Northeast Atlantic), fillet, grilled (without salt or fat)","Morue de l’Atlantique Nord-Est, filet, grillé (sans sel ni graisse)",Gadus morhua,Fish and its products,106.4,24.8,0,,0.8,0.14,0,0.22749999999999998,1,wafct-2019
+wafct:09_066,"Atlantic cod (Northeast Atlantic), fillet, steamed (without salt)","Morue de l’Atlantique Nord-Est, filet, cuit à la vapeur (sans sel)",Gadus morhua,Fish and its products,98,22.7,0,,0.8,0.13,0,0.20750000000000002,1,wafct-2019
+wafct:09_049,"Atlantic horse mackerel, wild, fillet without skin, raw","Chinchard atlantique, sauvage, filet sans peau, cru",Trachurus trachurus,Fish and its products,123,18.6,0,,5.4,1.67,0,0.1625,0,wafct-2019
+wafct:09_072,"Atlantic horse mackerel, wild, fillet without skin, boiled","Chinchard atlantique, sauvage, filet sans peau, bouilli (ingrédient de recette)",Trachurus trachurus,Fish and its products,175.7,26.6,0,,7.7,2.38,0,0.22999999999999998,1,wafct-2019
+wafct:09_071,"Atlantic horse mackerel, wild, fillet without skin, grilled (without salt or fat)","Chinchard atlantique, sauvage, filet sans peau, grillé (sans sel ni graisse)",Trachurus trachurus,Fish and its products,138.2,23.3,0,,5,1.54,0,0.17250000000000001,1,wafct-2019
+wafct:09_070,"Atlantic horse mackerel, wild, fillet without skin, steamed (without salt)","Chinchard atlantique, sauvage, filet sans peau, cuit à la vapeur (sans sel)",Trachurus trachurus,Fish and its products,148.70000000000002,26.6,0,,4.7,1.45,0,0.195,1,wafct-2019
+wafct:09_002,"Barracuda, fillet, raw","Barracuda, filet, cru",Sphyraena spp.,Fish and its products,84,19,0,,0.9,0.3,0,0.0975,0,wafct-2019
+wafct:09_063,"Barracuda, fillet, boiled","Barracuda, filet, bouilli (ingrédient de recette)",Sphyraena spp.,Fish and its products,100.6,22.9,0,,1,0.36,0,0.1175,1,wafct-2019
+wafct:09_014,"Barracuda, fillet, grilled (without salt or fat)","Barracuda, filet, grillé (sans sel ni graisse)",Sphyraena spp.,Fish and its products,120.8,27.5,0,,1.2,0.43,0,0.12,1,wafct-2019
+wafct:09_013,"Barracuda, fillet, steamed (without salt)","Barracuda, filet, cuit à la vapeur (sans sel)",Sphyraena spp.,Fish and its products,100.6,22.9,0,,1,0.36,0,0.1,1,wafct-2019
+wafct:09_015,"Bayad, fillet, raw","Bayad, filet, cru",Bagrus spp.,Fish and its products,79,17.1,0,,1.2,0.34,0,0.1275,0,wafct-2019
+wafct:09_064,"Bayad, fillet, boiled","Bayad, filet, bouilli (ingrédient de recette)",Bagrus spp.,Fish and its products,95,20.6,0,,1.4,0.41,0,0.1525,1,wafct-2019
+wafct:09_017,"Bayad, fillet, grilled (without salt or fat)","Bayad, filet, grillé (sans sel ni graisse)",Bagrus spp.,Fish and its products,114.5,24.8,0,,1.7,0.5,0,0.1575,1,wafct-2019
+wafct:09_016,"Bayad, fillet, steamed (without salt)","Bayad, filet, cuit à la vapeur (sans sel)",Bagrus spp.,Fish and its products,95,20.6,0,,1.4,0.41,0,0.13,1,wafct-2019
+wafct:09_021,"Carp, fillet, raw","Carpe, filet, cru",Cyprinus carpio,Fish and its products,117,17.6,0,,5.2,1.82,0,0.06,0,wafct-2019
+wafct:09_065,"Carp, fillet, boiled","Carpe, filet, bouilli (ingrédient de recette)",Cyprinus carpio,Fish and its products,141.5,21.2,0,,6.3,2.19,0,0.07250000000000001,1,wafct-2019
+wafct:09_023,"Carp, fillet, grilled (without salt or fat)","Carpe, filet, grillé (sans sel ni graisse)",Cyprinus carpio,Fish and its products,141.6,25.5,0,,4.4,1.54,0,0.07250000000000001,1,wafct-2019
+wafct:09_022,"Carp, fillet, steamed (without salt)","Carpe, filet, cuit à la vapeur (sans sel)",Cyprinus carpio,Fish and its products,128.9,21.2,0,,4.9,1.69,0,0.06,1,wafct-2019
+wafct:09_018,"Catfish, fillet, raw","Poisson-chat, filet, cru",Synodontis spp.,Fish and its products,101,16.5,0,,3.8,1.38,0,0.12,0,wafct-2019
+wafct:09_108,"Catfish, fillet, boiled","Poisson-chat, filet, bouilli (ingrédient de recette)",Synodontis spp.,Fish and its products,121,19.9,0,,4.6,1.66,0,0.14500000000000002,1,wafct-2019
+wafct:09_020,"Catfish, fillet, grilled (without salt or fat)","Poisson-chat, filet, grillé (sans sel ni graisse)",Synodontis spp.,Fish and its products,145.5,24,0,,5.5,2,0,0.1475,1,wafct-2019
+wafct:09_019,"Catfish, fillet, steamed (without salt)","Poisson-chat, filet, cuit à la vapeur (sans sel)",Synodontis spp.,Fish and its products,121,19.9,0,,4.6,1.66,0,0.1225,1,wafct-2019
+wafct:09_055,"Crab, flesh (body and claw), raw","Crabe, chair (corps et pinces), cru",Callinectes spp.,Fish and its products,93,16,4.4,,1.3,0.28,0,0.7324999999999999,0,wafct-2019
+wafct:09_098,"Crab, flesh (body and claw), boiled","Crabe, chair (corps et pinces), bouilli (ingrédient de recette)",Callinectes spp.,Fish and its products,106.7,18.3,5,,1.5,0.32,0,0.8425,1,wafct-2019
+wafct:09_097,"Crab, flesh (body and claw), grilled (without salt or fat)","Crabe, chair (corps et pinces), grillé (sans sel ni graisse)",Callinectes spp.,Fish and its products,108.30000000000001,18.6,5.1,,1.5,0.33,0,0.725,1,wafct-2019
+wafct:09_096,"Crab, flesh (body and claw), steamed (without salt)","Crabe, chair (corps et pinces), cuit à la vapeur (sans sel)",Callinectes spp.,Fish and its products,106.7,18.3,5,,1.5,0.32,0,0.715,1,wafct-2019
+wafct:09_053,"Fish, whole, dried","Poisson, entier, séché",Various species,Fish and its products,316,60.4,0,,8.2,2.97,0,0.3675,0,wafct-2019
+wafct:09_003,"Mackerel, fillet, raw","Maquereau, filet, cru",Scomberomorus spp.,Fish and its products,120,19.6,0,,4.6,1.97,0,0.325,0,wafct-2019
+wafct:09_069,"Mackerel, fillet, boiled","Maquereau, filet, bouilli (ingrédient de recette)",Scomberomorus spp.,Fish and its products,171.4,28,0,,6.6,2.82,0,0.46499999999999997,1,wafct-2019
+wafct:09_025,"Mackerel, fillet, grilled (without salt or fat)","Maquereau, filet, grillé (sans sel ni graisse)",Scomberomorus spp.,Fish and its products,150.2,24.5,0,,5.8,2.46,0,0.34500000000000003,1,wafct-2019
+wafct:09_024,"Mackerel, fillet, steamed (without salt)","Maquereau, filet, cuit à la vapeur (sans sel)",Scomberomorus spp.,Fish and its products,171.4,28,0,,6.6,2.82,0,0.395,1,wafct-2019
+wafct:09_050,"Mahi mahi, fillet, raw","Mahi mahi, filet, cru",Coryphaena hippurus,Fish and its products,100,22.1,0,,1.3,0.44,0,0.09,0,wafct-2019
+wafct:09_075,"Mahi mahi, fillet, boiled","Mahi mahi, filet, bouilli (ingrédient de recette)",Coryphaena hippurus,Fish and its products,120.80000000000001,26.6,0,,1.6,0.53,0,0.10999999999999999,1,wafct-2019
+wafct:09_074,"Mahi mahi, fillet, grilled (without salt or fat)","Mahi mahi, filet, grillé (sans sel ni graisse)",Coryphaena hippurus,Fish and its products,145.1,32,0,,1.9,0.64,0,0.11249999999999999,1,wafct-2019
+wafct:09_073,"Mahi mahi, fillet, steamed (without salt)","Mahi mahi, filet, cuit à la vapeur (sans sel)",Coryphaena hippurus,Fish and its products,120.80000000000001,26.6,0,,1.6,0.53,0,0.0925,1,wafct-2019
+wafct:09_051,"Mola carplet, small whole fish, viscera, fins and scales removed, raw","Mola carplet, petit poisson entier, vidé et écaillé, cru",Amblypharyngodon mola,Fish and its products,105,16,0,,4.6,1.53,0,0.08750000000000001,0,wafct-2019
+wafct:09_078,"Mola carplet, small whole fish, viscera, fins and scales removed, boiled","Mola carplet, petit poisson entier, vidé et écaillé, bouilli (ingrédient de recette)",Amblypharyngodon mola,Fish and its products,126.7,19.3,0,,5.5,1.84,0,0.10500000000000001,1,wafct-2019
+wafct:09_077,"Mola carplet, small whole fish, viscera, fins and scales removed, grilled (without salt or fat)","Mola carplet, petit poisson entier, vidé et écaillé, grillé (sans sel ni graisse)",Amblypharyngodon mola,Fish and its products,152.2,23.2,0,,6.6,2.22,0,0.10749999999999998,1,wafct-2019
+wafct:09_076,"Mola carplet, small whole fish, viscera, fins and scales removed, steamed (without salt)","Mola carplet, petit poisson entier, vidé et écaillé, cuit à la vapeur (sans sel)",Amblypharyngodon mola,Fish and its products,126.7,19.3,0,,5.5,1.84,0,0.09,1,wafct-2019
+wafct:09_026,"Mormyrid, fillet, raw","Mormiridé, filet, cru",Mormyrus spp.,Fish and its products,84,18.2,0,,1.3,0.4,0,0.10250000000000001,0,wafct-2019
+wafct:09_079,"Mormyrid, fillet, boiled","Mormiridé, filet, bouilli (ingrédient de recette)",Mormyrus spp.,Fish and its products,102,21.9,0,,1.6,0.49,0,0.1225,1,wafct-2019
+wafct:09_028,"Mormyrid, fillet, grilled (without salt or fat)","Mormiridé, filet, grillé (sans sel ni graisse)",Mormyrus spp.,Fish and its products,122.3,26.3,0,,1.9,0.59,0,0.125,1,wafct-2019
+wafct:09_027,"Mormyrid, fillet, steamed (without salt)","Mormiridé, filet, cuit à la vapeur (sans sel)",Mormyrus spp.,Fish and its products,102,21.9,0,,1.6,0.49,0,0.10250000000000001,1,wafct-2019
+wafct:09_052,"Mullet, fillet, raw","Mulet, filet, cru",Mugil cephalus,Fish and its products,94,20.5,0,,1.3,0.46,0,0.165,0,wafct-2019
+wafct:09_085,"Mullet, fillet, boiled","Mulet, filet, bouilli (ingrédient de recette)",Mugil cephalus,Fish and its products,113.2,24.7,0,,1.6,0.55,0,0.2,1,wafct-2019
+wafct:09_084,"Mullet, fillet, grilled (without salt or fat)","Mulet, filet, grillé (sans sel ni graisse)",Mugil cephalus,Fish and its products,135.9,29.7,0,,1.9,0.66,0,0.2025,1,wafct-2019
+wafct:09_083,"Mullet, fillet, steamed (without salt)","Mulet, filet, cuit à la vapeur (sans sel)",Mugil cephalus,Fish and its products,113.2,24.7,0,,1.6,0.55,0,0.17,1,wafct-2019
+wafct:09_060,"North African catfish, fillet, raw","Poisson-chat d’Afrique du Nord, filet, cru",Clarias gariepinus,Fish and its products,103,17.8,0,,3.5,1.19,0,0.10250000000000001,0,wafct-2019
+wafct:09_082,"North African catfish, fillet, boiled","Poisson-chat d’Afrique du Nord, filet, bouilli (ingrédient de recette)",Clarias gariepinus,Fish and its products,123.80000000000001,21.5,0,,4.2,1.43,0,0.1225,1,wafct-2019
+wafct:09_081,"North African catfish, fillet, grilled (without salt or fat)","Poisson-chat d’Afrique du Nord, filet, grillé (sans sel ni graisse)",Clarias gariepinus,Fish and its products,149.1,25.8,0,,5.1,1.72,0,0.1275,1,wafct-2019
+wafct:09_080,"North African catfish, fillet, steamed (without salt)","Poisson-chat d’Afrique du Nord, filet, cuit à la vapeur (sans sel)",Clarias gariepinus,Fish and its products,123.80000000000001,21.5,0,,4.2,1.43,0,0.10500000000000001,1,wafct-2019
+wafct:09_032,"Perch, Nile, fillet, raw","Perche du Nil, filet, cru",Lates niloticus,Fish and its products,93,20.5,0,,1.2,0.34,0,0.2425,0,wafct-2019
+wafct:09_086,"Perch, Nile, fillet, boiled","Perche du Nil, filet, bouilli (ingrédient de recette)",Lates niloticus,Fish and its products,111.39999999999999,24.7,0,,1.4,0.41,0,0.29250000000000004,1,wafct-2019
+wafct:09_034,"Perch, Nile, fillet, grilled (without salt or fat)","Perche du Nil, filet, grillé (sans sel ni graisse)",Lates niloticus,Fish and its products,134.1,29.7,0,,1.7,0.49,0,0.2975,1,wafct-2019
+wafct:09_033,"Perch, Nile, fillet, steamed (without salt)","Perche du Nil, filet, cuit à la vapeur (sans sel)",Lates niloticus,Fish and its products,111.39999999999999,24.7,0,,1.4,0.41,0,0.2475,1,wafct-2019
+wafct:09_004,"Sardine, fillet, raw","Sardine, filet, cru",Sardinella spp.,Fish and its products,106,19.8,0,,3,1.22,0,0.135,0,wafct-2019
+wafct:09_087,"Sardine, fillet, boiled","Sardine, filet, bouilli (ingrédient de recette)",Sardinella spp.,Fish and its products,127.6,23.8,0,,3.6,1.47,0,0.1625,1,wafct-2019
+wafct:09_036,"Sardine, fillet, grilled (without salt or fat)","Sardine, filet, grillé (sans sel ni graisse)",Sardinella spp.,Fish and its products,154.4,28.7,0,,4.4,1.77,0,0.165,1,wafct-2019
+wafct:09_035,"Sardine, fillet, steamed (without salt)","Sardine, filet, cuit à la vapeur (sans sel)",Sardinella spp.,Fish and its products,127.6,23.8,0,,3.6,1.47,0,0.1375,1,wafct-2019
+wafct:09_056,"Sea snail/whelk, flesh, raw","Escargot de mer/bulot, cru",Family: Buccinidae,Fish and its products,130,23.8,7.8,,0.4,0.06,0,0.515,0,wafct-2019
+wafct:09_101,"Sea snail/whelk, boiled","Escargot de mer/bulot, bouilli (ingrédient de recette)",Family: Buccinidae,Fish and its products,156.5,28.7,9.3,,0.5,0.07,0,0.62,1,wafct-2019
+wafct:09_100,"Sea snail/whelk, grilled (without salt or fat)","Escargot de mer/bulot, grillé (sans sel ni graisse)",Family: Buccinidae,Fish and its products,188.60000000000002,34.6,11.2,,0.6,0.08,0,0.635,1,wafct-2019
+wafct:09_099,"Sea snail/whelk, steamed (without salt)","Escargot de mer/bulot, cuit à la vapeur (sans sel)",Family: Buccinidae,Fish and its products,156.5,28.7,9.3,,0.5,0.07,0,0.5275,1,wafct-2019
+wafct:09_038,"Shiny-nose, fillet, raw","Capitaine de mer, filet, cru",Polydactylus spp.,Fish and its products,94,21.1,0,,1.1,0.4,0,0.13,0,wafct-2019
+wafct:09_088,"Shiny-nose, fillet, boiled","Capitaine de mer, filet, bouilli (ingrédient de recette)",Polydactylus spp.,Fish and its products,113.7,25.5,0,,1.3,0.48,0,0.1575,1,wafct-2019
+wafct:09_040,"Shiny-nose, fillet, grilled (without salt or fat)","Capitaine de mer, filet, grillé (sans sel ni graisse)",Polydactylus spp.,Fish and its products,137.2,30.7,0,,1.6,0.58,0,0.16,1,wafct-2019
+wafct:09_039,"Shiny-nose, fillet, steamed (without salt)","Capitaine de mer, filet, cuit à la vapeur (sans sel)",Polydactylus spp.,Fish and its products,113.7,25.5,0,,1.3,0.48,0,0.135,1,wafct-2019
+wafct:09_057,"Shrimp (crayfish), whole, dried","crayfish dried crayfish ground crayfish Crevette, entière, séchée",Families: Palaemonidae/Penaeidae,Fish and its products,322,63.1,7.9,,4.2,1.83,0,3.245,0,wafct-2019
+wafct:09_058,"Shrimp, palaemonid, flesh, raw","Crevette, palaemonidae, chair, crue",Family: Palaemonidae,Fish and its products,103,22.2,0.3,,1.4,0.36,0,0.395,0,wafct-2019
+wafct:09_104,"Shrimp, palaemonid, flesh, boiled","Crevette, palaemonidae, chair, bouillie (ingrédient de recette)",Family: Palaemonidae,Fish and its products,123.3,26.7,0.3,,1.7,0.43,0,0.47750000000000004,1,wafct-2019
+wafct:09_103,"Shrimp, palaemonid, flesh, grilled (without salt or fat)","Crevette, palaemonidae, chair, grillée (sans sel ni graisse)",Family: Palaemonidae,Fish and its products,118.80000000000001,25.8,0.3,,1.6,0.41,0,0.39,1,wafct-2019
+wafct:09_102,"Shrimp, palaemonid, flesh, steamed (without salt)","Crevette, palaemonidae, chair, cuite à la vapeur (sans sel)",Family: Palaemonidae,Fish and its products,123.3,26.7,0.3,,1.7,0.43,0,0.405,1,wafct-2019
+wafct:09_059,"Shrimp, penaeid, flesh, raw","Crevette, penaeidae, chair, crue",Family: Penaeidae,Fish and its products,98,21.6,1,,0.9,0.2,0,0.315,0,wafct-2019
+wafct:09_107,"Shrimp, penaeid, flesh, boiled","Crevette, penaeidae, chair, bouillie (ingrédient de recette)",Family: Penaeidae,Fish and its products,118.2,26,1.3,,1,0.24,0,0.38,1,wafct-2019
+wafct:09_106,"Shrimp, penaeid, flesh, grilled (without salt or fat)","Crevette, penaeidae, chair, grillée (sans sel ni graisse)",Family: Penaeidae,Fish and its products,114.2,25.1,1.2,,1,0.23,0,0.3125,1,wafct-2019
+wafct:09_105,"Shrimp, penaeid, flesh, steamed (without salt)","Crevette, penaeidae, chair, cuite à la vapeur (sans sel)",Family: Penaeidae,Fish and its products,118.2,26,1.3,,1,0.24,0,0.3225,1,wafct-2019
+wafct:09_041,"Tilapia, fillet, raw","Tilapia, filet, cru",Oreochromis spp./Tilappia spp.,Fish and its products,88,18.6,0,,1.5,0.49,0,0.16,0,wafct-2019
+wafct:09_089,"Tilapia, fillet, boiled","Tilapia, filet, bouilli (ingrédient de recette)",Oreochromis spp./Tilappia spp.,Fish and its products,100.89999999999999,21.4,0,,1.7,0.56,0,0.185,1,wafct-2019
+wafct:09_043,"Tilapia, fillet, grilled (without salt or fat)","Tilapia, filet, grillé (sans sel ni graisse)",Oreochromis spp./Tilappia spp.,Fish and its products,111.5,23.6,0,,1.9,0.62,0,0.17250000000000001,1,wafct-2019
+wafct:09_042,"Tilapia, fillet, steamed (without salt)","Tilapia, filet, cuit à la vapeur (sans sel)",Oreochromis spp./Tilappia spp.,Fish and its products,100.89999999999999,21.4,0,,1.7,0.56,0,0.1575,1,wafct-2019
+wafct:09_005,"Tuna, fillet, raw","Thon, filet, cru",Thunnus spp.,Fish and its products,118,23.6,0,,2.6,0.78,0,0.125,0,wafct-2019
+wafct:09_092,"Tuna, fillet, boiled","Thon, filet, bouilli (ingrédient de recette)",Thunnus spp.,Fish and its products,147.7,29.5,0,,3.3,0.98,0,0.155,1,wafct-2019
+wafct:09_091,"Tuna, fillet, grilled (without salt or fat)","Thon, filet, grillé (sans sel ni graisse)",Thunnus spp.,Fish and its products,159.1,31.9,0,,3.5,1.06,0,0.14250000000000002,1,wafct-2019
+wafct:09_090,"Tuna, fillet, steamed (without salt)","Thon, filet, cuit à la vapeur (sans sel)",Thunnus spp.,Fish and its products,147.7,29.5,0,,3.3,0.98,0,0.1325,1,wafct-2019
+wafct:09_054,"Venus clams, flesh, raw","Palourde vénus, chair, crue",Family: Veneridae,Fish and its products,61,9.2,3.5,,1.2,0.3,0,1.275,0,wafct-2019
+wafct:09_095,"Venus clams, flesh, boiled","Palourde vénus, chair, bouillie (ingrédient de recette)",Family: Veneridae,Fish and its products,97.5,14.6,5.5,,1.9,0.51,0,2.0225,1,wafct-2019
+wafct:09_094,"Venus clams, flesh, steamed (without salt)","Palourde vénus, chair, cuite à la vapeur (sans sel)",Family: Veneridae,Fish and its products,97.5,14.6,5.5,,1.9,0.51,0,1.7199999999999998,1,wafct-2019
+wafct:09_006,"White grouper, fillet, raw","Mérou blanc, filet, cru",Epinephelus spp.,Fish and its products,96,19.4,0,,2.1,0.87,0,0.1275,0,wafct-2019
+wafct:09_093,"White grouper, fillet, boiled","Mérou blanc, filet, bouilli (ingrédient de recette)",Epinephelus spp.,Fish and its products,115.7,23.3,0,,2.5,1.05,0,0.1525,1,wafct-2019
+wafct:09_047,"White grouper, fillet, grilled (without salt or fat)","Mérou blanc, filet, grillé (sans sel ni graisse)",Epinephelus spp.,Fish and its products,139,28,0,,3,1.26,0,0.1575,1,wafct-2019
+wafct:09_046,"White grouper, fillet, steamed (without salt)","Mérou blanc, filet, cuit à la vapeur (sans sel)",Epinephelus spp.,Fish and its products,115.7,23.3,0,,2.5,1.05,0,0.13,1,wafct-2019
+wafct:10_019,"Breastmilk, colostrum","Lait maternel, colostrum",,Milk and its products,59,1.9,7.1,,2.6,1.08,0,0.1175,0,wafct-2019
+wafct:10_004,"Breastmilk, mature",Lait maternel,,Milk and its products,70,1.1,8.4,,3.5,1.62,0,0.015,0,wafct-2019
+wafct:10_006,"Cheese, cheddar, from cow’s milk","Fromage, cheddar, de lait de vache",,Milk and its products,397,24.7,1.8,,32.3,20.6,0,1.2175,0,wafct-2019
+wafct:10_028,"Cheese, fresh curd, from cow’s milk","Fromage, blanc, frais, de lait de vache",,Milk and its products,219,15.5,3.8,,15.7,9.81,0,0.0775,0,wafct-2019
+wafct:10_008,"Cheese, Gouda, from cow’s milk","Fromage, Gouda, de lait de vache",,Milk and its products,380,23.9,0.3,,31.5,20.4,0,1.2775,0,wafct-2019
+wafct:10_007,"Cheese, hard type, from goat’s milk","Fromage, de chèvre, à pâte dure",,Milk and its products,447,30.5,1.2,,35.6,24.7,0,1.0574999999999999,0,wafct-2019
+wafct:10_027,"Cheese, processed, spreadable, shelf-stable (e.g. Laughing Cow)","Fromage, fondu à tartiner, longue conservation (ex. vache-qui-rit)",,Milk and its products,271,14.8,7,,20.4,13.2,0,2.5,0,wafct-2019
+wafct:10_009,"Cream, from cow’s milk, ca. 38% fat","Crème, de lait de vache, env. 38% de mat. grasse",,Milk and its products,351,2.1,3.5,,36.6,23.2,0,0.0975,0,wafct-2019
+wafct:10_010,"Cream, from cow’s milk, reduced fat, ca. 18% fat","Crème, de lait de vache, faible teneur en matière grasse (env. 18%)",,Milk and its products,183,2.7,4,,17.3,11,0,0.1225,0,wafct-2019
+wafct:10_018,"Milk, camel, fresh","Lait, de chamelle, frais",Camelus dromedarius,Milk and its products,58,3,2.4,,4,1.74,0,0.1525,0,wafct-2019
+wafct:10_013,"Milk, cow, reduced fat, 1.5–2% fat","Lait, de vache, partiellement écrémé, 1.5–2% de mat. grasse",Bos taurus,Milk and its products,48,3.4,4.6,,1.8,1.07,0,0.125,0,wafct-2019
+wafct:10_014,"Milk, cow, skimmed, 0.5% fat","Lait, de vache, écrémé, 0.5% de mat. grasse",Bos taurus,Milk and its products,37,3.5,4.6,,0.6,0.36,0,0.1575,0,wafct-2019
+wafct:10_022,"Milk, cow, whole, fermented","Lait, de vache, entier, fermenté",,Milk and its products,62,3.3,4,,3.6,2.2,0,0.10749999999999998,0,wafct-2019
+wafct:10_001,"Milk, cow, whole, pasteurized or UHT, 3.5% fat","Lait, de vache, entier, pasteurisé ou stérilisé UHT, 3.5% de mat. grasse",Bos taurus,Milk and its products,64,3.3,5.1,,3.4,2.11,0,0.11249999999999999,0,wafct-2019
+wafct:10_029,"Milk, cow, whole, raw, 4.5% fat","Lait, de vache, entier, cru, 4.5% de mat. grasse",Bos taurus,Milk and its products,78,3.1,5,,5,3.14,0,0.11249999999999999,0,wafct-2019
+wafct:10_003,"Milk, goat, fresh","Lait, de chèvre, frais",Capra aegagrus hircus,Milk and its products,83,3.9,4.9,,5.3,3.22,0,0.1375,0,wafct-2019
+wafct:10_024,"Milk, sheep or goat, fermented","Lait, de brebis ou de chèvre, fermenté",,Milk and its products,85,4.8,6.4,,4.5,2.72,0,0.12,0,wafct-2019
+wafct:10_023,"Milk, sheep, fresh","Lait, de brebis, frais",,Milk and its products,100,5.9,4.7,,6.4,4.11,0,0.1,0,wafct-2019
+wafct:10_026,"Yoghurt, from reduced fat/skimmed cow’s milk, sweetened/with fruit","Yaourt, de lait de vache partiellement écrémé, sucré/avec fruits",,Milk and its products,83,3.5,14,,1.4,0.9,0.2,0.16,0,wafct-2019
+wafct:10_025,"Yoghurt, plain, from reduced fat/skimmed cow’s milk","Yaourt, de lait de vache partiellement écrémé, nature",,Milk and its products,58,3.8,7.5,,1.4,0.89,0,0.165,0,wafct-2019
+wafct:10_005,"Yoghurt, plain, from whole cow’s milk","Yaourt, de lait de vache entier, nature",,Milk and its products,82,2.9,7.1,,4.7,2.98,0,0.07250000000000001,0,wafct-2019
+wafct:11_011,"Butter, from cow’s milk, salted","Beurre, de lait de vache, salé",,Fats and oils,739,1,0.2,,81.5,54.5,0,1.79,0,wafct-2019
+wafct:11_001,"Butter, from cow’s milk, unsalted","Beurre, de lait de vache, doux",,Fats and oils,743,1,1.2,,81.5,53.8,0,0.05499999999999999,0,wafct-2019
+wafct:11_004,"Palm oil, red","red palm oil epo pupa Huile de palme, rouge",Elaeis guineensis,Fats and oils,898,0,0,,99.8,48.5,0,0,0,wafct-2019
+wafct:11_008,"Shea butter, white","Beurre de karité, blanc",Butyrospermum parkii,Fats and oils,900,0,0,,100,46.5,0,0.027499999999999997,0,wafct-2019
+wafct:11_015,"Oil, from cow’s milk butter (ghee)","Beurre clarifié, de vache (ghee)",,Fats and oils,892,0.2,0,,99,63.7,0,0.005,0,wafct-2019
+wafct:11_014,Olive oil,Huile d’olive,Olea europaea,Fats and oils,900,0,0,,100,14.4,0,0.0025,0,wafct-2019
+wafct:13_016,"Allspice, ground","Piment de la Jamaïque, moulu",Pimenta dioica,Miscellaneous,348,6.1,50.5,,8.7,2.55,21.6,0.1925,0,wafct-2019
+wafct:13_004,Anis seed,"Anis, graine",Pimpinella anisum,Miscellaneous,384,17.6,35.4,,15.9,0.59,14.6,0.04,0,wafct-2019
+wafct:13_019,Baking soda (sodium bicarbonate),Bicarbonate de soude,,Miscellaneous,0,0,0,,0,0,0,68.5,0,wafct-2019
+wafct:13_020,"Calabash nutmeg, seed, dried","ehuru ariwo calabash nutmeg african nutmeg monodora Noix de muscade calebasse, graine, séchée",Monodora myristica,Miscellaneous,352,9.7,47,,9.9,,18,0.3275,0,wafct-2019
+wafct:13_006,"Chilli pepper, dried","dried chilli pepper cayenne Piment rouge, séché",Capsicum spp.,Miscellaneous,347,15,21.2,,15.5,2.41,31.1,0.05,0,wafct-2019
+wafct:13_007,"Cinnamon, ground","Cannelle, moulue",Cinnamomum verum,Miscellaneous,243,4,27.5,,1.2,0.35,53.1,0.025,0,wafct-2019
+wafct:13_008,"Cube, beef, dry","stock cube bouillon cube seasoning cube maggi Bouillon-cube, bœuf, sec",,Miscellaneous,190,15.5,15.5,,7.4,3.46,0,47.5,0,wafct-2019
+wafct:13_009,"Cumin, seed","Cumin, grains",Cuminum cyminum,Miscellaneous,385,13.9,17,,22.3,0.99,30.4,0.3125,0,wafct-2019
+wafct:13_022,Curry powder,"Curry, en poudre",,Miscellaneous,293,11.9,6.8,,12.4,1.46,53.2,0.6275,0,wafct-2019
+wafct:13_011,"Ginger, root, dried","Gingembre, racine, séchée",Zingiber officinale,Miscellaneous,329,7.6,59.1,,3.8,1.87,14.1,0.0775,0,wafct-2019
+wafct:13_001,Honey,Miel,,Miscellaneous,326,0.4,81,,0,0,0.2,0.01,0,wafct-2019
+wafct:13_023,Jam or marmalade,Confiture ou marmelade,,Miscellaneous,281,0.4,69.4,,0,0,0.9,0.0375,0,wafct-2019
+wafct:13_013,"Mustard, prepared, yellow","Moutarde, préparée, jaune",,Miscellaneous,60,3.7,1.8,,3.3,0.21,4,2.75,0,wafct-2019
+wafct:13_012,"Mustard, powder","Moutarde, en poudre",Brassica nigra,Miscellaneous,518,26.1,15.9,,36.2,1.99,12.2,0.0325,0,wafct-2019
+wafct:13_014,"Pepper, black","Poivre, noir",Piper nigrum,Miscellaneous,276,10.1,36.2,,2.7,0.78,33.2,0.06,0,wafct-2019
+wafct:13_024,"Potash, solid","Potasse, solide",,Miscellaneous,0,0,0,,0,0,0,46,0,wafct-2019
+wafct:13_015,Salt,Sel,,Miscellaneous,0,0,0,,0,0,0,97,0,wafct-2019
+wafct:13_002,"Sugar, white","Sucre, blanc",,Miscellaneous,400,0,100,,0,0,0,0.0025,0,wafct-2019
+wafct:13_021,"Sweets, chocolate, milk",Bonbons au chocolat au lait,,Miscellaneous,532,4.4,55.1,,31.1,18.6,7,0.06,0,wafct-2019
+wafct:13_026,"Uda (Ethiopian pepper), fruit/seed, dried","uda negro pepper ethiopian pepper xylopia Poivre de Guinée, fruit/graine, séché",Xylopia aethiopica,Miscellaneous,361,9.4,43.9,,10.6,,26.3,0.22749999999999998,0,wafct-2019
+wafct:13_003,Vinegar,Vinaigre,,Miscellaneous,19,0.1,4.7,,0,0,0,0.01,0,wafct-2019
+wafct:13_017,"Yeast, dried","Levure, séchée",,Miscellaneous,342,38.4,21.2,,6.3,0.83,23.3,0.2775,0,wafct-2019
+wafct:13_018,"Yeast extract, Marmite","Extrait de levure, Marmite",,Miscellaneous,155,27.5,8.7,,0.4,0.07,3,9,0,wafct-2019

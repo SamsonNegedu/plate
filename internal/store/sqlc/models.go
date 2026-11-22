@@ -235,6 +235,35 @@ type RecoveryCode struct {
 	UsedAt    *string
 }
 
+type ReferenceFood struct {
+	RowidAlias     int64
+	RefID          string
+	Name           string
+	LocalNames     string
+	ScientificName string
+	Category       string
+	Kcal100g       float64
+	Protein100g    *float64
+	Carbs100g      *float64
+	Fat100g        *float64
+	Sugar100g      *float64
+	Satfat100g     *float64
+	Fiber100g      *float64
+	Salt100g       *float64
+	Estimated      int64
+	Source         string
+	DatasetVersion string
+	ImportedAt     string
+}
+
+type ReferenceFt struct {
+	Name           string
+	LocalNames     string
+	ScientificName string
+	ReferenceFts   *string
+	Rank           *float64
+}
+
 type SavedMeal struct {
 	ID        string
 	UserID    string

@@ -37,10 +37,12 @@ type Result struct {
 	Kcal100      float64
 	ServingSize  string
 	ServingGrams *float64
-	Source       domain.Source
-	ImageKey     *string
-	Nutriscore   *string
-	Favorite     bool
+	// RefID is set for a hit from the shared reference foods (no barcode, no food id until it is selected).
+	RefID      *string
+	Source     domain.Source
+	ImageKey   *string
+	Nutriscore *string
+	Favorite   bool
 	// CatalogImage is true when a catalog hit has an image the proxy can serve by barcode.
 	CatalogImage bool
 	// Scans is the catalog's scan count for this product, used only to rank it.
@@ -90,6 +92,8 @@ func (s *Service) Search(ctx context.Context, userID, query string) ([]Result, e
 // local gathers whole-word hits first, then prefix-only hits, from the user's foods and the catalog.
 func (s *Service) local(ctx context.Context, repo *store.Repo, userID string, toks []string, add func(Result, tier, int)) error {
 	order := 0
+	// A reference food the account already selected shows as its own row, so the shared row is not listed twice.
+	owned := map[string]bool{}
 	for _, whole := range []bool{true, false} {
 		match := search.Match(toks, !whole)
 		t := tierPrefix
@@ -101,8 +105,21 @@ func (s *Service) local(ctx context.Context, repo *store.Repo, userID string, to
 			return err
 		}
 		for _, f := range foods {
+			if f.Barcode == nil && f.Source == domain.SourceCatalog && f.SourceID != nil {
+				owned[*f.SourceID] = true
+			}
 			add(foodResult(f), t, order)
 			order++
+		}
+		refs, err := repo.SearchReference(ctx, match, candidatePool)
+		if err != nil {
+			return err
+		}
+		for _, ref := range refs {
+			if !owned[ref.RefID] {
+				add(referenceResult(ref), t, order)
+				order++
+			}
 		}
 		cats, err := repo.SearchCatalog(ctx, match, candidatePool)
 		if err != nil {
@@ -232,6 +249,9 @@ func resultKey(r Result) string {
 	if r.ID != nil {
 		return "i:" + *r.ID
 	}
+	if r.RefID != nil {
+		return "r:" + *r.RefID
+	}
 	return "n:" + r.Name
 }
 
@@ -240,6 +260,11 @@ func foodResult(f domain.Food) Result {
 		ID: &f.ID, Barcode: f.Barcode, Name: f.Name, Brand: f.Brand, Kcal100: f.Per100.Kcal, ServingSize: f.ServingSize,
 		ServingGrams: f.ServingGrams, Source: f.Source, ImageKey: f.ImageKey, Nutriscore: f.Nutriscore,
 	}
+}
+
+func referenceResult(f domain.ReferenceFood) Result {
+	id := f.RefID
+	return Result{RefID: &id, Name: f.Name, Kcal100: f.Per100.Kcal, Source: domain.SourceCatalog}
 }
 
 func catalogResult(c domain.CatalogFood) Result {

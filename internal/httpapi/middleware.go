@@ -50,14 +50,23 @@ func (w *statusWriter) Write(b []byte) (int, error) {
 
 func (w *statusWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 
-// accessLog logs method, path, status and duration. It never logs query strings, bodies or headers.
+// isProbe is a health check the container runtime or a monitor calls every few seconds.
+func isProbe(path string) bool { return path == "/healthz" || path == "/readyz" }
+
+// accessLog logs method, path, status and duration. It never logs query strings, bodies or headers. A health check that
+// succeeds is logged at debug level only: it runs every 30 seconds and would otherwise be most of the log; a failing
+// one still shows at info.
 func accessLog(log *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 			sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 			next.ServeHTTP(sw, r)
-			log.LogAttrs(r.Context(), slog.LevelInfo, "request",
+			level := slog.LevelInfo
+			if isProbe(r.URL.Path) && sw.status < http.StatusBadRequest {
+				level = slog.LevelDebug
+			}
+			log.LogAttrs(r.Context(), level, "request",
 				slog.String("request_id", RequestID(r.Context())),
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),

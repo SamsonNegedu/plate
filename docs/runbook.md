@@ -53,7 +53,7 @@ docker compose ps
 docker compose logs --since 15m plate
 ```
 
-Logs are JSON on stdout. Request logs contain method, path, status, duration, and request id. They never contain bodies, cookies, passwords, or session tokens.
+Logs are JSON on stdout. Request logs contain method, path, status, duration, and request id. They never contain bodies, cookies, passwords, or session tokens. A health check (`/healthz`, `/readyz`) that succeeds is logged at debug level only, so the probe every 30 seconds does not fill the log; a failing one is logged at info.
 
 `/readyz` is the gate: it returns non-200 while a migration is pending or the database cannot be written. Restarting does not fix a failed migration; read the log and restore the pre-migration snapshot.
 

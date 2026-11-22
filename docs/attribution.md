@@ -34,6 +34,28 @@ Import: `PLATE_IMPORT_BLS_PATH=/data/BLS_4_0_Daten_2025_DE.xlsx`, restart once, 
 the official data file (7,140 foods, verified on the real file), keeps missing values as NULL, and never overwrites a food
 you corrected. Plate changes nothing in the values except unit conversion (sodium to salt, kJ to kcal when kcal is absent).
 
+## FAO/INFOODS Food Composition Table for Western Africa (WAFCT 2019)
+
+About 1,000 West African foods (staples, soup ingredients, local dishes) come from the FAO/INFOODS table for Western Africa.
+
+> Vincent, A., Grande, F., Compaoré, E., Amponsah Annor, G., Addy, P.A., Aburime, L.C., Ahmed, D., Bih Loh, A.M., Dahdouh Cabia, S., Deflache, N., Dembélé, F.M., Dieudonné, B., Edwige, O.B., Ene-Obong, H.N., Fanou Fogny, N., Ferreira, M., Omaghomi Jemide, J., Kouebou, P.C., Muller, C., Nájera Espinosa, S., Ouattara, F., Rittenschober, D., Schönfeldt, H., Stadlmayr, B., van Deventer, M., Razikou Yiagnigni, A. & Charrondière, U.R. 2020. FAO/INFOODS Food Composition Table for Western Africa (2019). Rome, FAO. © FAO, 2020.
+
+Terms, as printed in the file: FAO "encourages the use, reproduction and dissemination of material in this information product", which "may be copied, downloaded and printed for private study, research and teaching purposes, or for use in non-commercial products or services, provided that appropriate acknowledgement of FAO as the source and copyright holder is given". Translation, adaptation, resale and other commercial use need FAO's permission (www.fao.org/contact-us/licence-request).
+
+What Plate does with it, and the limits that follow:
+
+- **Shipped, cleaned.** The repository holds the foods a person weighs (702 of the 1,028) as `internal/food/data/wafct_2019.csv`, built by `make wafct XLSX=WAFCT_2019.xlsx` and embedded in the binary; prepared dishes, beverages and packaged variants are left out. The server loads it into the shared `reference_foods` table on start (and again when the file changes). Plate tidies names and converts sodium to salt and nothing else; `internal/food/data/NOTICE.md` lists every change and travels with the file.
+- **Non-commercial use only.** FAO allows use "in non-commercial products or services" and reserves adaptation, resale and commercial rights. Cleaning and reshaping is an adaptation. A deployment that charges for the app, or anyone who redistributes the file beyond personal, research or teaching use, needs FAO's permission first (www.fao.org/contact-us/licence-request). This is the operator's decision, not the project's.
+- **Credit stays with the data.** The About screen and every export carry the citation above, and the NOTICE stays beside the CSV.
+
+## USDA FoodData Central (public domain, CC0 1.0)
+
+A short list of generic foods the FAO table lacks (turkey, semolina, cucumber, avocado, spices and similar, 42 in all) comes from USDA FoodData Central, SR Legacy.
+
+> U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019. fdc.nal.usda.gov.
+
+The data is public domain and free for any use, commercial included; USDA asks only that it is named as the source, which the About screen and every export do. The list is built by `make usda` and shipped as `internal/food/data/usda_sr_legacy.csv`.
+
 ## Operating the catalog
 
 ```

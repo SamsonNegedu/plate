@@ -8,3 +8,5 @@ ALTER TABLE foods_trgm ADD COLUMN foods_trgm TEXT;
 ALTER TABLE foods_trgm ADD COLUMN rank REAL;
 ALTER TABLE catalog_trgm ADD COLUMN catalog_trgm TEXT;
 ALTER TABLE catalog_trgm ADD COLUMN rank REAL;
+ALTER TABLE reference_fts ADD COLUMN reference_fts TEXT;
+ALTER TABLE reference_fts ADD COLUMN rank REAL;

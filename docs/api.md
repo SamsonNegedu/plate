@@ -52,6 +52,7 @@ All paths are under `/api/v1`. Every operation needs a session cookie unless it 
 | POST | `/foods/barcode/{code}/dispute` | Say the community facts for a product are wrong | session | 200, 404, 409, 422, 500 |
 | GET | `/foods/barcode/{code}/fact` | Is there a community fact for this barcode? | session | 200, default |
 | GET | `/foods/recent` | Distinct foods logged most recently | session | 200, default |
+| GET | `/foods/reference/{id}` | Select a shared generic food | session | 200, 404, 422, 500 |
 | GET | `/foods/search` | Search foods by name, brand or barcode | session | 200, default |
 | PUT | `/foods/{id}` | Create a custom food or correct an existing one | session | 200, 409, 422, 500 |
 | GET | `/foods/{id}/favorite` | Is this food a favorite? | session | 200, 404, 422, 500 |

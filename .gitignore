@@ -16,3 +16,6 @@ web/public/wasm/
 web/public/ocr/
 web/.auth/
 off-export/
+
+# Playwright MCP scratch output
+.playwright-mcp/

@@ -78,10 +78,11 @@ func Schedule(ctx context.Context, d *sql.DB, log *slog.Logger, hour int, jobs f
 // RebuildFTS recreates both search indexes from their content tables.
 func RebuildFTS(ctx context.Context, d *sql.DB) error {
 	stmts := map[string]string{
-		"foods_fts":    "INSERT INTO foods_fts(foods_fts) VALUES('rebuild')",
-		"catalog_fts":  "INSERT INTO catalog_fts(catalog_fts) VALUES('rebuild')",
-		"foods_trgm":   "INSERT INTO foods_trgm(foods_trgm) VALUES('rebuild')",
-		"catalog_trgm": "INSERT INTO catalog_trgm(catalog_trgm) VALUES('rebuild')",
+		"foods_fts":     "INSERT INTO foods_fts(foods_fts) VALUES('rebuild')",
+		"catalog_fts":   "INSERT INTO catalog_fts(catalog_fts) VALUES('rebuild')",
+		"foods_trgm":    "INSERT INTO foods_trgm(foods_trgm) VALUES('rebuild')",
+		"catalog_trgm":  "INSERT INTO catalog_trgm(catalog_trgm) VALUES('rebuild')",
+		"reference_fts": "INSERT INTO reference_fts(reference_fts) VALUES('rebuild')",
 	}
 	for name, stmt := range stmts {
 		if _, err := d.ExecContext(ctx, stmt); err != nil {

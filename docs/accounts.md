@@ -55,4 +55,4 @@ The browser holds one local database. When a different account signs in on a dev
 
 ## BLS foods
 
-`PLATE_IMPORT_BLS_PATH` imports generic foods into one account, named by `PLATE_IMPORT_BLS_USERNAME`. Other accounts do not get them. Making BLS shared reference data, like the catalog, is future work.
+`PLATE_IMPORT_BLS_PATH` imports generic foods into one account, named by `PLATE_IMPORT_BLS_USERNAME`. Other accounts do not get them. Making BLS shared reference data, like the catalog, is future work; the West African table ships in the binary and is already shared with every account.

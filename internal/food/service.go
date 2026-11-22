@@ -185,6 +185,40 @@ func (s *Service) fromCatalog(ctx context.Context, userID string, candidates []s
 	return out, true, nil
 }
 
+// Reference materializes a shared reference food into the account's foods, once. Selecting the same food again returns
+// the same row, so entries, favorites and the food sheet share one model.
+// Errors: domain.ErrNotFound for an unknown id.
+func (s *Service) Reference(ctx context.Context, userID, refID string) (domain.Food, error) {
+	ref, err := store.NewRepo(s.db).ReferenceByID(ctx, refID)
+	if err != nil {
+		return domain.Food{}, err
+	}
+	var out domain.Food
+	err = store.InTx(ctx, s.db, func(r *store.Repo) error {
+		existing, err := r.FoodBySource(ctx, userID, domain.SourceCatalog, refID)
+		if err == nil {
+			out = existing
+			return nil
+		}
+		if !errors.Is(err, domain.ErrNotFound) {
+			return err
+		}
+		id, err := uuid.NewV7()
+		if err != nil {
+			return fmt.Errorf("generating food id: %w", err)
+		}
+		now := stamp(s.now())
+		id2 := refID
+		out = domain.Food{
+			ID: id.String(), UserID: userID, Name: ref.Name, Per100: ref.Per100, Source: domain.SourceCatalog,
+			SourceID: &id2, SourceCheckedAt: &ref.ImportedAt, SearchName: domain.SearchName(ref.Name + " " + ref.LocalNames),
+			CreatedAt: now, UpdatedAt: now,
+		}
+		return r.PutFood(ctx, out)
+	})
+	return out, err
+}
+
 func indexOfStr(list []string, v string) int {
 	for i, c := range list {
 		if c == v {

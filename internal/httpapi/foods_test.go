@@ -54,7 +54,7 @@ func TestFoodRoutesRequireAuth(t *testing.T) {
 		{"GET", "/foods/barcode/3017620422003", ""}, {"GET", "/foods/search?q=joghurt", ""}, {"GET", "/foods/recent", ""},
 		{"PUT", "/foods/" + id, `{}`}, {"GET", "/foods/" + id + "/favorite", ""}, {"PUT", "/foods/" + id + "/favorite", ""},
 		{"DELETE", "/foods/" + id + "/favorite", ""}, {"GET", "/images/" + strings.Repeat("a", 32), ""},
-		{"GET", "/images/catalog/3017620422003", ""}, {"GET", "/about", ""},
+		{"GET", "/images/catalog/3017620422003", ""}, {"GET", "/about", ""}, {"GET", "/foods/reference/wafct:02_005", ""},
 		{"PUT", "/foods/barcode/4337256560191/correction", `{}`}, {"GET", "/foods/barcode/4337256560191/fact", ""},
 		{"POST", "/foods/barcode/4337256560191/dispute", ""},
 	} {
@@ -154,6 +154,50 @@ func TestSearchEndpoint(t *testing.T) {
 		if rec.Code != 200 || !strings.Contains(rec.Body.String(), `"results":[`) {
 			t.Errorf("%q = %d %s", q, rec.Code, rec.Body)
 		}
+	}
+}
+
+func TestReferenceFoodSearchAndSelect(t *testing.T) {
+	e := newEnv(t, opts{})
+	c := e.login(t)
+	n := func(v float64) *float64 { return &v }
+	err := store.InTx(context.Background(), e.db, func(r *store.Repo) error {
+		return r.ReplaceReference(context.Background(), []domain.ReferenceFood{{
+			RefID: "wafct:06_008", Name: "Dikanut, kernel, dried, raw", LocalNames: "ogbono apon", ScientificName: "Irvingia gabonensis",
+			Per100: domain.Nutrients{Kcal: 650, Protein: n(7.6), Fat: n(62.6)}, Source: "wafct-2019", DatasetVersion: "wafct-2019",
+			ImportedAt: "2026-11-22T00:00:00Z",
+		}})
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec := e.do("GET", "/api/v1/foods/search?q=ogbono", "", cookie(c))
+	var out struct {
+		Results []struct {
+			ID          *string `json:"id"`
+			ReferenceID *string `json:"reference_id"`
+			Barcode     *string `json:"barcode"`
+			Name        string  `json:"name"`
+		} `json:"results"`
+	}
+	_ = json.Unmarshal(rec.Body.Bytes(), &out)
+	if rec.Code != 200 || len(out.Results) != 1 || out.Results[0].ReferenceID == nil || *out.Results[0].ReferenceID != "wafct:06_008" ||
+		out.Results[0].ID != nil || out.Results[0].Barcode != nil {
+		t.Fatalf("search = %d %s", rec.Code, rec.Body)
+	}
+
+	rec = e.do("GET", "/api/v1/foods/reference/wafct:06_008", "", cookie(c))
+	v := decode[map[string]any](t, rec)
+	if rec.Code != 200 || v["name"] != "Dikanut, kernel, dried, raw" || v["kcal"] != float64(650) || v["protein"] != float64(7.6) ||
+		v["carbs"] != nil || v["barcode"] != nil || v["source"] != "catalog" || v["id"] == nil {
+		t.Fatalf("select = %d %s", rec.Code, rec.Body)
+	}
+	again := decode[map[string]any](t, e.do("GET", "/api/v1/foods/reference/wafct:06_008", "", cookie(c)))
+	if again["id"] != v["id"] {
+		t.Fatalf("a second selection made a second food: %v vs %v", again["id"], v["id"])
+	}
+	if rec := e.do("GET", "/api/v1/foods/reference/wafct:nope", "", cookie(c)); rec.Code != 404 {
+		t.Fatalf("unknown id = %d, want 404", rec.Code)
 	}
 }
 

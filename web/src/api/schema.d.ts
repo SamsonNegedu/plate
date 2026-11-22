@@ -367,6 +367,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/foods/reference/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Select a shared generic food
+         * @description Adds the generic food (such as egusi or plantain) to the account the first time and returns it. Later calls return the same food.
+         */
+        get: operations["get-reference-food"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/foods/search": {
         parameters: {
             query?: never;
@@ -1187,13 +1207,15 @@ export interface components {
             barcode: string | null;
             brand: string;
             favorite: boolean;
-            /** @description Null for catalog hits: look the barcode up to log it. */
+            /** @description Null for catalog and reference hits: look the barcode or reference id up to log it. */
             id: string | null;
             image_path: string | null;
             /** Format: double */
             kcal: number;
             name: string;
             nutriscore: string | null;
+            /** @description Set for a hit from the shared generic foods, which have no barcode: look it up with get-reference-food. */
+            reference_id: string | null;
             /** Format: double */
             serving_grams: number | null;
             serving_size: string;
@@ -2340,6 +2362,56 @@ export interface operations {
             };
             /** @description Error */
             default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "get-reference-food": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The reference_id of a search hit, such as wafct:02_005. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoodView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

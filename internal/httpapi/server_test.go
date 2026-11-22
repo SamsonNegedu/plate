@@ -471,3 +471,29 @@ func TestSPAFallbackServesNonAPIPaths(t *testing.T) {
 		t.Fatalf("body = %q", rec.Body)
 	}
 }
+
+func TestHealthChecksAreQuietUnlessTheyFail(t *testing.T) {
+	var logs bytes.Buffer
+	log := slog.New(slog.NewJSONHandler(&logs, nil))
+	status := http.StatusOK
+	h := accessLog(log)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(status) }))
+	call := func(path string) {
+		h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, path, nil))
+	}
+
+	call("/readyz")
+	call("/healthz")
+	if logs.Len() != 0 {
+		t.Fatalf("a healthy probe was logged at info: %s", logs.String())
+	}
+	call("/api/v1/auth/me")
+	if !strings.Contains(logs.String(), "/api/v1/auth/me") {
+		t.Fatal("an ordinary request must still be logged")
+	}
+	logs.Reset()
+	status = http.StatusServiceUnavailable
+	call("/readyz")
+	if !strings.Contains(logs.String(), `"status":503`) {
+		t.Fatalf("a failing probe must be logged: %s", logs.String())
+	}
+}

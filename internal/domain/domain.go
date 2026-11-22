@@ -297,3 +297,20 @@ type CategoryStats struct {
 	N        int
 	Ranges   map[string][3]float64
 }
+
+// ReferenceFood is a row of the shared generic-food table: a food without a barcode, such as a staple or a soup
+// ingredient. Every row is loggable: kcal is required, and any other missing nutrient stays nil.
+type ReferenceFood struct {
+	// RefID is the stable text key, such as "wafct:02_005".
+	RefID          string
+	Name           string
+	LocalNames     string
+	ScientificName string
+	Category       string
+	Per100         Nutrients
+	// Estimated is true when the source marks the energy or a macronutrient as imputed or borrowed, not analysed.
+	Estimated      bool
+	Source         string
+	DatasetVersion string
+	ImportedAt     string
+}
