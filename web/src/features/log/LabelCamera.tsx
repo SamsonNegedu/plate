@@ -62,13 +62,6 @@ export function LabelCamera({
   const ready = state === "active";
 
   useEffect(() => {
-    const url = shot?.url;
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [shot]);
-
-  useEffect(() => {
     if (!focusRing) return;
     const id = window.setTimeout(() => setFocusRing(null), 700);
     return () => window.clearTimeout(id);
@@ -107,8 +100,14 @@ export function LabelCamera({
           return;
         }
         if (feedback.haptics && "vibrate" in navigator) navigator.vibrate(30);
-        setView({ scale: 1, x: 0, y: 0 });
-        setShot({ blob, url: URL.createObjectURL(blob), w: sw, h: sh });
+        // A data: URL, not a blob: one: a cached app shell can carry an older CSP that blocks blob: images.
+        const reader = new FileReader();
+        reader.onload = () => {
+          setView({ scale: 1, x: 0, y: 0 });
+          setShot({ blob, url: String(reader.result), w: sw, h: sh });
+        };
+        reader.onerror = () => setError(labelCopy.cameraFailed);
+        reader.readAsDataURL(blob);
       },
       "image/jpeg",
       0.92,
