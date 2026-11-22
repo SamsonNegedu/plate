@@ -45,7 +45,7 @@ Baseline:
 default-src 'self';
 script-src 'self' 'wasm-unsafe-eval';
 style-src 'self';
-img-src 'self' data:;
+img-src 'self' data: blob:;
 connect-src 'self';
 font-src 'self';
 worker-src 'self' blob:;
