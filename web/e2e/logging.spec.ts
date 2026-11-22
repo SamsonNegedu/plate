@@ -448,7 +448,7 @@ test("tabs and chart choices are in the address, so they can be linked, reloaded
 
   await page.goto("/history?range=7&metric=protein");
   await expect(page.getByText("Protein, g a day")).toBeVisible(); // the chart says what its axis counts
-  await expect(page.getByRole("button", { name: "7 days" })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "7d", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
@@ -456,7 +456,7 @@ test("tabs and chart choices are in the address, so they can be linked, reloaded
     "aria-pressed",
     "true",
   );
-  await page.getByRole("button", { name: "30 days" }).click();
+  await page.getByRole("button", { name: "30d", exact: true }).click();
   await expect(page).toHaveURL(/range=30/);
   await expect(page).toHaveURL(/metric=protein/);
 

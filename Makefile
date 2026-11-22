@@ -54,7 +54,7 @@ test-web:
 
 # The two projects run at the same time, each on its own port with its own server, seed and user, so the per-user rate
 # limit is not shared. The seeder is built once (go caches it) instead of `go run` compiling it in every server start.
-test-e2e: e2eseed
+test-e2e: build e2eseed
 	@set -e; \
 	E2E_PORT=18081 pnpm --dir web exec playwright test --project=mobile-400 & m=$$!; \
 	E2E_PORT=18082 pnpm --dir web exec playwright test --project=desktop & d=$$!; \

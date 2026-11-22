@@ -253,7 +253,7 @@ test("history shows the chart, its table alternative and the day list", async ({
   await expect(page.getByRole("group", { name: /Calories per day/ })).toBeVisible();
   await page.getByRole("button", { name: "Show table" }).click();
   await expect(page.getByRole("columnheader", { name: "Protein" })).toBeVisible();
-  await page.getByRole("button", { name: "30 days" }).click();
+  await page.getByRole("button", { name: "30d", exact: true }).click();
   await expect(page.getByText(/Logged \d+ of 30 days/)).toBeVisible();
 
   // Focusing a bar swaps the caption but must not move anything below the chart
