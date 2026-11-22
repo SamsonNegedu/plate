@@ -207,11 +207,7 @@ export function ManualFoodSheet({ meal, date, barcode, food, name, notLoggable, 
         noValidate
       >
         <div className="grid gap-2">
-          <LabelScan
-            primary={!read}
-            onResult={onScan}
-            label={read ? labelCopy.scanAgain : undefined}
-          />
+          <LabelScan primary={!read} repeat={read !== null} onResult={onScan} />
           {read ? (
             <div className="flex items-start gap-3">
               <img

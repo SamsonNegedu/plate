@@ -370,7 +370,9 @@ describe("not found", () => {
     const user = userEvent.setup();
     wrap(<NotFoundSheet meal="lunch" date="2026-11-13" barcode="4337256560191" />);
     expect(screen.getByText("Barcode 4337256560191")).toBeInTheDocument();
-    expect(screen.getByText(/Scan the nutrition label/)).toBeInTheDocument();
+    // jsdom has no camera, so the sheet offers the photo library and typing.
+    expect(screen.getByLabelText("Choose photo")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Type it in" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Type it in" }));
     expect(useUi.getState().sheets.at(-1)).toMatchObject({
       kind: "manual",

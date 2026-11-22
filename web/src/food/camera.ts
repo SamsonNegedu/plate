@@ -12,6 +12,11 @@ export type CameraState =
 
 type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
 
+/** True when an in-app camera can open, so a camera action can be offered without a later file picker. */
+export function cameraAvailable(): boolean {
+  return window.isSecureContext && typeof navigator.mediaDevices?.getUserMedia === "function";
+}
+
 export function classifyCameraError(err: unknown): CameraState {
   const name = err instanceof DOMException ? err.name : "";
   if (name === "NotAllowedError" || name === "SecurityError") return "denied";

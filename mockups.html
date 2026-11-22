@@ -1309,6 +1309,8 @@
   .nf-copy { font-size: 13px; color: var(--ink-2); margin: 0 0 12px; line-height: 1.35; }
   .nf-btn { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font-weight: 600; font-size: 14px; margin-bottom: 8px; }
   .nf-btn.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); }
+  .nf-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .nf-pair .nf-btn { margin-bottom: 0; }
   .nt-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid var(--ink); padding-bottom: 5px; margin-top: 10px; font-weight: 600; font-size: 14px; }
   .nt-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; min-height: 42px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 500; }
   .nt-row.sub { padding-left: 12px; color: var(--ink-2); font-weight: 400; }
@@ -1454,6 +1456,9 @@
             <div class="scan-actions">
               <span class="s-btn">Type barcode</span>
               <span class="s-btn">Search by name</span>
+            </div>
+            <div class="scan-actions">
+              <span class="s-btn">Add a food</span>
             </div>
             <p class="scan-note">Scanning happens on your device. Only the barcode number is sent to Open Food Facts.</p>
           </div>
@@ -1611,7 +1616,10 @@
             </div>
             <div class="nf-code">Barcode 4337256560191</div>
             <p class="nf-copy">Add it once and everyone who scans this barcode gets it. A photo of the nutrition table is the quickest way.</p>
-            <div class="nf-btn primary">Scan the nutrition label (18 MB download, once)</div>
+            <div class="nf-pair">
+              <div class="nf-btn primary">Take photo</div>
+              <div class="nf-btn">Choose photo</div>
+            </div>
             <div class="nf-btn">Type it in</div>
           </div>
         </div>

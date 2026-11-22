@@ -223,13 +223,17 @@ export default function ScanPage() {
       <h1 className="mt-1 text-title font-semibold">
         {recipeKey ? "Scan ingredient" : copy.scan.title}
       </h1>
-      <div className="relative grid aspect-[4/5] max-h-[62dvh] place-items-center overflow-hidden rounded-card border border-frame-line bg-frame">
+      <div className="relative grid aspect-[4/5] max-h-[62dvh] w-full place-items-center overflow-hidden rounded-card border border-frame-line bg-frame">
         {error ? (
-          <div
-            className="absolute inset-0 grid place-items-center bg-surface p-6 text-center"
-            role="alert"
-          >
-            <p className="max-w-[32ch] text-body text-ink">{error}</p>
+          <div className="absolute inset-0 grid place-items-center bg-surface p-6 text-center">
+            <div className="grid justify-items-center gap-3">
+              <p className="max-w-[32ch] text-body text-ink" role="alert">
+                {error}
+              </p>
+              {detector ? (
+                <Button onClick={() => fileRef.current?.click()}>{copy.scan.upload}</Button>
+              ) : null}
+            </div>
           </div>
         ) : (
           <>
@@ -269,7 +273,6 @@ export default function ScanPage() {
           <Icon name="barcode" />
           {copy.scan.typeBarcode}
         </Button>
-        <Button onClick={() => fileRef.current?.click()}>{copy.scan.upload}</Button>
         <Button
           onClick={() =>
             ui.open({ kind: "search", meal, date, ...(recipeKey ? { pick: addToDraft } : {}) })
@@ -278,12 +281,12 @@ export default function ScanPage() {
           <Icon name="search" />
           {copy.today.search}
         </Button>
-        {recipeKey ? null : (
-          <Button onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
-            {copy.sheet.addManually}
-          </Button>
-        )}
       </div>
+      {recipeKey ? null : (
+        <Button block onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
+          {copy.scan.addFood}
+        </Button>
+      )}
       <input
         ref={fileRef}
         type="file"

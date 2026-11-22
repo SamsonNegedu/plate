@@ -1,15 +1,18 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ChangeEvent } from "react";
+import { Button } from "@/components/Button";
 import { Icon } from "@/components/Icon";
+import { cameraAvailable } from "@/food/camera";
 import { scanLabel, type ScanResult, warmUpIfCached } from "@/food/ocr/scan";
 import { cn } from "@/lib/cn";
 import { labelCopy } from "@/lib/copy";
+import { LabelCamera } from "./LabelCamera";
 
 interface Props {
   onResult: (result: ScanResult) => void;
-  /** The main action of the sheet, so it looks like one. */
+  /** The main action of the sheet, so the camera button looks like one. */
   primary?: boolean;
-  /** Replaces the default label, for a second scan. */
-  label?: string;
+  /** After a successful read: the buttons offer another photo. */
+  repeat?: boolean;
 }
 
 type State = "idle" | "download" | "reading" | "failed";
@@ -18,10 +21,11 @@ type State = "idle" | "download" | "reading" | "failed";
  * The convenience path: photograph the nutrition table and the values fill in. Typing always works without it. The
  * first scan downloads the reader (about 30 MB) and says so; after that it runs offline. The photo never leaves the device.
  */
-export function LabelScan({ onResult, primary, label }: Props) {
-  const id = useId();
+export function LabelScan({ onResult, primary, repeat }: Props) {
+  const chooseId = useId();
   const [state, setState] = useState<State>("idle");
   const [cached, setCached] = useState<boolean | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -46,44 +50,69 @@ export function LabelScan({ onResult, primary, label }: Props) {
     }
   };
 
+  const pick = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // choosing the same photo again must still fire
+    void onPick(file);
+  };
+
   const busy = state === "download" || state === "reading";
-  let text: string = label ?? labelCopy.scan;
-  if (busy) text = labelCopy.reading;
+  const take = cameraAvailable();
+  let status: string | null = null;
+  if (state === "download") status = labelCopy.downloading;
+  else if (state === "reading") status = labelCopy.reading;
+  else if (state === "failed") status = labelCopy.failed;
+  else if (cached === false) status = labelCopy.firstUse;
 
   return (
     <div className="grid gap-1.5">
-      <label
-        htmlFor={id}
-        className={cn(
-          "inline-flex min-h-11 w-full items-center justify-center rounded-ctl border px-4 text-center text-body leading-heading font-medium focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent",
-          primary
-            ? "border-transparent bg-accent text-on-accent"
-            : "border-line bg-surface-2 text-ink",
-          busy && "opacity-55",
-        )}
-      >
-        <span className="inline-flex items-center gap-2">
-          <Icon name="camera" />
-          {text}
-        </span>
-        <input
-          id={id}
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          disabled={busy}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            e.target.value = ""; // choosing the same photo again must still fire
+      {cameraOpen ? (
+        <LabelCamera
+          onCapture={(file) => {
+            setCameraOpen(false);
             void onPick(file);
           }}
+          onClose={() => setCameraOpen(false)}
         />
-      </label>
-      <p className="min-h-4 text-meta text-ink-2" role="status">
-        {state === "download" ? labelCopy.downloading : null}
-        {state === "failed" ? labelCopy.failed : null}
-        {state === "idle" && cached === false ? labelCopy.firstUse : null}
-      </p>
+      ) : (
+        <>
+          <div className={cn("grid gap-2", take && "min-[400px]:grid-cols-2")}>
+            {take ? (
+              <Button
+                variant={primary ? "primary" : "secondary"}
+                disabled={busy}
+                onClick={() => setCameraOpen(true)}
+              >
+                <Icon name="camera" />
+                {repeat ? labelCopy.takeAnother : labelCopy.takePhoto}
+              </Button>
+            ) : null}
+            <label
+              htmlFor={chooseId}
+              className={cn(
+                "inline-flex min-h-11 w-full items-center justify-center rounded-ctl border border-line bg-surface-2 px-3 text-center text-body leading-heading font-medium text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent",
+                busy && "opacity-55",
+              )}
+            >
+              <span className="inline-flex items-center gap-2">
+                <Icon name="image" />
+                {repeat ? labelCopy.chooseAnother : labelCopy.choosePhoto}
+              </span>
+              <input
+                id={chooseId}
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={busy}
+                onChange={pick}
+              />
+            </label>
+          </div>
+          <p className="min-h-4 text-meta text-ink-2" role="status">
+            {status}
+          </p>
+        </>
+      )}
     </div>
   );
 }

@@ -4,9 +4,9 @@ A guide to the features, written for someone using the app. Each section says wh
 
 ## Logging food
 
-- **Scan a barcode** with the camera, type the digits, or upload a photo of the code. The product opens with its nutrition and a portion to confirm; nothing is added until you say so ([food-and-search.md](food-and-search.md)).
+- **Scan a barcode** with the camera, or type the digits; when the camera cannot start, upload a photo of the code. The product opens with its nutrition and a portion to confirm; nothing is added until you say so ([food-and-search.md](food-and-search.md)).
 - **Search by name** across your own foods, favourites, recents, the bundled German catalogue and Open Food Facts. A recipe matches by name too and is listed first.
-- **Quick add** calories with no label, **add a food by hand**, or **copy yesterday** into an empty day.
+- **Quick add** calories with no label, **add a food** by hand or from a photo of the nutrition table, or **copy yesterday** into an empty day.
 - **Add again** puts the foods you eat most one tap away on Today, and a food's last portion is remembered.
 - Every entry keeps the nutrition it was logged with, so correcting a food later never rewrites your history ([data-model.md](data-model.md)).
 - Missing nutrition is shown as missing, never as zero.
