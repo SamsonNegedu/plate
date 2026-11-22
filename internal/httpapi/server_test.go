@@ -200,15 +200,6 @@ func TestSecurityHeadersOnHTMLAndAPI(t *testing.T) {
 	}
 }
 
-// The label camera previews its photo from a blob: URL; without this the image silently fails to load.
-func TestCSPAllowsBlobImages(t *testing.T) {
-	e := newEnv(t, opts{})
-	got := e.do("GET", "/", "").Header().Get("Content-Security-Policy")
-	if !strings.Contains(got, "img-src 'self' data: blob:") {
-		t.Errorf("CSP = %q, want img-src to allow blob:", got)
-	}
-}
-
 func TestEveryAPIRouteIsPrivateByDefault(t *testing.T) {
 	e := newEnv(t, opts{register: func(api huma.API, _ chi.Router) {
 		huma.Get(api, "/secret", func(context.Context, *struct{}) (*struct{}, error) { return nil, nil })

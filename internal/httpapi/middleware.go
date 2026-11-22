@@ -15,7 +15,7 @@ import (
 // style-src allows one hash: Radix's scroll lock (react-remove-scroll-bar) injects a fixed <style> element when a sheet opens.
 // Without it the page behind a sheet scrolls. The hash is of that exact text; the end-to-end suite fails on any CSP violation,
 // so a Radix upgrade that changes the text is caught.
-const csp = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='; img-src 'self' data: blob:; " +
+const csp = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'sha256-nzTgYzXYDNe6BAHiiI7NNlfK8n/auuOAhh2t92YvuXo='; img-src 'self' data:; " +
 	"connect-src 'self'; font-src 'self'; worker-src 'self' blob:; manifest-src 'self'; " +
 	"base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 
