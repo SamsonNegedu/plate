@@ -142,7 +142,7 @@ docker compose up -d           # migrations run before the listener
 curl -fsS https://<host>/readyz
 ```
 
-The image is multi-arch (`linux/amd64` and `linux/arm64`), so it runs on x86 servers and on ARM ones such as Ampere, Graviton or a Raspberry Pi. Compose always runs `latest`. Every green push to `main` promotes the smoke-tested image to `latest` on ghcr.io (it is also kept as `sha-<commit>`) once the full CI passes. Tagging `vX.Y.Z` publishes a pinnable version for rollbacks. Check login, Today, scan, and sync.
+The image is `linux/arm64` only, built and smoke-tested on a native arm64 CI runner, so it runs on ARM servers such as Ampere, Graviton or a Raspberry Pi, not on x86 hosts. Compose always runs `latest`. Every green push to `main` promotes the smoke-tested image to `latest` on ghcr.io (it is also kept as `sha-<commit>`) once the full CI passes. Tagging `vX.Y.Z` publishes a pinnable version for rollbacks. Check login, Today, scan, and sync.
 
 ## Rollback
 

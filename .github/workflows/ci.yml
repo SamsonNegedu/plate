@@ -87,7 +87,7 @@ jobs:
       - run: make build
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm # the image is arm64 only, so build and smoke-test it natively
     timeout-minutes: 15
     permissions:
       contents: read
@@ -101,7 +101,7 @@ jobs:
         run: |
           echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT" # registry names must be lowercase
-      # Pull requests: one amd64 image, loaded locally for the smoke test.
+      # Pull requests: one arm64 image, loaded locally for the smoke test.
       - if: env.PUSH != 'true'
         uses: docker/build-push-action@v6
         with:
@@ -110,9 +110,8 @@ jobs:
           tags: plate:smoke
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      # main: build amd64 and arm64 together (the Go stage cross-compiles, so there is no emulation) and push the
-      # result as sha-<commit>. That tag is a candidate only; nothing deploys it. `publish` promotes it to latest once
-      # every other job is green.
+      # main: build the arm64 image and push it as sha-<commit>. That tag is a candidate only; nothing deploys it.
+      # `publish` promotes it to latest once every other job is green.
       - if: env.PUSH == 'true'
         uses: docker/login-action@v3
         with:
@@ -123,7 +122,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           push: true
           tags: ${{ steps.ref.outputs.image }}:${{ steps.ref.outputs.tag }}
           cache-from: type=gha
