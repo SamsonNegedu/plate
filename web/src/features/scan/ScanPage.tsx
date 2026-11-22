@@ -6,16 +6,18 @@ import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { useSettings } from "@/db/hooks";
-import { useScanFeedback } from "@/db/prefs";
+import { useHand, useScanFeedback } from "@/db/prefs";
 import type { ItemInput } from "@/db/savedMeals";
 import { draftOf } from "@/features/recipes/draft";
 import { createDetector, makeDeduper } from "@/food/barcode";
 import { type CameraState, useCamera } from "@/food/camera";
 import { digitsOnly, isBarcodeLength, resolveBarcode } from "@/food/lookup";
+import { usePinchZoom } from "@/food/usePreviewGestures";
 import { copy } from "@/lib/copy";
 import { defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { useUi } from "@/lib/ui";
 import { useNow } from "@/lib/useNow";
+import { useWakeLock } from "@/lib/wakeLock";
 import { beep, haptic } from "./feedback";
 import { cameraWanted, initialScanState, scanReducer } from "./scanMachine";
 
@@ -34,6 +36,7 @@ export default function ScanPage() {
   const [params] = useSearchParams();
   const settings = useSettings();
   const feedback = useScanFeedback();
+  const hand = useHand();
   const sheetOpen = useUi((s) => s.sheets.length > 0);
   const [scan, dispatch] = useReducer(scanReducer, initialScanState);
   const detector = scan.detector.kind === "ready" ? scan.detector.detector : null;
@@ -52,7 +55,25 @@ export default function ScanPage() {
   const recipePath = recipeKey === "new" || !recipeKey ? "/recipes/new" : `/recipes/${recipeKey}`;
 
   const active = !sheetOpen && cameraWanted(scan);
-  const { videoRef, state: cameraState, torchAvailable, torchOn, toggleTorch } = useCamera(active);
+  const {
+    videoRef,
+    state: cameraState,
+    torchAvailable,
+    torchOn,
+    toggleTorch,
+    zoomTo,
+  } = useCamera(active);
+  const pinch = usePinchZoom(zoomTo);
+  useWakeLock(active);
+
+  // The home-screen "Search" shortcut lands here and opens the search sheet straight away.
+  const wantsSearch = params.get("search") === "1";
+  const searchOpened = useRef(false);
+  useEffect(() => {
+    if (!wantsSearch || searchOpened.current || !settings) return;
+    searchOpened.current = true;
+    useUi.getState().open({ kind: "search", meal, date });
+  }, [wantsSearch, settings, meal, date]);
 
   useEffect(() => {
     let alive = true;
@@ -223,7 +244,13 @@ export default function ScanPage() {
       <h1 className="mt-1 text-title font-semibold">
         {recipeKey ? "Scan ingredient" : copy.scan.title}
       </h1>
-      <div className="relative grid aspect-[4/5] max-h-[62dvh] w-full place-items-center overflow-hidden rounded-card border border-frame-line bg-frame">
+      <div
+        className="relative grid aspect-[4/5] max-h-[62dvh] w-full touch-none place-items-center overflow-hidden rounded-card border border-frame-line bg-frame"
+        onPointerDown={pinch.onPointerDown}
+        onPointerMove={pinch.onPointerMove}
+        onPointerUp={pinch.onPointerEnd}
+        onPointerCancel={pinch.onPointerEnd}
+      >
         {error ? (
           <div className="absolute inset-0 grid place-items-center bg-surface p-6 text-center">
             <div className="grid justify-items-center gap-3">
@@ -253,7 +280,7 @@ export default function ScanPage() {
             {torchAvailable ? (
               <button
                 type="button"
-                className="absolute right-3 bottom-3 grid size-12 place-items-center rounded-pill border border-frame-line bg-frame text-on-accent aria-pressed:bg-accent"
+                className={`absolute bottom-3 grid size-14 ${hand === "left" ? "left-3" : "right-3"} place-items-center rounded-pill border border-frame-line bg-frame text-on-accent aria-pressed:bg-accent`}
                 onClick={() => void toggleTorch()}
                 aria-pressed={torchOn}
                 aria-label={torchOn ? copy.scan.torchOff : copy.scan.torchOn}
@@ -268,25 +295,27 @@ export default function ScanPage() {
         {scan.announcement || status}
       </p>
 
-      <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
-        <Button onClick={() => dispatch({ type: "typingOpened" })}>
-          <Icon name="barcode" />
-          {copy.scan.typeBarcode}
-        </Button>
-        <Button
-          onClick={() =>
-            ui.open({ kind: "search", meal, date, ...(recipeKey ? { pick: addToDraft } : {}) })
-          }
-        >
-          <Icon name="search" />
-          {copy.today.search}
-        </Button>
+      <div className="sticky bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+8px)] z-10 grid gap-2 rounded-card bg-bg/95 py-1 backdrop-blur">
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={() => dispatch({ type: "typingOpened" })}>
+            <Icon name="barcode" />
+            {copy.scan.typeBarcode}
+          </Button>
+          <Button
+            onClick={() =>
+              ui.open({ kind: "search", meal, date, ...(recipeKey ? { pick: addToDraft } : {}) })
+            }
+          >
+            <Icon name="search" />
+            {copy.today.search}
+          </Button>
+        </div>
+        {recipeKey ? null : (
+          <Button block onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
+            {copy.scan.addFood}
+          </Button>
+        )}
       </div>
-      {recipeKey ? null : (
-        <Button block onClick={() => ui.open({ kind: "manual", meal, date, barcode: null })}>
-          {copy.scan.addFood}
-        </Button>
-      )}
       <input
         ref={fileRef}
         type="file"
@@ -300,9 +329,11 @@ export default function ScanPage() {
           if (f) void readPhoto(f);
         }}
       />
-      <Button variant="ghost" onClick={() => navigate(recipeKey ? recipePath : "/today")}>
-        {copy.common.back}
-      </Button>
+      {recipeKey ? (
+        <Button variant="ghost" onClick={() => navigate(recipePath)}>
+          {copy.common.back}
+        </Button>
+      ) : null}
 
       {scan.input.kind === "typing" ? (
         <Sheet

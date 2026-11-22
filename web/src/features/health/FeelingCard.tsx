@@ -1,4 +1,5 @@
 import type { HealthKind, HealthRecord } from "@/db/types";
+import { haptic } from "@/features/scan/feedback";
 import { ratingFor } from "@/lib/health";
 
 const LEVELS: Record<"appetite" | "nausea", string[]> = {
@@ -40,8 +41,11 @@ export function FeelingCard({
                   type="button"
                   aria-pressed={current === v}
                   aria-label={`${NAMES[kind]} ${v} of 5, ${LEVELS[kind][v]}`}
-                  className="min-h-11 flex-1 rounded-lg border border-line bg-surface text-label font-medium text-ink-2 aria-pressed:border-ink aria-pressed:bg-surface-2 aria-pressed:text-ink"
-                  onClick={() => onRate(kind, v)}
+                  className="min-h-12 flex-1 rounded-lg border border-line bg-surface text-label font-medium text-ink-2 aria-pressed:border-ink aria-pressed:bg-surface-2 aria-pressed:text-ink"
+                  onClick={() => {
+                    haptic(15);
+                    onRate(kind, v);
+                  }}
                 >
                   {v}
                 </button>

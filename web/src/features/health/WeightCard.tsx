@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "@/components/Button";
 import { Segmented } from "@/components/Segmented";
 import { addDays, shortLabel } from "@/lib/dates";
 import { type WeightPoint, type WeightProgress } from "@/lib/health";
@@ -19,15 +18,12 @@ export function WeightCard({
   progress,
   goalKg,
   today,
-  onLog,
   onGoal,
 }: {
   series: WeightPoint[];
   progress: WeightProgress | null;
   goalKg: number | null;
   today: string;
-  /** The one way to log anything: weight is the default, and the sheet offers every other measurement. */
-  onLog: () => void;
   onGoal: () => void;
 }) {
   const [range, setRange] = useState<Range>("90");
@@ -40,16 +36,9 @@ export function WeightCard({
 
   return (
     <section aria-labelledby="weight-h" className="grid gap-3">
-      <div className="flex items-center gap-2 border-b-[1.5px] border-ink pb-1.5">
-        <h2 id="weight-h" className="text-section font-semibold">
-          Weight
-        </h2>
-        <span className="ml-auto">
-          <Button variant="primary" onClick={onLog}>
-            Log a measurement
-          </Button>
-        </span>
-      </div>
+      <h2 id="weight-h" className="sr-only">
+        Weight
+      </h2>
       {latest && progress ? (
         <>
           <div>
@@ -75,7 +64,11 @@ export function WeightCard({
               </dd>
             </div>
             <div>
-              <dt>Goal</dt>
+              <dt>
+                {goalKg !== null && progress.remainingKg !== null
+                  ? `Goal · ${progress.remainingKg === 0 ? "reached" : `${formatGrams(progress.remainingKg)} to go`}`
+                  : "Goal"}
+              </dt>
               <dd>
                 {goalKg === null ? (
                   <button
@@ -111,11 +104,6 @@ export function WeightCard({
                   style={{ width: `${Math.round(progress.towardGoal * 100)}%` }}
                 />
               </span>
-              <p className="text-meta text-ink-2">
-                {progress.remainingKg === null || progress.remainingKg === 0
-                  ? "You have reached your goal."
-                  : `${formatGrams(progress.remainingKg)} kg to go`}
-              </p>
             </div>
           ) : null}
           <Segmented
@@ -130,16 +118,13 @@ export function WeightCard({
           />
           <div className="rounded-card border border-line bg-surface px-3 pt-3 pb-1">
             <p className="mb-1 px-1 text-meta font-medium text-ink-2">
-              Weight in kg, one dot a day
+              Weight in kg. Dots are weighings, the line is the 7-day average.
             </p>
             <WeightChart
               points={shown.length > 0 ? shown : series.slice(-1)}
               goalKg={goalKg}
               summary={summary}
             />
-            <p className="px-1 pb-2 text-meta text-ink-2">
-              Dots are single weighings. The line is the 7-day average.
-            </p>
             <details className="group mt-1 border-t border-line text-meta">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-label font-medium text-ink">
                 <span>{`Readings (${series.length})`}</span>

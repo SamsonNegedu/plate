@@ -1311,6 +1311,15 @@
   .nf-btn.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); }
   .nf-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
   .nf-pair .nf-btn { margin-bottom: 0; }
+  .crop-frame { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; margin: 8px 0; overflow: hidden; border: 1px solid #333a2f; border-radius: 10px; background: #1c2119; }
+  .crop-table { display: grid; gap: 5px; width: 68%; padding: 10px; border-radius: 6px; background: #f4f5ef; color: #171a16; font-size: 8.5px; }
+  .crop-table span { display: flex; justify-content: space-between; padding-bottom: 3px; border-bottom: 1px solid #d6dbcc; }
+  .crop-frame::after { content: ""; position: absolute; inset: 0; border: 2px dashed #e9ecdf; opacity: 0.8; }
+  .install-nudge { display: grid; gap: 7px; margin-top: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .install-nudge strong { display: block; font-size: 12px; }
+  .install-nudge span { font-size: 10px; color: var(--ink-2); }
+  .install-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .install-btn { display: flex; align-items: center; justify-content: center; min-height: 32px; border: 1px solid var(--line); border-radius: 8px; font-size: 10.5px; font-weight: 600; }
   .nt-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid var(--ink); padding-bottom: 5px; margin-top: 10px; font-weight: 600; font-size: 14px; }
   .nt-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; min-height: 42px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 500; }
   .nt-row.sub { padding-left: 12px; color: var(--ink-2); font-weight: 400; }
@@ -1382,6 +1391,17 @@
                 Scan a barcode
               </span>
               <span class="s-btn">Search</span>
+            </div>
+
+            <div class="install-nudge">
+              <div>
+                <strong>Add Plate to your home screen</strong>
+                <span>It opens faster and keeps your log available offline.</span>
+              </div>
+              <div class="install-actions">
+                <span class="install-btn">Not now</span>
+                <span class="install-btn">Install</span>
+              </div>
             </div>
 
             <div class="recent-strip">
@@ -1625,6 +1645,40 @@
         </div>
       </div>
       <figcaption><strong>Not found</strong><span>One path: photograph the table or type it. Saved for everyone, so a rescan finds it.</span></figcaption>
+    </figure>
+
+    <!-- LABEL REVIEW -->
+    <figure class="mock">
+      <div class="phone">
+        <div class="screen sheet-screen quick-sheet" aria-hidden="true">
+          <div class="sheet-backdrop">
+            <div class="fake-line w40"></div>
+            <div class="fake-card"></div>
+          </div>
+          <div class="quick-panel">
+            <div class="quick-head">
+              <div><h2>Add this product</h2><p class="quick-sub">Frame the nutrition table.</p></div>
+              <span class="p-close">×</span>
+            </div>
+            <div class="crop-frame">
+              <div class="crop-table">
+                <span>Energy <b>192 kcal</b></span>
+                <span>Fat <b>12 g</b></span>
+                <span>of which saturates <b>1,9 g</b></span>
+                <span>Carbohydrate <b>0 g</b></span>
+                <span>Protein <b>21 g</b></span>
+                <span>Salt <b>2,8 g</b></span>
+              </div>
+            </div>
+            <p class="nt-note">Pinch to zoom and drag to frame the nutrition table.</p>
+            <div class="nf-pair">
+              <div class="nf-btn">Retake</div>
+              <div class="nf-btn primary">Use photo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption><strong>Label review</strong><span>The photo is framed before it is read; the dashed edge is the crop.</span></figcaption>
     </figure>
 
     <!-- ADD THIS PRODUCT -->

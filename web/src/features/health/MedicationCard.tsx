@@ -1,4 +1,3 @@
-import { Button } from "@/components/Button";
 import type { HealthRecord } from "@/db/types";
 import { cn } from "@/lib/cn";
 import { shortLabel } from "@/lib/dates";
@@ -22,7 +21,6 @@ export function MedicationCard({
   doses,
   changes,
   supply,
-  onLog,
   onPlan,
   onEdit,
 }: {
@@ -31,7 +29,6 @@ export function MedicationCard({
   doses: HealthRecord[];
   changes: DoseChange[];
   supply: number | null;
-  onLog: () => void;
   onPlan: () => void;
   onEdit: (record: HealthRecord) => void;
 }) {
@@ -45,11 +42,6 @@ export function MedicationCard({
           Track a weekly medication such as a GLP-1: log each dose, see when the next one is due and
           how your eating and weight move alongside it.
         </p>
-        <div>
-          <Button variant="primary" onClick={onPlan}>
-            Track a medication
-          </Button>
-        </div>
       </section>
     );
   }
@@ -68,11 +60,6 @@ export function MedicationCard({
             </span>
           ) : null}
         </h2>
-        <span className="ml-auto">
-          <Button variant="primary" onClick={onLog}>
-            Log a dose
-          </Button>
-        </span>
       </div>
 
       <div>

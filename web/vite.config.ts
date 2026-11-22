@@ -44,6 +44,12 @@ export default defineConfig({
             icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
           },
           {
+            name: "Search",
+            short_name: "Search",
+            url: "/scan?search=1",
+            icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+          },
+          {
             name: "Today",
             short_name: "Today",
             url: "/today",

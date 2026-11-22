@@ -45,7 +45,7 @@ test("build a recipe from a searched ingredient and log a portion", async ({ pag
   await page.getByRole("button", { name: "New recipe" }).click();
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByLabel("Portions", { exact: true }).fill("2");
-  await page.getByRole("button", { name: "Search ingredients" }).click();
+  await page.getByRole("button", { name: "Add ingredient", exact: true }).click();
   await page.getByLabel("Search foods").fill("nutella");
   await page
     .getByRole("button", { name: /Nutella/ })
@@ -58,21 +58,22 @@ test("build a recipe from a searched ingredient and log a portion", async ({ pag
   await expect(page.getByText(`Saved ${name}`).first()).toBeVisible(); // Radix adds a hidden screen-reader copy for a moment
 
   await page.getByRole("button", { name: `Log ${name}` }).click();
-  await page.getByRole("button", { name: "½ portion" }).click();
+  await page.getByRole("button", { name: "½", exact: true }).click();
   await page.getByRole("button", { name: /^Add to / }).click();
   await expect(page.getByText(new RegExp(`Added ${name} to`))).toBeVisible();
   await expect(page.getByRole("button", { name: new RegExp(name) })).toBeVisible();
   await expect(page.getByText("Recipe · ½ portion")).toBeVisible();
 
-  // Save is only live while something has changed
+  // Save only appears while something has changed; otherwise the bar offers to log a portion
   await page.goto("/recipes");
   await page.getByRole("link", { name: new RegExp(name) }).click();
   const save = page.getByRole("button", { name: "Save recipe" });
-  await expect(save).toBeDisabled();
+  await expect(save).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Log a portion" })).toBeVisible();
   await page.getByLabel("Portions", { exact: true }).fill("3");
   await expect(save).toBeEnabled();
   await page.getByLabel("Portions", { exact: true }).fill("2");
-  await expect(save).toBeDisabled();
+  await expect(save).toHaveCount(0);
 });
 
 test("scan an ingredient from the recipe editor and keep what was typed", async ({ page }) => {
@@ -281,7 +282,7 @@ test("track a medication, log a dose from the Today reminder, then weight and ap
     .click();
   await expect(page).toHaveURL(/\/health$/);
   await page.getByRole("button", { name: "Medication", exact: true }).click();
-  await page.getByRole("button", { name: "Track a medication" }).click();
+  await page.getByRole("button", { name: "Set up medication" }).click();
   await page.getByRole("combobox", { name: "Medication" }).selectOption("Wegovy");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Wegovy" })).toBeVisible();
@@ -307,7 +308,7 @@ test("track a medication, log a dose from the Today reminder, then weight and ap
   await expect(page.getByText(/Next dose\s*·\s*0\.25 mg/)).toBeVisible(); // the amount rides on the next-dose label
 
   await page.getByRole("button", { name: "Weight", exact: true }).click();
-  await page.getByRole("button", { name: "Log a measurement" }).click();
+  await page.getByRole("button", { name: "Log measurement" }).click();
   await expect(page.getByRole("dialog", { name: "Log a measurement" })).toBeVisible();
   await expect(page.getByLabel("Measure", { exact: true })).toHaveValue("weight"); // weight first, everything else in the same sheet
   await page.getByRole("textbox", { name: "Weight", exact: true }).fill("88,4");
@@ -343,7 +344,7 @@ test("body measurements: one button adds any of them and only the ones used are 
 }) => {
   await page.goto("/health/weight");
   await expect(page.getByRole("list", { name: "Body measurements" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Log a measurement" }).click();
+  await page.getByRole("button", { name: "Log measurement" }).click();
   await expect(page.getByRole("dialog", { name: "Log a measurement" })).toBeVisible();
   await page.getByLabel("Measure", { exact: true }).selectOption("hips");
   await page.getByRole("textbox", { name: "Hips" }).fill("101,5");
@@ -481,7 +482,7 @@ test("a recipe is shared as a copy: saved as a file, then imported into another 
   await page.goto("/recipes/new");
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByLabel("Portions", { exact: true }).fill("2");
-  await page.getByRole("button", { name: "Search ingredients" }).click();
+  await page.getByRole("button", { name: "Add ingredient", exact: true }).click();
   await page.getByLabel("Search foods").fill("nutella");
   await page
     .getByRole("button", { name: /^Nutella/ })

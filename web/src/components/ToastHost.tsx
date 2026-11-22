@@ -7,8 +7,9 @@ import { useUi } from "@/lib/ui";
 export function ToastHost() {
   const toasts = useUi((s) => s.toasts);
   const dismiss = useUi((s) => s.dismiss);
+  const sheetOpen = useUi((s) => s.sheets.length > 0);
   return (
-    <Toast.Provider swipeDirection="up" duration={5000} label="Notifications">
+    <Toast.Provider swipeDirection="down" duration={5000} label="Notifications">
       {toasts.map((t) => (
         <Toast.Root
           key={t.id}
@@ -42,7 +43,15 @@ export function ToastHost() {
           ) : null}
         </Toast.Root>
       ))}
-      <Toast.Viewport className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+8px)] z-[60] mx-auto grid max-w-[560px] gap-2 px-4 outline-none" />
+      <Toast.Viewport
+        className={cn(
+          "pointer-events-none fixed inset-x-0 z-[60] mx-auto grid max-w-[560px] gap-2 px-4 outline-none",
+          // Above the sheet footer while one is open, otherwise above the tab bar: both are within thumb reach.
+          sheetOpen
+            ? "bottom-[calc(var(--vv-bottom,0px)+92px)]"
+            : "bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+12px)]",
+        )}
+      />
     </Toast.Provider>
   );
 }

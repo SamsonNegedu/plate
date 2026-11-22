@@ -386,3 +386,16 @@ export function intakeByMedication(
   ].filter((p): p is MedicationPeriod => p !== null);
   return periods.length >= 2 ? periods : null;
 }
+
+export type HealthTab = "weight" | "medication" | "insights";
+
+/** Where Health opens: on whatever is overdue (a dose due, a week without weighing), else on the person's main habit. */
+export function suggestedTab(o: {
+  doseDue: boolean;
+  weightStale: boolean;
+  tracksMedication: boolean;
+}): HealthTab {
+  if (o.doseDue) return "medication";
+  if (o.weightStale) return "weight";
+  return o.tracksMedication ? "medication" : "weight";
+}

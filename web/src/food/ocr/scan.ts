@@ -1,4 +1,4 @@
-import { engineIsCached, type OcrMetrics, readLines, warmUp } from "./engine";
+import { engineIsCached, type LoadProgress, type OcrMetrics, readLines, warmUp } from "./engine";
 import { type Field, parseLabel, type ParsedLabel, type Region } from "./parse";
 
 export type { Field, ParsedLabel };
@@ -112,9 +112,9 @@ async function thumbnail(photo: Blob): Promise<string> {
 }
 
 /** Photo in, per-100 g values and the fields to double-check out. Nothing leaves the device. */
-export async function scanLabel(file: Blob): Promise<ScanResult> {
+export async function scanLabel(file: Blob, onProgress?: LoadProgress): Promise<ScanResult> {
   const photo = await preparePhoto(file);
-  const { lines, metrics, level } = await readLines(photo);
+  const { lines, metrics, level } = await readLines(photo, onProgress);
   const parsed = parseLabel(lines);
   // When the reader straightened the photo, the table's position is in that picture, so crop and show that one.
   const picture = level ?? photo;

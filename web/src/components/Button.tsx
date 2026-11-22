@@ -5,6 +5,7 @@ interface Props {
   children: ReactNode;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   block?: boolean;
+  className?: string;
   type?: "button" | "submit";
   disabled?: boolean;
   busy?: boolean;
@@ -26,15 +27,17 @@ export function Button({
   children,
   variant = "secondary",
   block,
+  className,
   type = "button",
   busy,
   disabled,
   ...rest
 }: Props) {
   const cls = cn(
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-ctl border px-4 text-body leading-heading font-medium whitespace-nowrap disabled:cursor-default disabled:opacity-55",
+    "inline-flex min-h-12 items-center justify-center gap-2 rounded-ctl border px-4 text-body leading-heading font-medium whitespace-nowrap disabled:cursor-default disabled:opacity-55",
     variants[variant],
     block && "w-full",
+    className,
   );
   return (
     <button

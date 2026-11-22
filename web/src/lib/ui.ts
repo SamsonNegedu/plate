@@ -69,6 +69,9 @@ interface UiState {
   applyUpdate: () => Promise<void>;
   /** A write failed because the device is out of storage. */
   quotaExceeded: boolean;
+  /** Foods logged in this session, so the install hint waits until the app has been useful. */
+  logCount: number;
+  countLog: () => void;
   recipeDraft: RecipeDraft | null;
   setRecipeDraft(d: RecipeDraft | null): void;
   open(sheet: Sheet): void;
@@ -92,6 +95,8 @@ export const useUi = create<UiState>((set) => ({
   updateReady: false,
   applyUpdate: async () => undefined,
   quotaExceeded: false,
+  logCount: 0,
+  countLog: () => set((s) => ({ logCount: s.logCount + 1 })),
   recipeDraft: null,
   setRecipeDraft: (recipeDraft) => set({ recipeDraft }),
   open: (sheet) => set((s) => ({ sheets: [...s.sheets, sheet] })),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type PointerEvent, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import { shortLabel } from "@/lib/dates";
 import {
@@ -44,6 +44,8 @@ const MAX_BAR = 20;
  */
 export function BarChart({ days, metric, trend, goal, doseDays, today, onOpen }: Props) {
   const [active, setActive] = useState<string | null>(null);
+  const touching = useRef(false);
+  const dragged = useRef(false);
   const limit = metric === "kcal";
   const name = METRICS.find((m) => m.key === metric)?.label ?? "";
   const values = days.map((d) => valueOf(d, metric));
@@ -64,6 +66,17 @@ export function BarChart({ days, metric, trend, goal, doseDays, today, onOpen }:
   const legend = `${goal === null ? "" : "Dashed line: your goal. "}${doseDays && doseDays.size > 0 ? "▲ marks a dose day. " : ""}${goal === null ? "The line" : "Solid line"} is the 7-day average. Tap or focus a bar for details.`;
   const trendEnd = trendSegments(trend, slot, max).at(-1)?.at(-1);
 
+  // On touch, dragging a finger across the bars reads each day's detail below the chart; a second tap on the same bar opens it.
+  const scrub = (e: PointerEvent<SVGSVGElement>) => {
+    if (e.pointerType !== "touch") return;
+    touching.current = true;
+    dragged.current = true;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * W;
+    const i = Math.min(days.length - 1, Math.max(0, Math.floor((x - LEFT) / slot)));
+    setActive(days[i]?.date ?? null);
+  };
+
   return (
     <figure>
       <p className="mb-1 px-1 text-meta font-medium text-ink-2">
@@ -73,7 +86,12 @@ export function BarChart({ days, metric, trend, goal, doseDays, today, onOpen }:
         viewBox={`0 0 ${W} ${H}`}
         role="group"
         aria-label={`${name} per day for the last ${days.length} days.${goal === null ? "" : ` Goal ${formatMetric(goal, metric)}.`}`}
-        className="block h-auto w-full overflow-visible"
+        className="block h-auto w-full touch-pan-y overflow-visible"
+        onPointerDown={(e) => {
+          dragged.current = false;
+          touching.current = e.pointerType === "touch";
+        }}
+        onPointerMove={scrub}
       >
         {ticks.map((t) => (
           <g key={t}>
@@ -112,7 +130,15 @@ export function BarChart({ days, metric, trend, goal, doseDays, today, onOpen }:
               onMouseLeave={() => setActive(null)}
               onFocus={() => setActive(d.date)}
               onBlur={() => setActive(null)}
-              onClick={() => onOpen(d.date)}
+              onClick={() => {
+                // The first touch only selects; opening needs a second tap on the same bar.
+                if (touching.current && (dragged.current || active !== d.date)) {
+                  dragged.current = false;
+                  setActive(d.date);
+                  return;
+                }
+                onOpen(d.date);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();

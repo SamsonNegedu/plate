@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Button } from "@/components/Button";
+import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { useDb } from "@/db/context";
 import { setFavorite } from "@/db/favorites";
 import { deleteCustomFood } from "@/db/foods";
@@ -20,6 +22,11 @@ export function FoodsPanel({ dayStartHour }: { dayStartHour: number }) {
   const now = useNow();
   const date = logicalDate(now, dayStartHour);
   const meal = defaultMeal(now);
+  const [deleting, setDeleting] = useState<{
+    kind: "meal" | "food";
+    id: string;
+    name: string;
+  } | null>(null);
   const nothingSaved = favorites.length + meals.length + foods.length === 0;
 
   return (
@@ -69,7 +76,7 @@ export function FoodsPanel({ dayStartHour }: { dayStartHour: number }) {
                 <button
                   type="button"
                   className={smallBtn(true)}
-                  onClick={() => void deleteMeal(db, m.meal.id)}
+                  onClick={() => setDeleting({ kind: "meal", id: m.meal.id, name: m.meal.name })}
                   aria-label={`Delete ${m.meal.name}`}
                 >
                   Delete
@@ -104,7 +111,7 @@ export function FoodsPanel({ dayStartHour }: { dayStartHour: number }) {
                 <button
                   type="button"
                   className={smallBtn(true)}
-                  onClick={() => void deleteCustomFood(db, f.id)}
+                  onClick={() => setDeleting({ kind: "food", id: f.id, name: f.name })}
                   aria-label={`Delete ${f.name}`}
                 >
                   Delete
@@ -120,6 +127,25 @@ export function FoodsPanel({ dayStartHour }: { dayStartHour: number }) {
           Add a food
         </Button>
       </div>
+
+      {deleting ? (
+        <ConfirmSheet
+          title={`Delete ${deleting.name}?`}
+          body={
+            deleting.kind === "meal"
+              ? "The saved meal is removed. Entries you already logged from it stay."
+              : "The food is removed from search. Entries you already logged stay."
+          }
+          confirmLabel="Delete"
+          onCancel={() => setDeleting(null)}
+          onConfirm={async () => {
+            await (deleting.kind === "meal"
+              ? deleteMeal(db, deleting.id)
+              : deleteCustomFood(db, deleting.id));
+            setDeleting(null);
+          }}
+        />
+      ) : null}
     </section>
   );
 }

@@ -5,7 +5,8 @@ import type { ScanResult } from "@/food/ocr/scan";
 import { LabelScan } from "./LabelScan";
 
 const ocr = vi.hoisted(() => ({
-  scanLabel: vi.fn<(file: File) => Promise<unknown>>(),
+  scanLabel:
+    vi.fn<(file: File, onProgress?: (downloadedBytes: number) => void) => Promise<unknown>>(),
   warmUpIfCached: vi.fn<() => Promise<boolean>>(() => Promise.resolve(true)),
 }));
 const camera = vi.hoisted(() => ({
@@ -17,11 +18,20 @@ const camera = vi.hoisted(() => ({
       torchAvailable: boolean;
       torchOn: boolean;
       toggleTorch: () => Promise<void>;
+      focusAt: () => Promise<void>;
+      zoomTo: () => Promise<void>;
     }
   >(),
 }));
+const prefs = vi.hoisted(() => ({
+  useScanFeedback: vi.fn<() => { haptics: boolean; sound: boolean }>(() => ({
+    haptics: false,
+    sound: false,
+  })),
+}));
 vi.mock("@/food/ocr/scan", () => ocr);
 vi.mock("@/food/camera", () => camera);
+vi.mock("@/db/prefs", () => prefs);
 
 const scanned: ScanResult = {
   values: { kcal: 192 },
@@ -38,6 +48,7 @@ const photo = () => new File(["x"], "label.jpg", { type: "image/jpeg" });
 const onResult = () => vi.fn<(result: ScanResult) => void>();
 
 beforeEach(() => {
+  ocr.warmUpIfCached.mockResolvedValue(true);
   camera.cameraAvailable.mockReturnValue(true);
   camera.useCamera.mockReturnValue({
     videoRef: { current: null },
@@ -45,12 +56,15 @@ beforeEach(() => {
     torchAvailable: false,
     torchOn: false,
     toggleTorch: () => Promise.resolve(),
+    focusAt: () => Promise.resolve(),
+    zoomTo: () => Promise.resolve(),
   });
 });
 
 afterEach(() => {
   cleanup();
   ocr.scanLabel.mockReset();
+  Reflect.deleteProperty(navigator, "connection");
 });
 
 describe("label scan", () => {
@@ -75,7 +89,7 @@ describe("label scan", () => {
     const file = photo();
     fireEvent.change(screen.getByLabelText("Choose photo"), { target: { files: [file] } });
     await waitFor(() => expect(report).toHaveBeenCalledWith(scanned));
-    expect(ocr.scanLabel).toHaveBeenCalledWith(file);
+    expect(ocr.scanLabel).toHaveBeenCalledWith(file, expect.any(Function));
   });
 
   test("disables both actions while the reader runs", async () => {
@@ -106,11 +120,42 @@ describe("label scan", () => {
       torchAvailable: false,
       torchOn: false,
       toggleTorch: () => Promise.resolve(),
+      focusAt: () => Promise.resolve(),
+      zoomTo: () => Promise.resolve(),
     });
     render(<LabelScan onResult={onResult()} />);
     fireEvent.click(screen.getByRole("button", { name: "Take photo" }));
     expect(screen.getByRole("alert")).toHaveTextContent(/Camera access is blocked/);
     expect(screen.getByRole("button", { name: "Take the photo" })).toBeDisabled();
+  });
+
+  test("asks before the first download on a metered connection", async () => {
+    ocr.warmUpIfCached.mockResolvedValue(false);
+    Object.defineProperty(navigator, "connection", {
+      configurable: true,
+      value: { saveData: true },
+    });
+    render(<LabelScan onResult={onResult()} />);
+    await waitFor(() => expect(screen.getByText(/first scan downloads/)).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText("Choose photo"), { target: { files: [photo()] } });
+    expect(screen.getByText(/slow or metered connection/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByLabelText("Choose photo")).toBeInTheDocument();
+    expect(ocr.scanLabel).not.toHaveBeenCalled();
+  });
+
+  test("shows how much of the reader has downloaded", async () => {
+    ocr.warmUpIfCached.mockResolvedValue(false);
+    ocr.scanLabel.mockImplementation(async (_file, onProgress) => {
+      onProgress?.(5_000_000);
+      return new Promise(() => {});
+    });
+    render(<LabelScan onResult={onResult()} />);
+    await waitFor(() => expect(screen.getByText(/first scan downloads/)).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText("Choose photo"), { target: { files: [photo()] } });
+    await waitFor(() =>
+      expect(screen.getByText("Downloading the label reader: 5.0 MB")).toBeInTheDocument(),
+    );
   });
 
   test("offers another photo after a read", () => {

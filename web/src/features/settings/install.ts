@@ -7,8 +7,10 @@ interface InstallPromptEvent extends Event {
 /** Install affordances: Chromium's install prompt, and instructions for iOS. Hidden once the app is installed. */
 export function useInstall() {
   const [event, setEvent] = useState<InstallPromptEvent | null>(null);
+  // iOS Safari sets navigator.standalone for a home-screen app; older versions lack the display-mode query.
   const standalone =
-    typeof matchMedia === "function" && matchMedia("(display-mode: standalone)").matches;
+    (typeof matchMedia === "function" && matchMedia("(display-mode: standalone)").matches) ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
   useEffect(() => {
     const on = (e: Event) => {
       e.preventDefault();

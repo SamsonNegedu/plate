@@ -6,6 +6,8 @@ import { formatKcal } from "@/lib/numbers";
 import { entryKcal } from "@/lib/nutrition";
 import { EntryRow } from "./EntryRow";
 import { Icon } from "./Icon";
+import type { SwipeAction } from "./swipe";
+import { SwipeRow } from "./SwipeRow";
 
 interface Props {
   meal: Meal;
@@ -14,10 +16,11 @@ interface Props {
   /** Opens that meal's nutrient table. Only offered once the meal has entries. */
   onDetails: () => void;
   onOpen: (e: Entry) => void;
+  onSwipe: (e: Entry, a: SwipeAction) => void;
   extra?: ReactNode;
 }
 
-export function MealSection({ meal, entries, onAdd, onDetails, onOpen, extra }: Props) {
+export function MealSection({ meal, entries, onAdd, onDetails, onOpen, onSwipe, extra }: Props) {
   const total = entries.reduce((s, e) => s + entryKcal(e), 0);
   const images = useFoodImages(entries.flatMap((e) => (e.foodId ? [e.foodId] : [])));
   const label = copy.meals[meal];
@@ -54,12 +57,17 @@ export function MealSection({ meal, entries, onAdd, onDetails, onOpen, extra }: 
         </button>
       </header>
       {entries.map((e) => (
-        <EntryRow
+        <SwipeRow
           key={e.id}
-          entry={e}
-          imagePath={e.foodId ? (images.get(e.foodId) ?? null) : null}
-          onOpen={() => onOpen(e)}
-        />
+          onAction={(a) => onSwipe(e, a)}
+          labels={{ delete: copy.common.delete, repeat: copy.today.again }}
+        >
+          <EntryRow
+            entry={e}
+            imagePath={e.foodId ? (images.get(e.foodId) ?? null) : null}
+            onOpen={() => onOpen(e)}
+          />
+        </SwipeRow>
       ))}
       {extra}
     </section>

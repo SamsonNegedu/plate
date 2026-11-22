@@ -26,6 +26,7 @@ export interface LogOptions {
 export function useLog() {
   const db = useDb();
   const toast = useUi((s) => s.toast);
+  const countLog = useUi((s) => s.countLog);
   const navigate = useNavigate();
 
   const logFood = useCallback(
@@ -53,6 +54,7 @@ export function useLog() {
       });
       await saveEntry(db, entry);
       await setPref(db, food.id, o.unit, o.amount);
+      countLog();
       buzz();
       toast({
         message: `Added to ${copy.mealsSingular[o.meal]}`,
@@ -61,17 +63,19 @@ export function useLog() {
       if (o.goToday) navigate("/today");
       return entry;
     },
-    [db, navigate, toast],
+    [db, navigate, toast, countLog],
   );
 
   const removeEntry = useCallback(
     async (entry: Entry) => {
       await deleteEntry(db, entry.id);
+      buzz();
       toast({
         message: "Entry deleted",
         action: {
           label: copy.common.undo,
           run: async () => {
+            buzz(15);
             await undoDelete(db, entry.id);
           },
         },
@@ -80,10 +84,25 @@ export function useLog() {
     [db, toast],
   );
 
+  const repeatEntry = useCallback(
+    async (entry: Entry) => {
+      const copyOf = buildEntry({ ...entry, eatenOn: entry.eatenOn });
+      await saveEntry(db, copyOf);
+      countLog();
+      buzz();
+      toast({
+        message: `Added ${entry.name} again`,
+        action: { label: copy.common.undo, run: () => undoAdd(db, copyOf.id) },
+      });
+    },
+    [db, toast, countLog],
+  );
+
   const logPortions = useCallback(
     async (mealId: string, name: string, date: string, slot: Meal, portions: number) => {
       const id = await logRecipe(db, mealId, date, slot, portions);
       if (id === null) return false;
+      countLog();
       buzz();
       toast({
         message: `Added ${name} to ${copy.mealsSingular[slot]}`,
@@ -91,8 +110,8 @@ export function useLog() {
       });
       return true;
     },
-    [db, toast],
+    [db, toast, countLog],
   );
 
-  return { logFood, removeEntry, logPortions };
+  return { logFood, removeEntry, repeatEntry, logPortions };
 }

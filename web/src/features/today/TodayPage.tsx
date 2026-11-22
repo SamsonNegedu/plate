@@ -8,19 +8,17 @@ import { MealSection } from "@/components/MealSection";
 import { SummaryCard } from "@/components/SummaryCard";
 import { useDb } from "@/db/context";
 import { copyDay, undoAdd } from "@/db/entries";
-import { useDay, useRecentFoods, useSettings } from "@/db/hooks";
-import { MEALS } from "@/db/types";
-import { startingPortion } from "@/features/log/portion";
+import { useDay, useSettings } from "@/db/hooks";
+import { MEALS, type Meal } from "@/db/types";
 import { useLog } from "@/features/log/useLog";
 import { copy } from "@/lib/copy";
 import { addDays, dayLabel, dayTitle, defaultMeal, isValidDate, logicalDate } from "@/lib/dates";
 import { formatKcal } from "@/lib/numbers";
+import { useFlick } from "@/lib/swipeNav";
 import { useUi } from "@/lib/ui";
 import { useNow } from "@/lib/useNow";
 import { HealthNudge } from "./HealthNudge";
-
-const chip =
-  "flex min-h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-1 rounded-pill border border-line bg-surface px-2.5 text-label text-ink";
+import { InstallNudge } from "./InstallNudge";
 
 export function TodayPage() {
   const params = useParams();
@@ -39,18 +37,19 @@ function Day({ date, today }: { date: string; today: string }) {
   const ui = useUi();
   const auth = useAuth();
   const now = useNow();
-  const { logFood } = useLog();
+  const { removeEntry, repeatEntry } = useLog();
   const settings = useSettings();
   const day = useDay(date);
   const yesterday = useDay(addDays(date, -1));
-  const recents = useRecentFoods(3);
+  const meal = defaultMeal(now);
+  const go = (d: string) => navigate(d === today ? "/today" : `/today/${d}`);
+
+  const flick = useFlick((dir) => go(addDays(date, -dir)));
 
   if (!settings || !day) return null;
-  const go = (d: string) => navigate(d === today ? "/today" : `/today/${d}`);
-  const meal = defaultMeal(now);
 
-  const copyYesterday = async () => {
-    const ids = await copyDay(db, addDays(date, -1), date);
+  const copyYesterday = async (only?: Meal) => {
+    const ids = await copyDay(db, addDays(date, -1), date, Date.now(), only);
     if (ids.length === 0) {
       ui.toast({ message: copy.today.nothingToCopy });
       return;
@@ -67,7 +66,7 @@ function Day({ date, today }: { date: string; today: string }) {
   };
 
   return (
-    <div className="pb-2">
+    <div className="touch-pan-y pb-2" {...flick}>
       <DayNav
         title={dayTitle(date, today)}
         label={dayLabel(date)}
@@ -114,34 +113,8 @@ function Day({ date, today }: { date: string; today: string }) {
           {copy.today.search}
         </Button>
       </div>
+      <InstallNudge />
 
-      {(recents ?? []).length > 0 ? (
-        <section
-          className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-1"
-          aria-label={`Add again to ${copy.meals[meal].toLowerCase()}`}
-        >
-          <p className="text-micro text-ink-2" aria-hidden="true">
-            {`Add again to ${copy.meals[meal]}`}
-          </p>
-          <div className="flex gap-2">
-            {(recents ?? []).map((r) => {
-              const p = startingPortion(r.food, r.pref);
-              return (
-                <button
-                  key={r.food.id}
-                  type="button"
-                  className={chip}
-                  onClick={() => void logFood(r.food, { ...p, meal, date })}
-                  aria-label={`Add ${r.food.name} again to ${copy.meals[meal].toLowerCase()}`}
-                >
-                  <Icon name="plus" size={16} />
-                  <span className="truncate">{r.food.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
       {day.totals.count === 0 && (yesterday?.totals.count ?? 0) > 0 ? (
         <button
           type="button"
@@ -167,17 +140,30 @@ function Day({ date, today }: { date: string; today: string }) {
             onAdd={() => ui.open({ kind: "search", meal: m, date })}
             onDetails={() => ui.open({ kind: "nutrients", date, scope: m })}
             onOpen={(e) => ui.open({ kind: "entry", entryId: e.id })}
+            onSwipe={(e, a) => void (a === "delete" ? removeEntry(e) : repeatEntry(e))}
             extra={
-              entries.length > 0 ? (
-                <button
-                  type="button"
-                  className="inline-flex min-h-11 items-center bg-transparent p-0 text-meta text-ink-2 underline"
-                  onClick={() => ui.open({ kind: "saveMeal", entries })}
-                >
-                  Save as recipe
-                  <span className="sr-only">{` ${formatKcal(entries.reduce((s, e) => s + (e.kcal * e.grams) / 100, 0))} kcal`}</span>
-                </button>
-              ) : null
+              <>
+                {entries.length === 0 && (yesterday?.entries ?? []).some((e) => e.meal === m) ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-12 items-center gap-1.5 bg-transparent p-0 text-label font-medium text-accent"
+                    onClick={() => void copyYesterday(m)}
+                  >
+                    <Icon name="copy" size={16} />
+                    {`Repeat yesterday's ${copy.meals[m].toLowerCase()}`}
+                  </button>
+                ) : null}
+                {entries.length > 0 ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 items-center bg-transparent p-0 text-meta text-ink-2 underline"
+                    onClick={() => ui.open({ kind: "saveMeal", entries })}
+                  >
+                    Save as recipe
+                    <span className="sr-only">{` ${formatKcal(entries.reduce((s, e) => s + (e.kcal * e.grams) / 100, 0))} kcal`}</span>
+                  </button>
+                ) : null}
+              </>
             }
           />
         );

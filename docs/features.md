@@ -7,7 +7,7 @@ A guide to the features, written for someone using the app. Each section says wh
 - **Scan a barcode** with the camera, or type the digits; when the camera cannot start, upload a photo of the code. The product opens with its nutrition and a portion to confirm; nothing is added until you say so ([food-and-search.md](food-and-search.md)).
 - **Search by name** across your own foods, favourites, recents, the bundled German catalogue and Open Food Facts. A recipe matches by name too and is listed first.
 - **Quick add** calories with no label, **add a food** by hand or from a photo of the nutrition table, or **copy yesterday** into an empty day.
-- **Add again** puts the foods you eat most one tap away on Today, and a food's last portion is remembered.
+- **Usual for this meal** tops the add-food sheet with the foods you log most for that meal, then recents. An empty meal offers "Repeat yesterday's breakfast". A food's last portion is remembered.
 - Every entry keeps the nutrition it was logged with, so correcting a food later never rewrites your history ([data-model.md](data-model.md)).
 - Missing nutrition is shown as missing, never as zero.
 
@@ -40,11 +40,13 @@ A guide to the features, written for someone using the app. Each section says wh
 ## Goals and settings
 
 - Calories, and optional protein, carbs, fat and fibre targets. Macros can be entered as grams or as a share of the calories; Plate shows how they split the calories and whether they add up to your goal.
+- **Suggest my goals**: a calorie and macro starting point from sex, age, height, weight and activity (no BMI), accepted or ignored by the person.
 - A weight goal and the day-start hour (so late meals count toward the day before).
 - Light, dark or automatic theme, and scan sound and vibration.
 
 ## Your data
 
 - Everything works offline and syncs when there is a connection, with a visible sync status and a way to retry or discard a change the server refused ([sync.md](sync.md)).
+- It can be installed to the home screen. After a few logs Plate offers this once, so the log opens faster and stays available offline.
 - **Export a backup** (entries, foods, recipes, health records and goals) and **import** it back; delete your account and all of its data ([accounts.md](accounts.md), [runbook.md](runbook.md)).
 - Development builds also offer **sample data** (recipes, foods, a month of history, a fortnight of weight and doses) that can be removed again. It is not in the built app.

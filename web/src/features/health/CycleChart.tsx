@@ -1,3 +1,4 @@
+import { type PointerEvent, useState } from "react";
 import { roundedTop } from "@/features/history/BarChart";
 import { niceMax, yFor } from "@/features/history/stats";
 import type { CycleBucket } from "@/lib/health";
@@ -15,12 +16,20 @@ const dayLabel = (d: number) => (d === 0 ? "Dose" : String(d));
 
 /** Average calories on each day since the last dose, as columns. The dose day is the first one. */
 export function CycleChart({ cycle }: { cycle: CycleBucket[] }) {
+  const [active, setActive] = useState<number | null>(null);
   const max = niceMax(Math.max(...cycle.map((b) => b.avgKcal)) * 1.1);
   const slot = (W - LEFT - RIGHT) / cycle.length;
   const barW = Math.min(MAX_BAR, slot - 4);
   const high = cycle.reduce((a, b) => (b.avgKcal > a.avgKcal ? b : a));
   const low = cycle.reduce((a, b) => (b.avgKcal < a.avgKcal ? b : a));
   const summary = `Average calories by days since the dose. Highest on ${dayLabel(high.day) === "Dose" ? "the dose day" : `day ${high.day}`} at ${formatKcal(high.avgKcal)} kcal, lowest on ${dayLabel(low.day) === "Dose" ? "the dose day" : `day ${low.day}`} at ${formatKcal(low.avgKcal)} kcal.`;
+
+  const scrub = (e: PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * W;
+    setActive(Math.min(cycle.length - 1, Math.max(0, Math.floor((px - LEFT) / slot))));
+  };
+  const picked = active === null ? undefined : cycle[active];
 
   return (
     <figure>
@@ -29,7 +38,11 @@ export function CycleChart({ cycle }: { cycle: CycleBucket[] }) {
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label={summary}
-        className="block h-auto w-full overflow-visible"
+        data-swipe-row
+        className="block h-auto w-full touch-pan-y overflow-visible"
+        onPointerDown={scrub}
+        onPointerMove={scrub}
+        onPointerLeave={(e) => e.pointerType === "mouse" && setActive(null)}
       >
         {[0, max / 2, max].map((t) => (
           <g key={t}>
@@ -58,7 +71,7 @@ export function CycleChart({ cycle }: { cycle: CycleBucket[] }) {
             <g key={b.day}>
               <path
                 d={roundedTop(x, y, barW, BOTTOM - y, 3)}
-                className={b.day === 0 ? "fill-accent" : "fill-ink-3"}
+                className={b.day === 0 || b === picked ? "fill-accent" : "fill-ink-3"}
               />
               {marked ? (
                 <text
@@ -85,6 +98,11 @@ export function CycleChart({ cycle }: { cycle: CycleBucket[] }) {
           Days since the dose
         </text>
       </svg>
+      <p className="mt-1.5 min-h-5 text-meta text-ink-2" aria-live="polite">
+        {picked
+          ? `${picked.day === 0 ? "Dose day" : `Day ${picked.day}`} · ${formatKcal(picked.avgKcal)} kcal · ${picked.days} ${picked.days === 1 ? "day" : "days"} logged`
+          : "Touch or drag across the chart to read each day."}
+      </p>
       <table className="sr-only">
         <caption>Average calories by days since the dose</caption>
         <thead>

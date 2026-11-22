@@ -16,9 +16,11 @@ import { useLog } from "./useLog";
 
 const MAX_PORTIONS = 100;
 const PRESETS: Array<{ name: string; portions: number }> = [
-  { name: "¼ portion", portions: 0.25 },
-  { name: "½ portion", portions: 0.5 },
-  { name: "1 portion", portions: 1 },
+  { name: "¼", portions: 0.25 },
+  { name: "½", portions: 0.5 },
+  { name: "Small plate", portions: 0.75 },
+  { name: "Normal plate", portions: 1 },
+  { name: "Big plate", portions: 1.5 },
   { name: "2 portions", portions: 2 },
 ];
 
@@ -161,7 +163,7 @@ function Logger({
             <button
               key={p.name}
               type="button"
-              className="min-h-11 rounded-pill border border-line bg-surface px-3.5 text-meta text-ink"
+              className="min-h-12 rounded-pill border border-line bg-surface px-3.5 text-meta text-ink"
               onClick={() => setText(String(p.portions))}
             >
               {p.name}

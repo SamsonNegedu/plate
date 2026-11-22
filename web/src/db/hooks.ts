@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useMemo } from "react";
+import { addDays } from "@/lib/dates";
 import { type DayTotals, dayTotals } from "@/lib/nutrition";
 import { useDb } from "./context";
 import { entriesForDay } from "./entries";
@@ -11,6 +12,7 @@ import type {
   FoodPref,
   HealthKind,
   HealthRecord,
+  Meal,
   SavedMeal,
   SavedMealItem,
   Settings,
@@ -53,6 +55,41 @@ export function useRecentFoods(limit: number): RecentFood[] | undefined {
     }
     return out;
   }, [db, limit]);
+}
+
+/** Foods eaten at least twice for this meal in the 30 days before `date`, most often first. */
+export function usualFoodIds(entries: Entry[], meal: Meal, limit: number): string[] {
+  const seen = new Map<string, { n: number; last: string }>();
+  for (const e of entries) {
+    if (e.meal !== meal || e.foodId === null) continue;
+    const cur = seen.get(e.foodId);
+    seen.set(e.foodId, {
+      n: (cur?.n ?? 0) + 1,
+      last: cur && cur.last > e.eatenOn ? cur.last : e.eatenOn,
+    });
+  }
+  return [...seen.entries()]
+    .filter(([, v]) => v.n >= 2)
+    .sort((a, b) => b[1].n - a[1].n || b[1].last.localeCompare(a[1].last))
+    .slice(0, limit)
+    .map(([id]) => id);
+}
+
+export function useUsualFoods(meal: Meal, date: string, limit: number): RecentFood[] | undefined {
+  const db = useDb();
+  return useLiveQuery(async () => {
+    const rows = await db.entries
+      .where("eatenOn")
+      .between(addDays(date, -30), addDays(date, -1), true, true)
+      .filter((e) => e.deletedAt === null)
+      .toArray();
+    const out: RecentFood[] = [];
+    for (const id of usualFoodIds(rows, meal, limit)) {
+      const food = await db.foods.get(id);
+      if (food && !food.deletedAt) out.push({ food, pref: await db.foodPrefs.get(id) });
+    }
+    return out;
+  }, [db, meal, date, limit]);
 }
 
 export function useFavoriteFoods(): RecentFood[] | undefined {

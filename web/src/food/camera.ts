@@ -36,9 +36,42 @@ function unsupportedReason(): CameraState | null {
   return typeof navigator.mediaDevices?.getUserMedia === "function" ? null : "unsupported";
 }
 
+const IDLE_RELEASE_MS = 30 * 1000;
+let shared: MediaStream | null = null;
+let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+const isLive = (stream: MediaStream | null): stream is MediaStream =>
+  stream !== null && stream.getVideoTracks().some((t) => t.readyState === "live");
+
+function stopShared() {
+  for (const t of shared?.getTracks() ?? []) t.stop();
+  shared = null;
+}
+
 /**
- * Owns the camera stream. It runs only while `active` is true and the page is visible, and always stops its tracks on
- * cleanup, so the camera is never left on behind a sheet or after leaving the route.
+ * One stream for the whole document. An installed iOS app asks for camera permission on every getUserMedia call, so
+ * moving between the scanner and the label camera reuses the live stream instead of asking again.
+ */
+async function acquireStream(): Promise<MediaStream> {
+  if (releaseTimer) clearTimeout(releaseTimer);
+  releaseTimer = null;
+  if (isLive(shared)) return shared;
+  shared = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
+    audio: false,
+  });
+  return shared;
+}
+
+/** Lets go of the camera after a short idle, so it is never left on for long behind a closed screen. */
+function releaseStream() {
+  if (releaseTimer) clearTimeout(releaseTimer);
+  releaseTimer = setTimeout(stopShared, IDLE_RELEASE_MS);
+}
+
+/**
+ * Owns the camera stream. It runs only while `active` is true and the page is visible. On cleanup the preview detaches at once and the
+ * stream is released after a short idle, so the camera is not left on, yet coming straight back does not ask again.
  */
 export function useCamera(active: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -55,7 +88,12 @@ export function useCamera(active: boolean) {
   }, []);
 
   const stop = useCallback(() => {
-    for (const t of streamRef.current?.getTracks() ?? []) t.stop();
+    // The stream outlives this screen, so the torch must not stay lit with it.
+    const track = streamRef.current?.getVideoTracks()[0];
+    void track
+      ?.applyConstraints({ advanced: [{ torch: false } as MediaTrackConstraintSet] })
+      .catch(() => undefined);
+    if (streamRef.current) releaseStream();
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
@@ -66,14 +104,10 @@ export function useCamera(active: boolean) {
   useEffect(() => {
     if (!running || unsupported) return;
     let cancelled = false;
-    void navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
-        audio: false,
-      })
+    void acquireStream()
       .then(async (stream) => {
         if (cancelled) {
-          for (const t of stream.getTracks()) t.stop();
+          releaseStream();
           return;
         }
         streamRef.current = stream;
@@ -117,5 +151,40 @@ export function useCamera(active: boolean) {
     }
   }, [torchOn]);
 
-  return { videoRef, state, torchAvailable, torchOn, toggleTorch };
+  /** A focus point in the preview, from 0 to 1 on each axis. Devices without one simply keep their own autofocus. */
+  const focusAt = useCallback(async (x: number, y: number) => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track) return;
+    try {
+      await track.applyConstraints({
+        advanced: [{ pointsOfInterest: [{ x, y }] } as unknown as MediaTrackConstraintSet],
+      });
+    } catch {
+      // Not supported here; the camera's own autofocus still runs.
+    }
+  }, []);
+
+  /** An absolute zoom factor (1 is the widest the camera offers). Ignored where the camera cannot zoom. */
+  const zoomTo = useCallback(async (factor: number) => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track || typeof track.getCapabilities !== "function") return;
+    const cape = track.getCapabilities() as unknown as {
+      zoom?: { min: number; max: number; step?: number };
+    };
+    const range = cape.zoom;
+    if (!range || typeof range !== "object") return;
+    try {
+      await track.applyConstraints({
+        advanced: [
+          {
+            zoom: Math.min(range.max, Math.max(range.min, factor)),
+          } as unknown as MediaTrackConstraintSet,
+        ],
+      });
+    } catch {
+      // Not adjustable on this camera.
+    }
+  }, []);
+
+  return { videoRef, state, torchAvailable, torchOn, toggleTorch, focusAt, zoomTo };
 }

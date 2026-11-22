@@ -14,7 +14,7 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
 }
 
 /** One line of a nutrition table: the name on the left, the number and its unit on the right. */
-export function NutrientRow({ label, unit, sub, error, check, ...input }: Props) {
+export function NutrientRow({ label, unit, sub, error, check, onFocus, ...input }: Props) {
   const id = useId();
   const note = error ?? (check ? "Check this value against the label." : undefined);
   return (
@@ -33,6 +33,11 @@ export function NutrientRow({ label, unit, sub, error, check, ...input }: Props)
             autoComplete="off"
             enterKeyHint="next"
             onKeyDown={nextOnEnter}
+            onFocus={(e) => {
+              // A numeric field starts selected so typing replaces the old value instead of appending to it.
+              e.currentTarget.select();
+              onFocus?.(e);
+            }}
             className="min-h-11 min-w-0 flex-1 rounded-ctl bg-transparent pl-3 text-right text-input tabular-nums outline-none focus:outline-none focus-visible:outline-none"
             aria-invalid={error ? true : undefined}
             aria-describedby={note ? `${id}-n` : undefined}

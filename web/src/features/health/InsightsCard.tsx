@@ -110,40 +110,46 @@ export function InsightsCard({
           >
             By medication
           </h2>
-          <table className="w-full border-collapse text-label [&_td]:border-b [&_td]:border-line [&_td]:py-2 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-2 [&_th]:text-left [&_th]:font-normal [&_thead_th]:border-ink [&_thead_th]:pb-1.5 [&_thead_th]:text-right [&_thead_th]:font-semibold [&_thead_th:first-child]:text-left">
-            <caption className="sr-only">
-              Average a day before any dose and on each medication
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Period</th>
-                <th scope="col">Days</th>
-                <th scope="col">kcal</th>
-                <th scope="col">Protein</th>
-              </tr>
-            </thead>
-            <tbody>
-              {periods.map((p) => (
-                <tr key={p.label}>
-                  <th scope="row">
-                    <span className="block">
-                      {p.label === "Before" ? "Before any dose" : p.label}
-                    </span>
-                    <span className="block text-meta text-ink-3">
-                      {p.from ? `${shortLabel(p.from)} on` : "Earlier days"}
-                    </span>
-                  </th>
-                  <td>{p.days}</td>
-                  <td>{formatKcal(p.avgKcal)}</td>
-                  <td>{p.avgProtein === null ? "—" : `${formatKcal(p.avgProtein)} g`}</td>
+          <details className="group">
+            <summary className="flex min-h-12 cursor-pointer items-center justify-between text-body font-medium">
+              {`${periods.length} stretches compared`}
+              <span className="text-meta text-ink-2 group-open:hidden">Show</span>
+            </summary>
+            <table className="w-full border-collapse text-label [&_td]:border-b [&_td]:border-line [&_td]:py-2 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-2 [&_th]:text-left [&_th]:font-normal [&_thead_th]:border-ink [&_thead_th]:pb-1.5 [&_thead_th]:text-right [&_thead_th]:font-semibold [&_thead_th:first-child]:text-left">
+              <caption className="sr-only">
+                Average a day before any dose and on each medication
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Period</th>
+                  <th scope="col">Days</th>
+                  <th scope="col">kcal</th>
+                  <th scope="col">Protein</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-meta text-ink-2">
-            Averages a day over the days you logged. Each stretch runs from the first dose of that
-            medication.
-          </p>
+              </thead>
+              <tbody>
+                {periods.map((p) => (
+                  <tr key={p.label}>
+                    <th scope="row">
+                      <span className="block">
+                        {p.label === "Before" ? "Before any dose" : p.label}
+                      </span>
+                      <span className="block text-meta text-ink-3">
+                        {p.from ? `${shortLabel(p.from)} on` : "Earlier days"}
+                      </span>
+                    </th>
+                    <td>{p.days}</td>
+                    <td>{formatKcal(p.avgKcal)}</td>
+                    <td>{p.avgProtein === null ? "—" : `${formatKcal(p.avgProtein)} g`}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-meta text-ink-2">
+              Averages a day over the days you logged. Each stretch runs from the first dose of that
+              medication.
+            </p>
+          </details>
         </section>
       ) : null}
 
@@ -152,32 +158,40 @@ export function InsightsCard({
           <h2 id="ba-h" className="border-b-[1.5px] border-ink pb-1.5 text-section font-semibold">
             Before and since you started
           </h2>
-          <table className="w-full border-collapse text-label [&_td]:border-b [&_td]:border-line [&_td]:py-2 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-2 [&_th]:text-left [&_th]:font-normal [&_thead_th]:border-ink [&_thead_th]:pb-1.5 [&_thead_th]:text-right [&_thead_th]:font-semibold [&_thead_th:first-child]:text-left">
-            <caption className="sr-only">
-              Average a day, before and since the medication started
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">
-                  <span className="sr-only">Measure</span>
-                </th>
-                <th scope="col">{`Before · ${beforeAfter.before.days} d`}</th>
-                <th scope="col">{`Since · ${beforeAfter.after.days} d`}</th>
-                <th scope="col">Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.label}>
-                  <th scope="row">{r.label}</th>
-                  <td>{formatKcal(r.before)}</td>
-                  <td>{formatKcal(r.after)}</td>
-                  <td className="font-semibold">{`${signed(r.after - r.before)} ${r.unit}`}</td>
+          <p className="text-body">
+            {`${signed(beforeAfter.after.avgKcal - beforeAfter.before.avgKcal)} kcal a day since you started.`}
+          </p>
+          <details className="group">
+            <summary className="flex min-h-12 cursor-pointer items-center justify-between text-meta font-medium text-ink-2">
+              Before and since, in detail
+            </summary>
+            <table className="w-full border-collapse text-label [&_td]:border-b [&_td]:border-line [&_td]:py-2 [&_td]:text-right [&_td]:font-medium [&_th]:border-b [&_th]:border-line [&_th]:py-2 [&_th]:text-left [&_th]:font-normal [&_thead_th]:border-ink [&_thead_th]:pb-1.5 [&_thead_th]:text-right [&_thead_th]:font-semibold [&_thead_th:first-child]:text-left">
+              <caption className="sr-only">
+                Average a day, before and since the medication started
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <span className="sr-only">Measure</span>
+                  </th>
+                  <th scope="col">{`Before · ${beforeAfter.before.days} d`}</th>
+                  <th scope="col">{`Since · ${beforeAfter.after.days} d`}</th>
+                  <th scope="col">Change</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-meta text-ink-2">Averages a day over the days you logged.</p>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.label}>
+                    <th scope="row">{r.label}</th>
+                    <td>{formatKcal(r.before)}</td>
+                    <td>{formatKcal(r.after)}</td>
+                    <td className="font-semibold">{`${signed(r.after - r.before)} ${r.unit}`}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-meta text-ink-2">Averages a day over the days you logged.</p>
+          </details>
         </section>
       ) : null}
 

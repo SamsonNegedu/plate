@@ -25,7 +25,8 @@ export function Field({ label, error, hint, suffix, ...input }: Props) {
       <div className="flex items-center rounded-ctl border border-line bg-surface focus-within:outline-2 focus-within:outline-offset-0 focus-within:outline-accent has-[[aria-invalid=true]]:border-red">
         <input
           id={id}
-          className="min-h-11 min-w-0 flex-1 rounded-ctl bg-transparent px-3 text-input outline-none focus:outline-none focus-visible:outline-none"
+          enterKeyHint="done"
+          className="min-h-12 min-w-0 flex-1 rounded-ctl bg-transparent px-3 text-input outline-none focus:outline-none focus-visible:outline-none"
           aria-invalid={error ? true : undefined}
           aria-describedby={described}
           {...input}

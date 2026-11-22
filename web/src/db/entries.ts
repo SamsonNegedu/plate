@@ -138,14 +138,17 @@ export async function entriesForDay(db: PlateDB, date: string): Promise<Entry[]>
   return rows.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
 }
 
-/** Copy every live entry of one day into another, with new ids and the same meals and portions. */
+/** Copy the live entries of one day (or one meal of it) into another day, with new ids and the same portions. */
 export async function copyDay(
   db: PlateDB,
   from: string,
   to: string,
   now: number = Date.now(),
+  meal?: Meal,
 ): Promise<string[]> {
-  const source = await entriesForDay(db, from);
+  const source = (await entriesForDay(db, from)).filter(
+    (e) => meal === undefined || e.meal === meal,
+  );
   const ids: string[] = [];
   await db.transaction("rw", [db.entries, db.outbox], async () => {
     for (const [i, e] of source.entries()) {

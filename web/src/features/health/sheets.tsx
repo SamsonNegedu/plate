@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
+import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { Field } from "@/components/Field";
 import { Segmented } from "@/components/Segmented";
 import { Select } from "@/components/Select";
@@ -9,16 +10,15 @@ import { addHealthRecord, deleteHealthRecord, saveHealthRecord } from "@/db/heal
 import { savePlan, setWeightGoal, stopPlan } from "@/db/medication";
 import type { HealthRecord } from "@/db/types";
 import { cls } from "@/features/log/forms";
+import { haptic } from "@/features/scan/feedback";
 import { localDate } from "@/lib/dates";
 import { MEASURES } from "@/lib/health";
 import { formatGrams, formatMg, parseDecimal } from "@/lib/numbers";
 import { PRODUCT_GROUPS, PRODUCTS, productNamed } from "@/lib/pens";
+import { localInput, nudge } from "./when";
+import { WhenField } from "./WhenField";
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
-/** The value a datetime-local field takes: the device's local time, to the minute. */
-export const localInput = (d: Date): string =>
-  `${localDate(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+export { localInput } from "./when";
 
 /** A datetime-local value back to a Date, or null when it is empty or not a time. */
 function fromInput(v: string): Date | null {
@@ -82,8 +82,10 @@ export function MeasureSheet({
     setError(undefined);
   };
 
-  const save = async () => {
-    const v = parseDecimal(value);
+  const last = latestOf(kind);
+
+  const save = async (text: string = value) => {
+    const v = parseDecimal(text);
     const at = fromInput(when);
     const bad = v === null || v < min || v > max;
     setError(
@@ -107,9 +109,16 @@ export function MeasureSheet({
       title={canChoose ? "Log a measurement" : `Log ${measure.label.toLowerCase()}`}
       onClose={onClose}
       footer={
-        <Button variant="primary" block busy={busy} onClick={() => void save()}>
-          Save
-        </Button>
+        <>
+          <Button variant="primary" block busy={busy} onClick={() => void save()}>
+            Save
+          </Button>
+          {last !== null ? (
+            <Button block busy={busy} onClick={() => void save(formatGrams(last))}>
+              {`Same as last · ${formatGrams(last)} ${measure.unit}`}
+            </Button>
+          ) : null}
+        </>
       }
     >
       <div className={cls.form}>
@@ -135,19 +144,28 @@ export function MeasureSheet({
           label={measure.label}
           inputMode="decimal"
           suffix={measure.unit}
-          autoFocus
+          autoFocus={latestOf(kind) === null}
           value={value}
           error={error}
           hint={measure.unit === "cm" ? "Measured around the body, in cm." : undefined}
           onChange={(e) => setValue(e.target.value)}
         />
-        <Field
-          label="When"
-          type="datetime-local"
-          value={when}
-          error={whenError}
-          onChange={(e) => setWhen(e.target.value)}
-        />
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Adjust the value">
+          {(measure.unit === "kg" ? [-1, -0.1, 0.1, 1] : [-1, -0.5, 0.5, 1]).map((d) => (
+            <button
+              key={d}
+              type="button"
+              className="min-h-12 min-w-16 flex-1 rounded-ctl border border-line bg-surface text-label font-medium text-ink"
+              onClick={() => {
+                haptic(10);
+                setValue((v) => nudge(v, d, latestOf(kind), parseDecimal));
+              }}
+            >
+              {`${d > 0 ? "+" : "−"}${Math.abs(d)}`}
+            </button>
+          ))}
+        </div>
+        <WhenField value={when} onChange={setWhen} error={whenError} />
       </div>
     </Sheet>
   );
@@ -228,6 +246,8 @@ export function DoseSheet({
   const [errors, setErrors] = useState<{ mg?: string; when?: string }>({});
   const strengths = productNamed(medication)?.strengthsMg ?? [];
   const [busy, setBusy] = useState(false);
+  // With a last dose to copy from, logging is one tap on a summary; "Change details" opens the whole form.
+  const [showForm, setShowForm] = useState(Boolean(record) || lastDose === undefined);
 
   const save = async () => {
     const v = parseDecimal(mg);
@@ -240,6 +260,7 @@ export function DoseSheet({
       when: at === null ? "Enter a date and time." : undefined,
     };
     setErrors(next);
+    if (next.mg || next.when) setShowForm(true);
     if (v === null || at === null || next.mg || next.when) return;
     setBusy(true);
     try {
@@ -284,7 +305,7 @@ export function DoseSheet({
       footer={
         <>
           <Button variant="primary" block busy={busy} onClick={() => void save()}>
-            Save
+            {showForm ? "Save" : "Log dose"}
           </Button>
           {record ? (
             <Button variant="danger" block onClick={() => void remove()}>
@@ -294,7 +315,19 @@ export function DoseSheet({
         </>
       }
     >
-      <div className={cls.form}>
+      {showForm ? null : (
+        <div className="grid gap-3">
+          <p className="font-display text-stat leading-stat font-semibold">
+            {`${mg} mg`}
+            {site ? (
+              <small className="ml-2 font-sans text-label font-normal text-ink-2">{site}</small>
+            ) : null}
+          </p>
+          <p className={cls.muted}>Same dose as last time, next site in the rotation, taken now.</p>
+          <Button onClick={() => setShowForm(true)}>Change details</Button>
+        </div>
+      )}
+      <div className={cls.form} hidden={!showForm}>
         <div className="grid gap-2">
           <div className="grid grid-cols-2 items-start gap-3">
             <Field
@@ -326,7 +359,7 @@ export function DoseSheet({
                   key={st}
                   type="button"
                   aria-pressed={parseDecimal(mg) === st}
-                  className="min-h-11 rounded-pill border border-line bg-surface px-3.5 text-meta text-ink-2 aria-pressed:border-ink aria-pressed:text-ink"
+                  className="min-h-12 rounded-pill border border-line bg-surface px-3.5 text-meta text-ink-2 aria-pressed:border-ink aria-pressed:text-ink"
                   onClick={() => setMg(formatMg(st))}
                 >
                   {`${formatMg(st)} mg`}
@@ -345,12 +378,11 @@ export function DoseSheet({
             >{`Last time: ${lastDose.site}. The next site in the rotation is chosen.`}</p>
           ) : null}
         </div>
-        <Field
-          label="When"
-          type="datetime-local"
+        <WhenField
           value={when}
+          onChange={setWhen}
           error={errors.when}
-          onChange={(e) => setWhen(e.target.value)}
+          initial={record ? "other" : "now"}
         />
         <Field
           label="Note (optional)"
@@ -433,106 +465,118 @@ export function PlanSheet({
     onClose();
   };
 
+  const [confirmStop, setConfirmStop] = useState(false);
   const stop = async () => {
     await stopPlan(db);
     onClose();
   };
 
   return (
-    <Sheet
-      title={current ? "Change medication" : "Track a medication"}
-      description="Plate keeps your log and a schedule. It never suggests or changes a dose."
-      onClose={onClose}
-      footer={
-        <>
-          <Button variant="primary" block onClick={() => void save()}>
-            {switching ? "Switch medication" : "Save"}
-          </Button>
-          {current ? (
-            <Button variant="danger" block onClick={() => void stop()}>
-              Stop tracking
+    <>
+      <Sheet
+        title={current ? "Change medication" : "Track a medication"}
+        description="Plate keeps your log and a schedule. It never suggests or changes a dose."
+        onClose={onClose}
+        footer={
+          <>
+            <Button variant="primary" block onClick={() => void save()}>
+              {switching ? "Switch medication" : "Save"}
             </Button>
+            {current ? (
+              <Button variant="danger" block onClick={() => setConfirmStop(true)}>
+                Stop tracking
+              </Button>
+            ) : null}
+          </>
+        }
+      >
+        <div className={cls.form}>
+          <div className="grid gap-1.5">
+            <label htmlFor="product" className="text-meta font-medium text-ink-2">
+              Medication
+            </label>
+            <Select
+              id="product"
+              value={choice}
+              invalid={Boolean(errors.name)}
+              onChange={(e) => pick(e.target.value)}
+            >
+              <option value="">Choose the name on your pen or box</option>
+              {PRODUCT_GROUPS.map((g) => (
+                <optgroup key={g} label={g}>
+                  {PRODUCTS.filter((p) => p.group === g).map((p) => (
+                    <option key={p.name} value={p.name}>
+                      {`${p.name} (${p.generic})`}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value={OTHER}>Other, such as a compounded pen</option>
+            </Select>
+            {product ? (
+              <p className={cls.muted}>
+                {`${product.generic[0]?.toUpperCase()}${product.generic.slice(1)}, ${product.group.toLowerCase()}. Comes in ${product.strengthsMg.map((m) => formatMg(m)).join(", ")} mg; check your pen's label, as strengths differ by country.`}
+              </p>
+            ) : null}
+            {errors.name ? (
+              <p className="text-meta text-red" role="alert">
+                {errors.name}
+              </p>
+            ) : null}
+          </div>
+          {choice === OTHER ? (
+            <Field
+              label="Name"
+              placeholder="As written on the label"
+              value={custom}
+              maxLength={100}
+              onChange={(e) => setCustom(e.target.value)}
+            />
           ) : null}
-        </>
-      }
-    >
-      <div className={cls.form}>
-        <div className="grid gap-1.5">
-          <label htmlFor="product" className="text-meta font-medium text-ink-2">
-            Medication
-          </label>
-          <Select
-            id="product"
-            value={choice}
-            invalid={Boolean(errors.name)}
-            onChange={(e) => pick(e.target.value)}
-          >
-            <option value="">Choose the name on your pen or box</option>
-            {PRODUCT_GROUPS.map((g) => (
-              <optgroup key={g} label={g}>
-                {PRODUCTS.filter((p) => p.group === g).map((p) => (
-                  <option key={p.name} value={p.name}>
-                    {`${p.name} (${p.generic})`}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-            <option value={OTHER}>Other, such as a compounded pen</option>
-          </Select>
-          {product ? (
-            <p className={cls.muted}>
-              {`${product.generic[0]?.toUpperCase()}${product.generic.slice(1)}, ${product.group.toLowerCase()}. Comes in ${product.strengthsMg.map((m) => formatMg(m)).join(", ")} mg; check your pen's label, as strengths differ by country.`}
+          {switching ? (
+            <p className="rounded-ctl border border-line bg-surface-2 px-3 py-2.5 text-meta text-ink-2">
+              Your earlier doses stay in the log. The schedule starts again from the date below.
             </p>
           ) : null}
-          {errors.name ? (
-            <p className="text-meta text-red" role="alert">
-              {errors.name}
-            </p>
-          ) : null}
-        </div>
-        {choice === OTHER ? (
-          <Field
-            label="Name"
-            placeholder="As written on the label"
-            value={custom}
-            maxLength={100}
-            onChange={(e) => setCustom(e.target.value)}
+          <Segmented
+            label="How often"
+            value={INTERVALS.some((i) => i.value === interval) ? interval : ""}
+            options={INTERVALS.map((i) => ({ value: i.value, label: i.label }))}
+            onChange={setInterval}
           />
-        ) : null}
-        {switching ? (
-          <p className="rounded-ctl border border-line bg-surface-2 px-3 py-2.5 text-meta text-ink-2">
-            Your earlier doses stay in the log. The schedule starts again from the date below.
-          </p>
-        ) : null}
-        <Segmented
-          label="How often"
-          value={INTERVALS.some((i) => i.value === interval) ? interval : ""}
-          options={INTERVALS.map((i) => ({ value: i.value, label: i.label }))}
-          onChange={setInterval}
+          <Field
+            label="Days between doses"
+            inputMode="numeric"
+            value={interval}
+            error={errors.interval}
+            onChange={(e) => setInterval(e.target.value)}
+          />
+          <Field
+            label={switching ? "Starts on" : "Started on"}
+            type="date"
+            value={startedOn}
+            error={errors.start}
+            onChange={(e) => setStartedOn(e.target.value)}
+          />
+          <Field
+            label="Doses on hand (optional)"
+            inputMode="numeric"
+            hint="Shows how many are left and when to refill."
+            value={supply}
+            error={errors.supply}
+            onChange={(e) => setSupply(e.target.value)}
+          />
+        </div>
+      </Sheet>
+      {confirmStop ? (
+        <ConfirmSheet
+          title="Stop tracking?"
+          body="Your logged doses stay. Reminders and the next-dose schedule stop."
+          confirmLabel="Stop tracking"
+          onCancel={() => setConfirmStop(false)}
+          onConfirm={stop}
         />
-        <Field
-          label="Days between doses"
-          inputMode="numeric"
-          value={interval}
-          error={errors.interval}
-          onChange={(e) => setInterval(e.target.value)}
-        />
-        <Field
-          label={switching ? "Starts on" : "Started on"}
-          type="date"
-          value={startedOn}
-          error={errors.start}
-          onChange={(e) => setStartedOn(e.target.value)}
-        />
-        <Field
-          label="Doses on hand (optional)"
-          inputMode="numeric"
-          hint="Shows how many are left and when to refill."
-          value={supply}
-          error={errors.supply}
-          onChange={(e) => setSupply(e.target.value)}
-        />
-      </div>
-    </Sheet>
+      ) : null}
+    </>
   );
 }

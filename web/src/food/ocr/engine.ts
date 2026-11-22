@@ -48,6 +48,9 @@ interface Engine {
 
 let engine: Promise<Engine> | null = null;
 
+/** Bytes read so far while the reader downloads, so the first scan can show movement instead of a dead label. */
+export type LoadProgress = (downloadedBytes: number) => void;
+
 /** True once the files are on this device, so the UI can say "Downloading" only the first time. */
 export async function engineIsCached(): Promise<boolean> {
   if (engine) return true; // already loaded in this session
@@ -60,7 +63,30 @@ export async function engineIsCached(): Promise<boolean> {
   }
 }
 
-async function create(): Promise<Engine> {
+/** Reads a response to completion, reporting how much has arrived. The service worker keeps the response after this. */
+async function fetchBuffer(url: string, report?: (bytes: number) => void): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok || !res.body) return res.arrayBuffer();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let loaded = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.byteLength;
+    report?.(value.byteLength);
+  }
+  const out = new Uint8Array(loaded);
+  let at = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, at);
+    at += chunk.byteLength;
+  }
+  return out.buffer;
+}
+
+async function create(onProgress?: LoadProgress): Promise<Engine> {
   const ort = await import("onnxruntime-web/wasm");
   // Same-origin WASM and one thread (a page without cross-origin isolation cannot share memory). The proxy runs the model
   // in ORT's own worker so the screen stays responsive while it works.
@@ -68,22 +94,43 @@ async function create(): Promise<Engine> {
   ort.env.wasm.numThreads = 1;
   ort.env.wasm.proxy = true;
   const options = { executionProviders: ["wasm"] };
-  const [det, rec, keys] = await Promise.all([
-    ort.InferenceSession.create(`${BASE}/det.onnx`, options),
-    ort.InferenceSession.create(`${BASE}/rec.onnx`, options),
-    fetch(`${BASE}/keys.txt`).then((r) => r.text()),
+  let downloaded = 0;
+  const report = (bytes: number) => {
+    downloaded += bytes;
+    onProgress?.(downloaded);
+  };
+  const [detBytes, recBytes, keysBytes] = await Promise.all([
+    fetchBuffer(`${BASE}/det.onnx`, report),
+    fetchBuffer(`${BASE}/rec.onnx`, report),
+    fetchBuffer(`${BASE}/keys.txt`, report),
   ]);
+  // Fetching the runtime here fills the service worker's cache, so ORT's own request is local; in a dev build without a
+  // service worker it is read twice, which is a fair price for progress on a slow connection.
+  await fetchBuffer(`${BASE}/ort-wasm-simd-threaded.wasm`, report).catch(() => undefined);
+  const [det, rec] = await Promise.all([
+    ort.InferenceSession.create(detBytes, options),
+    ort.InferenceSession.create(recBytes, options),
+  ]);
+  const keys = new TextDecoder().decode(keysBytes);
   // CTC index 0 is the blank; the dictionary follows, then a space.
   return { ort, det, rec, dict: ["", ...keys.split("\n").filter((l) => l !== ""), " "] };
 }
 
 /** Start loading the models without reading anything, so the first scan does not wait for them. Safe to call often. */
 export function warmUp(): void {
-  engine ??= create().catch((e: unknown) => {
+  void startEngine();
+}
+
+/** The shared start, so a scan that reports progress joins an in-flight load instead of starting a second one. */
+function startEngine(onProgress?: LoadProgress): Promise<Engine> {
+  if (engine) return engine;
+  const started = create(onProgress).catch((e: unknown) => {
     engine = null; // let the next scan try again
     throw e;
   });
-  void engine.catch(() => undefined);
+  engine = started;
+  void started.catch(() => undefined);
+  return started;
 }
 
 function engineBytes(): number {
@@ -374,10 +421,10 @@ async function readPass(
  */
 export async function readLines(
   image: string | Blob,
+  onProgress?: LoadProgress,
 ): Promise<{ lines: Line[]; metrics: OcrMetrics; tilt: number; level: Blob | null }> {
   const t0 = performance.now();
-  warmUp();
-  const eng = await (engine as Promise<Engine>);
+  const eng = await startEngine(onProgress);
   const t1 = performance.now();
 
   const photo = await loadPhoto(image);

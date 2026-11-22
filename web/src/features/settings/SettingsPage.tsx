@@ -7,7 +7,7 @@ import { Icon } from "@/components/Icon";
 import { Segmented } from "@/components/Segmented";
 import { useDb } from "@/db/context";
 import { useCustomFoods, useFavoriteFoods, useSavedMeals, useSettings } from "@/db/hooks";
-import { setScanFeedback, useScanFeedback } from "@/db/prefs";
+import { setHand, setScanFeedback, useHand, useScanFeedback } from "@/db/prefs";
 import { saveSettings } from "@/db/settings";
 import type { Theme } from "@/db/types";
 import { formatKcal } from "@/lib/numbers";
@@ -57,6 +57,7 @@ export function SettingsPage() {
   const auth = useAuth();
   const settings = useSettings();
   const feedback = useScanFeedback();
+  const hand = useHand();
   const sync = useStore(useSyncStore());
   const favorites = useFavoriteFoods();
   const meals = useSavedMeals();
@@ -133,6 +134,15 @@ export function SettingsPage() {
             { value: "off", label: "Silent" },
           ]}
           onChange={(v) => void setScanFeedback(db, { sound: v === "on", haptics: v === "on" })}
+        />
+        <Segmented
+          label="Thumb"
+          value={hand}
+          options={[
+            { value: "right", label: "Right hand" },
+            { value: "left", label: "Left hand" },
+          ]}
+          onChange={(v) => void setHand(db, v)}
         />
       </section>
 

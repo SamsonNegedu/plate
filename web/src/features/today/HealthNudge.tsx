@@ -38,7 +38,9 @@ export function HealthNudge() {
     (r) => r.kind === "weight" && r.recordedOn > addDays(today, -7),
   );
   if (!weighedRecently && records.some((r) => r.kind === "weight")) {
-    return <Nudge text="No weight logged in a week" action="Log weight" to="/health/weight" />;
+    return (
+      <Nudge text="No weight logged in a week" action="Log weight" to="/health/weight?log=weight" />
+    );
   }
   return null;
 }

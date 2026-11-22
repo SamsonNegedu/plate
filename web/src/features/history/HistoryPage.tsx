@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
+import { Icon } from "@/components/Icon";
 import { Segmented } from "@/components/Segmented";
 import { useEntryRange, useHealthRecords, useSettings } from "@/db/hooks";
 import type { Entry } from "@/db/types";
@@ -225,6 +226,29 @@ export default function HistoryPage() {
       <TopFoods foods={top.foods} coverage={topCoverage} days={days.length} />
 
       <DayList days={days} entriesByDay={entriesByDay} goal={settings.goalKcal} today={today} />
+      <ToTop />
     </div>
+  );
+}
+
+/** Appears after a long scroll and returns to the chart at the top. */
+function ToTop() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 700);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      className="fixed right-4 bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+16px)] z-20 grid size-12 place-items-center rounded-pill border border-line bg-surface text-ink shadow-[0_6px_16px_-8px_rgba(0,0,0,0.4)]"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to the top"
+    >
+      <Icon name="up" />
+    </button>
   );
 }

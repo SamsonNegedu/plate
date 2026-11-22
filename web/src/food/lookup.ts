@@ -171,3 +171,34 @@ export async function resolveBarcode(
     return { kind: "unavailable", retryAfter: null };
   }
 }
+
+export type ReferenceResult =
+  | { kind: "found"; food: Food }
+  | { kind: "offline" }
+  | { kind: "unavailable" };
+
+/**
+ * A shared generic food (egusi, plantain) to a food of the account. Already-selected ones are found locally; the first
+ * selection needs the server, which adds it to the account.
+ */
+export async function resolveReference(
+  db: PlateDB,
+  refId: string,
+  opts: { online?: boolean } = {},
+): Promise<ReferenceResult> {
+  const local = await db.foods
+    .filter(
+      (f) => f.source === "catalog" && f.barcode === null && f.sourceId === refId && !f.deletedAt,
+    )
+    .first();
+  if (local) return { kind: "found", food: local };
+  if (opts.online === false) return { kind: "offline" };
+  try {
+    const res = await api.GET("/foods/reference/{id}", { params: { path: { id: refId } } });
+    if (res.data === undefined) return { kind: "unavailable" };
+    return { kind: "found", food: await cacheFood(db, foodFromView(foodView.parse(res.data))) };
+  } catch (e) {
+    if (e instanceof NetworkError || e instanceof AccessExpired) return { kind: "offline" };
+    throw e;
+  }
+}

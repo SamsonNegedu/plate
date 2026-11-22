@@ -93,8 +93,9 @@ export function AboutPanel() {
         ))}
         {!about ? (
           <p className={cls.attr}>
-            Food data from Open Food Facts (ODbL) and the Bundeslebensmittelschlüssel (CC BY 4.0).
-            Connect to see the full credits.
+            Food data from Open Food Facts (ODbL), the Bundeslebensmittelschlüssel (CC BY 4.0), the
+            FAO/INFOODS West African food table and USDA FoodData Central. Connect to see the full
+            credits.
           </p>
         ) : null}
         <p className={cls.attr}>

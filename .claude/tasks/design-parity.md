@@ -34,18 +34,18 @@ Every surface gets designed states, not browser defaults.
 
 | Surface | Mockup | Required states |
 |---|---|---|
-| Today | Today | default, empty day, over goal, missing macros, offline, syncing, sync error |
+| Today | Today | default, empty day, over goal, missing macros, offline, syncing, sync error, install nudge after three logs |
 | Scan | Scan | starting, detecting, permission denied, no camera, camera busy, insecure context, offline, barcode-photo fallback in the camera error, add a food entry |
 | Product | Product | found, identity missing nutrition if applicable, not loggable, custom, stale, community-corrected, unusual values, offline, add, edit |
 | Search | Search | empty query with recents, results, no results, offline, rate limited, upstream error |
 | Quick add | Quick add | default, validation error, kJ entry, numbers that do not add up (the same table and hint as Add this product) |
 | Entry edit | Entry edit | default, deleted with undo, tombstoned conflict |
 | Manual food | Add this product | new food, correction, missing kcal, server error, label read (values filled, doubtful values marked, photo beside them), per-portion label, nothing read, kJ entry, numbers that do not add up, photos for the product |
-| Not found | Not found | barcode shown, take photo (starting, live preview, shutter, camera denied/no camera/busy/insecure), choose photo, first-use download wording, reading, downloading, failed, type it in, offline |
+| Not found | Not found | barcode shown, take photo (starting, live preview, tap-to-focus, shutter, camera denied/no camera/busy/insecure), crop review (pan, zoom, retake, use photo), choose photo, metered-download confirm, download progress, reading, failed, type it in, offline |
 | History | History | data, no data, one day, over goal, offline, table view, loading |
 | Settings | — (Phase 9) | default, dirty, saved, sync paused, conflicts, export, import, delete-all, install |
 | Login / onboarding | — | login, wrong password, rate limited, offline start, first run, goal estimate |
-| Global | — | offline banner, sync badge, toast, update prompt, quota error, install prompt |
+| Global | — | sync badge, bottom toast with undo, sheet swipe-to-dismiss, update prompt, quota error, install nudge |
 
 Where a state has no mockup, design it in the same visual language and add it to this matrix before implementation.
 

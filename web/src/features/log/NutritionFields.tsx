@@ -133,7 +133,7 @@ function UnitToggle({ value, onChange }: { value: Unit; onChange: (u: Unit) => v
           key={u}
           type="button"
           aria-pressed={value === u}
-          className="min-h-9 min-w-12 rounded-lg border border-transparent bg-transparent px-2 text-meta font-medium text-ink-2 aria-pressed:border-ink aria-pressed:bg-surface aria-pressed:text-ink"
+          className="min-h-11 min-w-12 rounded-lg border border-transparent bg-transparent px-2 text-meta font-medium text-ink-2 aria-pressed:border-ink aria-pressed:bg-surface aria-pressed:text-ink"
           onClick={() => onChange(u)}
         >
           {u === "kj" ? "kJ" : "kcal"}

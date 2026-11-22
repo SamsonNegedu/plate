@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { Button } from "@/components/Button";
+import { ConfirmSheet } from "@/components/ConfirmSheet";
 import { EmptyState } from "@/components/EmptyState";
 import { Field } from "@/components/Field";
 import { Icon } from "@/components/Icon";
 import { Segmented } from "@/components/Segmented";
+import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { useRecipe, useSettings } from "@/db/hooks";
 import { deleteMeal, saveMeal } from "@/db/savedMeals";
+import { haptic } from "@/features/scan/feedback";
 import { defaultMeal, logicalDate } from "@/lib/dates";
 import { formatKcal, formatOptional, parseDecimal } from "@/lib/numbers";
 import { recipeNutrition } from "@/lib/recipe";
 import { useUi } from "@/lib/ui";
 import { useNow } from "@/lib/useNow";
-import { type DraftItem, draftFromSaved, draftOf, toInput, withAmount } from "./draft";
+import { type DraftItem, draftFromSaved, draftOf, scaleItems, toInput, withAmount } from "./draft";
 import { IngredientRow } from "./IngredientRow";
 import { RecipeSummary } from "./RecipeSummary";
 import { ShareSheet } from "./ShareSheet";
@@ -87,6 +90,7 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
   const [errors, setErrors] = useState<{ name?: string; servings?: string; items?: string }>({});
   const [busy, setBusy] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [menu, setMenu] = useState<"closed" | "more" | "delete">("closed");
   const [query, setQuery] = useSearchParams();
   const tab: "ingredients" | "nutrition" =
     query.get("tab") === "nutrition" ? "nutrition" : "ingredients";
@@ -142,6 +146,69 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
     void navigate("/recipes");
   };
 
+  const removeItem = (item: DraftItem) => {
+    const at = items.findIndex((i) => i.key === item.key);
+    setItems((cur) => cur.filter((i) => i.key !== item.key));
+    haptic(15);
+    ui.toast({
+      message: `Removed ${item.name}`,
+      action: {
+        label: "Undo",
+        run: () =>
+          setItems((cur) => {
+            const next = [...cur];
+            next.splice(Math.min(at, next.length), 0, item);
+            return next;
+          }),
+      },
+    });
+  };
+
+  const duplicateItem = (item: DraftItem) =>
+    setItems((cur) => {
+      const at = cur.findIndex((i) => i.key === item.key);
+      const next = [...cur];
+      next.splice(at + 1, 0, { ...item, key: crypto.randomUUID() });
+      return next;
+    });
+
+  const scale = (factor: number) => {
+    const scaled = scaleItems(items, factor);
+    const makes = (portions ?? 1) * factor;
+    if (!scaled || makes <= 0 || makes > 1000) {
+      ui.toast({ message: "That is too much to scale to.", tone: "error" });
+      return;
+    }
+    const before = { items, servings };
+    setItems(scaled);
+    setServings(String(Math.round(makes * 100) / 100));
+    haptic(10);
+    ui.toast({
+      message:
+        factor < 1
+          ? "Halved every ingredient and the portions"
+          : "Doubled every ingredient and the portions",
+      action: {
+        label: "Undo",
+        run: () => {
+          setItems(before.items);
+          setServings(before.servings);
+        },
+      },
+    });
+  };
+
+  const duplicate = async () => {
+    const copy = await saveMeal(
+      db,
+      `${name.trim() || "Recipe"} copy`,
+      validServings ? (portions ?? 1) : 1,
+      items.map(toInput),
+    );
+    ui.toast({ message: `Made ${copy.name}. Edit it here.` });
+    void navigate(`/recipes/${copy.id}`);
+  };
+
   const logPortion = () => {
     if (!id || !settings) return;
     ui.open({
@@ -163,7 +230,7 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
     "grid size-11 flex-none place-items-center rounded-ctl border border-line bg-surface text-ink";
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pb-2">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pb-24">
       <div className="mt-1 flex items-center gap-2">
         <Link
           to="/recipes"
@@ -176,11 +243,21 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
         {id ? (
           <button
             type="button"
-            className="-mr-2 ml-auto grid size-11 place-items-center bg-transparent text-ink"
+            className="ml-auto grid size-11 place-items-center bg-transparent text-ink"
             aria-label="Share recipe"
             onClick={() => setSharing(true)}
           >
             <Icon name="share" />
+          </button>
+        ) : null}
+        {id ? (
+          <button
+            type="button"
+            className="-mr-2 grid size-11 place-items-center bg-transparent text-ink"
+            aria-label="More actions"
+            onClick={() => setMenu("more")}
+          >
+            <Icon name="more" />
           </button>
         ) : null}
       </div>
@@ -236,6 +313,29 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
             {errors.servings}
           </p>
         ) : null}
+        {items.length > 0 && validServings ? (
+          <div className="grid gap-1.5">
+            <p className="text-meta text-ink-2">
+              Cooking a different amount? Change every ingredient and the portions together. One
+              portion stays the same.
+            </p>
+            <div className="flex gap-1.5" role="group" aria-label="Scale the recipe">
+              {[
+                { f: 0.5, label: "Half batch" },
+                { f: 2, label: "Double batch" },
+              ].map(({ f, label }) => (
+                <button
+                  key={label}
+                  type="button"
+                  className="min-h-12 rounded-pill border border-line bg-surface px-3.5 text-meta text-ink"
+                  onClick={() => scale(f)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="sticky top-0 z-10 -mx-4 grid gap-2 border-y border-line bg-bg px-4 py-2">
@@ -251,15 +351,6 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
               </span>
             )}
           </p>
-          <Button
-            variant="primary"
-            busy={busy}
-            disabled={!dirty}
-            onClick={() => void save()}
-            aria-label="Save recipe"
-          >
-            {dirty || !id ? "Save" : "Saved"}
-          </Button>
         </div>
         <div className="flex items-center gap-2">
           <div className="min-w-0 flex-1">
@@ -276,26 +367,6 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
               onChange={setTab}
             />
           </div>
-          {tab === "ingredients" && items.length > 0 ? (
-            <>
-              <button
-                type="button"
-                className={iconBtn}
-                onClick={addIngredient}
-                aria-label="Search ingredients"
-              >
-                <Icon name="search" />
-              </button>
-              <button
-                type="button"
-                className={iconBtn}
-                onClick={scanIngredient}
-                aria-label="Scan ingredient"
-              >
-                <Icon name="barcode" />
-              </button>
-            </>
-          ) : null}
         </div>
       </div>
 
@@ -304,18 +375,9 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
           {items.length === 0 ? (
             <div className="grid gap-3 py-2">
               <p className="text-body text-ink-2">
-                Add each ingredient with the amount you put in, raw or as packed.
+                Tap Add ingredient below. Each tap adds one with a usual amount; change it after.
+                Raw or as packed is fine.
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={addIngredient} aria-label="Search ingredients">
-                  <Icon name="search" />
-                  Search
-                </Button>
-                <Button onClick={scanIngredient} aria-label="Scan ingredient">
-                  <Icon name="barcode" />
-                  Scan
-                </Button>
-              </div>
             </div>
           ) : (
             <>
@@ -330,7 +392,8 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
                         cur.map((i) => (i.key === item.key ? withAmount(i, amount) : i)),
                       )
                     }
-                    onRemove={() => setItems((cur) => cur.filter((i) => i.key !== item.key))}
+                    onRemove={() => removeItem(item)}
+                    onSwipe={(a) => (a === "delete" ? removeItem(item) : duplicateItem(item))}
                   />
                 ))}
               </ul>
@@ -350,15 +413,65 @@ function Editor({ id, initial }: { id?: string; initial?: Initial }) {
         />
       )}
 
-      {id ? (
-        <div className="grid gap-2">
-          <Button block onClick={logPortion}>
+      <div className="fixed inset-x-0 bottom-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+8px)] z-20 mx-auto flex max-w-[560px] gap-2 bg-bg/95 px-4 py-2 backdrop-blur">
+        {tab === "ingredients" ? (
+          <>
+            <button
+              type="button"
+              className={`${iconBtn} size-12`}
+              onClick={scanIngredient}
+              aria-label="Scan ingredient"
+            >
+              <Icon name="barcode" />
+            </button>
+            <Button className="flex-1" onClick={addIngredient}>
+              <Icon name="plus" />
+              Add ingredient
+            </Button>
+          </>
+        ) : null}
+        {dirty || !id ? (
+          <Button
+            variant="primary"
+            className="flex-1"
+            busy={busy}
+            onClick={() => void save()}
+            aria-label="Save recipe"
+          >
+            Save
+          </Button>
+        ) : (
+          <Button variant="primary" className="flex-1" onClick={logPortion}>
             Log a portion
           </Button>
-          <Button variant="danger" block onClick={() => void remove()}>
-            Delete recipe
-          </Button>
-        </div>
+        )}
+      </div>
+      {menu === "more" ? (
+        <Sheet title="Recipe actions" onClose={() => setMenu("closed")}>
+          <div className="grid gap-2">
+            <Button
+              block
+              onClick={() => {
+                setMenu("closed");
+                void duplicate();
+              }}
+            >
+              Duplicate recipe
+            </Button>
+            <Button variant="danger" block onClick={() => setMenu("delete")}>
+              Delete recipe
+            </Button>
+          </div>
+        </Sheet>
+      ) : null}
+      {menu === "delete" ? (
+        <ConfirmSheet
+          title={`Delete ${name.trim() || "this recipe"}?`}
+          body="Entries you already logged from it stay. The recipe itself is removed."
+          confirmLabel="Delete recipe"
+          onCancel={() => setMenu("closed")}
+          onConfirm={remove}
+        />
       ) : null}
       {sharing ? (
         <ShareSheet

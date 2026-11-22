@@ -9,9 +9,11 @@ import { getPref } from "@/db/foods";
 import { useFavoriteIds } from "@/db/hooks";
 import type { Food, Meal, Unit } from "@/db/types";
 import { MEALS } from "@/db/types";
+import { itemFromFood } from "@/features/recipes/draft";
 import { categoryNote } from "@/lib/categoryCheck";
 import { cn } from "@/lib/cn";
 import { copy } from "@/lib/copy";
+import { householdMeasures } from "@/lib/measures";
 import { formatKcal, formatOptional, parseDecimal } from "@/lib/numbers";
 import { amountLabel, gramsFor, MAX_GRAMS, portionOf } from "@/lib/nutrition";
 import { plausibility } from "@/lib/plausibility";
@@ -88,6 +90,9 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
   const error = amountError(amount, grams);
   const portion = grams !== null && !error ? portionOf(food, grams) : null;
   const pack = packSize(food);
+  const measures = householdMeasures(food).map((m) =>
+    liquid || m.unit === "g" ? m : { ...m, unit: "g" as const },
+  );
   const isFav = favorites.has(food.id);
 
   const set = (u: Unit, a: number) => {
@@ -106,22 +111,8 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
   const add = async () => {
     if (amount === null || grams === null || error) return;
     if (pick) {
-      pick({
-        foodId: food.id,
-        name: food.name,
-        brand: food.brand,
-        amount,
-        unit,
-        grams,
-        kcal: food.kcal,
-        protein: food.protein,
-        carbs: food.carbs,
-        fat: food.fat,
-        sugar: food.sugar,
-        satfat: food.satfat,
-        fiber: food.fiber,
-        salt: food.salt,
-      });
+      const item = itemFromFood(food, unit, amount);
+      if (item) pick(item);
       ui.closeAll();
       return;
     }
@@ -135,7 +126,9 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
   };
 
   const mealLabel = copy.meals[meal].toLowerCase();
-  const sourceNote = food.community ? copy.sheet.community : (sourceNotes[food.source] ?? null);
+  const fromReference = food.source === "catalog" && food.barcode === null;
+  let sourceNote = food.community ? copy.sheet.community : (sourceNotes[food.source] ?? null);
+  if (fromReference) sourceNote = copy.sheet.fromReference;
   const unusual = food.source === "user" ? [] : plausibility(food);
   const categoryWarning = food.category ? categoryNote(food, food.category) : null;
 
@@ -217,11 +210,13 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
             <span className="sr-only">{copy.sheet.amount}</span>
             <input
               inputMode="decimal"
+              enterKeyHint="done"
               value={text}
               onChange={(e) => {
                 setTouched(true);
                 setText(e.target.value);
               }}
+              onFocus={(e) => e.currentTarget.select()}
               aria-invalid={error ? true : undefined}
               aria-describedby="amount-help"
             />
@@ -240,9 +235,12 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
               ? `${amountLabel(amount ?? 0, unit)} · ${Math.round(grams * 10) / 10} g`
               : " ")}
         </p>
-        <div className="flex flex-wrap gap-1.5 [&>button]:min-h-9.5 [&>button]:rounded-pill [&>button]:border [&>button]:border-line [&>button]:bg-surface [&>button]:px-3 [&>button]:text-meta [&>button]:text-ink">
+        <div className="flex flex-wrap gap-1.5 [&>button]:min-h-12 [&>button]:rounded-pill [&>button]:border [&>button]:border-line [&>button]:bg-surface [&>button]:px-3 [&>button]:text-meta [&>button]:text-ink">
           {food.servingGrams ? (
             <>
+              <button type="button" onClick={() => set("serving", 0.5)}>
+                ½ portion
+              </button>
               <button type="button" onClick={() => set("serving", 1)}>
                 1 portion
               </button>
@@ -259,6 +257,16 @@ export function ProductSheet({ food, meal: initialMeal, date, notice, pick }: Pr
               Whole pack
             </button>
           ) : null}
+          {measures.map((m) => (
+            <button
+              key={m.label}
+              type="button"
+              onClick={() => set(m.unit, m.amount)}
+              aria-label={`${m.label}, about ${m.amount} ${m.unit}`}
+            >
+              {`${m.label} ≈ ${m.amount} ${m.unit}`}
+            </button>
+          ))}
         </div>
       </section>
 

@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Icon } from "@/components/Icon";
 import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
-import { getFood } from "@/db/foods";
+import { getFood, getPref } from "@/db/foods";
 import {
   type MealSummary,
   type RecentFood,
@@ -14,19 +14,28 @@ import {
   useFavoriteFoods,
   useRecentFoods,
   useSavedMeals,
+  useUsualFoods,
 } from "@/db/hooks";
 import type { Food, FoodSource, Meal } from "@/db/types";
-import { resolveBarcode } from "@/food/lookup";
+import { itemFromFood } from "@/features/recipes/draft";
+import { resolveBarcode, resolveReference } from "@/food/lookup";
 import { LocalSearch } from "@/food/searchIndex";
 import { api } from "@/lib/api";
 import { copy } from "@/lib/copy";
+import { quickMeasure } from "@/lib/measures";
 import { formatKcal } from "@/lib/numbers";
+import { amountLabel } from "@/lib/nutrition";
 import { type PickIngredient, useUi } from "@/lib/ui";
 import { AccessExpired, NetworkError } from "@/sync/errors";
-import { startingPortion } from "./portion";
+import { isLiquid, startingPortion } from "./portion";
 import { useLog } from "./useLog";
 
 const hitSchema = z.object({
+  reference_id: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
   id: z
     .string()
     .nullable()
@@ -51,6 +60,7 @@ const hitSchema = z.object({
 interface Hit {
   key: string;
   id: string | null;
+  refId: string | null;
   barcode: string | null;
   name: string;
   brand: string;
@@ -61,6 +71,7 @@ interface Hit {
 const fromFood = (f: Food): Hit => ({
   key: f.barcode ?? f.id,
   id: f.id,
+  refId: null,
   barcode: f.barcode,
   name: f.name,
   brand: f.brand,
@@ -96,8 +107,12 @@ export function SearchSheet({
     null,
   );
   const [opening, setOpening] = useState(false);
+  const [added, setAdded] = useState(0);
   const foods = useAllFoods();
-  const recents = useRecentFoods(5);
+  const recentAll = useRecentFoods(8);
+  const usual = useUsualFoods(meal, date, 4);
+  const usualIds = new Set((usual ?? []).map((r) => r.food.id));
+  const recents = (recentAll ?? []).filter((r) => !usualIds.has(r.food.id)).slice(0, 5);
   const favorites = useFavoriteFoods();
   const meals = useSavedMeals();
   const index = useMemo(() => {
@@ -128,8 +143,9 @@ export function SearchSheet({
               .array(hitSchema)
               .parse(res.data.results)
               .map((h): Hit => ({
-                key: h.barcode ?? h.id ?? h.name,
+                key: h.barcode ?? h.id ?? h.reference_id ?? h.name,
                 id: h.id,
+                refId: h.reference_id,
                 barcode: h.barcode,
                 name: h.name,
                 brand: h.brand,
@@ -165,25 +181,61 @@ export function SearchSheet({
     return [...server.hits, ...local.filter((l) => !seen.has(l.key))];
   }, [q, server, local]);
 
+  const foodOf = async (hit: Hit): Promise<Food | null> => {
+    if (hit.refId) {
+      const r = await resolveReference(db, hit.refId, { online: navigator.onLine });
+      return r.kind === "found" ? r.food : null;
+    }
+    if (hit.id) {
+      const f = await getFood(db, hit.id);
+      if (f) return f;
+    }
+    if (hit.barcode) {
+      const r = await resolveBarcode(db, hit.barcode);
+      if (r.kind === "found") return r.food;
+    }
+    return null;
+  };
+
+  const unreachable = () =>
+    ui.toast({
+      message: "That food could not be opened. Try again when you are online.",
+      tone: "error",
+    });
+
   const open = async (hit: Hit) => {
     setOpening(true);
     try {
-      if (hit.id) {
-        const f = await getFood(db, hit.id);
-        if (f) return ui.open({ kind: "product", food: f, meal, date, ...(pick ? { pick } : {}) });
-      }
-      if (hit.barcode) {
-        const r = await resolveBarcode(db, hit.barcode);
-        if (r.kind === "found")
-          return ui.open({ kind: "product", food: r.food, meal, date, ...(pick ? { pick } : {}) });
-      }
-      ui.toast({
-        message: "That food could not be opened. Try again when you are online.",
-        tone: "error",
-      });
+      const f = await foodOf(hit);
+      if (f) ui.open({ kind: "product", food: f, meal, date, ...(pick ? { pick } : {}) });
+      else unreachable();
     } finally {
       setOpening(false);
     }
+  };
+
+  /** Adds a recipe ingredient in one tap: the amount used last time, else a kitchen measure, else 100 g. The sheet stays open for the next one. */
+  const quickPick = async (food: Food) => {
+    if (!pick) return;
+    const pref = await getPref(db, food.id);
+    const measure = quickMeasure(food);
+    let start = startingPortion(food, pref);
+    if (!pref && measure) {
+      const unit = measure.unit === "ml" && !isLiquid(food) ? "g" : measure.unit;
+      start = { unit, amount: measure.amount };
+    }
+    const item = itemFromFood(food, start.unit, start.amount);
+    if (!item) return;
+    pick(item);
+    setAdded((n) => n + 1);
+    setQuery("");
+    ui.toast({ message: `Added ${food.name} · ${amountLabel(item.amount, item.unit)}` });
+  };
+
+  const quickPickHit = async (hit: Hit) => {
+    const f = await foodOf(hit);
+    if (f) await quickPick(f);
+    else unreachable();
   };
 
   const quickLog = async (r: RecentFood) => {
@@ -204,7 +256,11 @@ export function SearchSheet({
 
   return (
     <Sheet
-      title={pick ? "Add ingredient" : `${copy.sheet.addTo} ${copy.meals[meal].toLowerCase()}`}
+      title={
+        pick
+          ? `Add ingredient${added > 0 ? ` · ${added} added` : ""}`
+          : `${copy.sheet.addTo} ${copy.meals[meal].toLowerCase()}`
+      }
       onClose={ui.close}
       tall
       pinned={
@@ -226,7 +282,11 @@ export function SearchSheet({
         </div>
       }
       footer={
-        pick ? undefined : (
+        pick ? (
+          <Button variant="primary" block onClick={ui.close}>
+            {added > 0 ? `Done · ${added} added` : "Done"}
+          </Button>
+        ) : (
           <Button block onClick={() => ui.replace({ kind: "quick", meal, date })}>
             {copy.sheet.quickAdd}
           </Button>
@@ -260,15 +320,27 @@ export function SearchSheet({
               ) : null}
             </Section>
           )}
-          <Section title={copy.sheet.recent}>
-            {(recents ?? []).map((r) => (
+          <Section title={`Usual for ${copy.meals[meal].toLowerCase()}`}>
+            {(usual ?? []).map((r) => (
               <FoodRow
                 key={r.food.id}
                 food={r.food}
                 onOpen={() =>
                   ui.open({ kind: "product", food: r.food, meal, date, ...(pick ? { pick } : {}) })
                 }
-                onAdd={pick ? undefined : () => void quickLog(r)}
+                onAdd={() => void (pick ? quickPick(r.food) : quickLog(r))}
+              />
+            ))}
+          </Section>
+          <Section title={copy.sheet.recent}>
+            {recents.map((r) => (
+              <FoodRow
+                key={r.food.id}
+                food={r.food}
+                onOpen={() =>
+                  ui.open({ kind: "product", food: r.food, meal, date, ...(pick ? { pick } : {}) })
+                }
+                onAdd={() => void (pick ? quickPick(r.food) : quickLog(r))}
               />
             ))}
           </Section>
@@ -280,11 +352,14 @@ export function SearchSheet({
                 onOpen={() =>
                   ui.open({ kind: "product", food: r.food, meal, date, ...(pick ? { pick } : {}) })
                 }
-                onAdd={pick ? undefined : () => void quickLog(r)}
+                onAdd={() => void (pick ? quickPick(r.food) : quickLog(r))}
               />
             ))}
           </Section>
-          {(recents ?? []).length + (favorites ?? []).length + (pick ? 0 : (meals ?? []).length) ===
+          {(usual ?? []).length +
+            recents.length +
+            (favorites ?? []).length +
+            (pick ? 0 : (meals ?? []).length) ===
           0 ? (
             <p className="mt-4 text-label text-ink-2">
               {pick
@@ -301,8 +376,12 @@ export function SearchSheet({
             </li>
           ))}
           {results.map((h) => (
-            <li key={h.key}>
-              <button type="button" className={row} onClick={() => void open(h)}>
+            <li key={h.key} className={pick ? "flex items-center border-b border-line" : undefined}>
+              <button
+                type="button"
+                className={pick ? `${row} border-b-0` : row}
+                onClick={() => void open(h)}
+              >
                 <span className={rowText}>
                   <strong>{h.name}</strong>
                   <span>{h.brand || "No brand"}</span>
@@ -312,6 +391,16 @@ export function SearchSheet({
                   <small> kcal / 100 g</small>
                 </span>
               </button>
+              {pick ? (
+                <button
+                  type="button"
+                  className={rowPlus}
+                  aria-label={`Add ${h.name} to the recipe`}
+                  onClick={() => void quickPickHit(h)}
+                >
+                  <Icon name="plus" size={19} />
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -380,10 +469,12 @@ function FoodRow({
   food,
   onOpen,
   onAdd,
+  addLabel = `Add ${food.name} again`,
 }: {
   food: Food;
   onOpen: () => void;
   onAdd: (() => void) | undefined;
+  addLabel?: string;
 }) {
   return (
     <div className={row}>
@@ -402,12 +493,7 @@ function FoodRow({
         </span>
       </button>
       {onAdd ? (
-        <button
-          type="button"
-          className={rowPlus}
-          aria-label={`Add ${food.name} again`}
-          onClick={onAdd}
-        >
+        <button type="button" className={rowPlus} aria-label={addLabel} onClick={onAdd}>
           <Icon name="plus" size={19} />
         </button>
       ) : null}

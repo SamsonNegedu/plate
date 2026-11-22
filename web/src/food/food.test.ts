@@ -4,7 +4,7 @@ import { PlateDB } from "@/db/schema";
 import type { Food } from "@/db/types";
 import { createDetector, makeDeduper } from "./barcode";
 import { classifyCameraError } from "./camera";
-import { digitsOnly, foodView, resolveBarcode } from "./lookup";
+import { digitsOnly, foodView, resolveBarcode, resolveReference } from "./lookup";
 import { LocalSearch, spellings } from "./searchIndex";
 
 afterEach(() => {
@@ -299,5 +299,41 @@ describe("local search spellings", () => {
   test("a query that needs no change is searched once", () => {
     expect(spellings("brot")).toEqual(["brot"]);
     expect(spellings("Kaese")).toEqual(["Kaese", "kase"]);
+  });
+});
+
+describe("resolveReference", () => {
+  test("finds an already selected generic food without the network", async () => {
+    const db = fresh();
+    const food: Food = {
+      ...mk("f1", "Dikanut, kernel, dried, raw"),
+      source: "catalog",
+      sourceId: "wafct:06_008",
+    };
+    await cacheFood(db, food);
+    const fetchSpy = vi.fn<() => void>();
+    vi.stubGlobal("fetch", fetchSpy);
+    const r = await resolveReference(db, "wafct:06_008", { online: false });
+    expect(r).toMatchObject({ kind: "found", food: { id: "f1" } });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  test("a first selection needs the network", async () => {
+    const db = fresh();
+    expect(await resolveReference(db, "wafct:06_008", { online: false })).toEqual({
+      kind: "offline",
+    });
+  });
+
+  test("a barcode food with the same source id is not mistaken for it", async () => {
+    const db = fresh();
+    await cacheFood(db, {
+      ...mk("f2", "Nutella", "", "3017620422003"),
+      source: "catalog",
+      sourceId: "wafct:06_008",
+    });
+    expect(await resolveReference(db, "wafct:06_008", { online: false })).toEqual({
+      kind: "offline",
+    });
   });
 });

@@ -165,6 +165,12 @@
     overscroll-behavior-y: none;
   }
 
+  /* No double-tap-zoom delay and no grey flash on tap. */
+  html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   button {
     cursor: pointer;
   }

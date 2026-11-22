@@ -1,16 +1,14 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useCallback } from "react";
 import { Outlet } from "react-router";
-import { useStore } from "zustand";
 import { AppBar } from "@/components/AppBar";
-import { OfflineBanner } from "@/components/OfflineBanner";
 import { TabBar } from "@/components/TabBar";
 import { useDb } from "@/db/context";
 import { download, localDump } from "@/lib/diagnostics";
+import { PULL_THRESHOLD, usePullToRefresh } from "@/lib/pullToRefresh";
 import { useUi } from "@/lib/ui";
 import { useAuth } from "./auth";
-import { useOnline } from "./online";
 import { useStorageGuards } from "./storage";
-import { useSyncStore } from "./sync";
+import { useSyncEngine } from "./sync";
 import { UpdatePrompt } from "./UpdatePrompt";
 
 // Sheets, forms and toasts are needed only after the first tap, so they load as a separate chunk.
@@ -23,14 +21,27 @@ const ToastHost = lazy(() =>
 
 export function AppShell() {
   const auth = useAuth();
-  const online = useOnline();
-  const syncState = useStore(useSyncStore(), (s) => s.state);
-  const offline = !online || syncState === "offline" || auth.offline;
   const db = useDb();
   const quota = useUi((s) => s.quotaExceeded);
   useStorageGuards(auth.status === "authed");
+  const engine = useSyncEngine();
+  const toast = useUi((s) => s.toast);
+  const refresh = useCallback(() => {
+    if (!engine) return;
+    toast({ message: "Syncing" });
+    void engine.trigger(true);
+  }, [engine, toast]);
+  const pull = usePullToRefresh(refresh, engine !== null);
   return (
     <div className="mx-auto max-w-[560px] pr-[max(16px,env(safe-area-inset-right,0px))] pb-[calc(var(--tabbar-h)+env(safe-area-inset-bottom,0px)+24px)] pl-[max(16px,env(safe-area-inset-left,0px))]">
+      {pull > 8 ? (
+        <p
+          className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top,0px)+8px)] z-20 mx-auto w-fit rounded-pill border border-line bg-surface px-3 py-1.5 text-meta text-ink-2"
+          aria-hidden="true"
+        >
+          {pull >= PULL_THRESHOLD ? "Release to sync" : "Pull to sync"}
+        </p>
+      ) : null}
       <AppBar />
       <main className="pt-1" id="main">
         {quota ? (
@@ -52,7 +63,6 @@ export function AppShell() {
             </button>
           </p>
         ) : null}
-        {offline ? <OfflineBanner notVerified={auth.offline} /> : null}
         <Outlet />
       </main>
       <TabBar />
