@@ -18,7 +18,7 @@ export function NutrientRow({ label, unit, sub, error, check, ...input }: Props)
   const id = useId();
   const note = error ?? (check ? "Check this value against the label." : undefined);
   return (
-    <div className="border-b border-line py-0.5">
+    <div className="border-b border-line py-1.5">
       <div className="grid min-h-11 grid-cols-[1fr_auto] items-center gap-3">
         <label
           htmlFor={id}
