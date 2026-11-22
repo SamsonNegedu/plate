@@ -300,7 +300,7 @@ test("track a medication, log a dose from the Today reminder, then weight and ap
   ); // Wegovy's strengths are shortcuts
   await page.getByLabel("Injection site").selectOption("Right abdomen");
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText("Logged dose 0.25 mg")).toBeVisible();
+  await expect(page.getByText("Logged dose 0.25 mg", { exact: true })).toBeVisible();
   const doses = page.getByRole("list", { name: "Recent doses" });
   await expect(doses).toContainText("0.25");
   await expect(doses).toContainText("Right abdomen");
