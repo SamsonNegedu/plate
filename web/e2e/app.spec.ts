@@ -105,7 +105,7 @@ test.describe("signed out", () => {
     await page.goto(`/today/2026-04-01`);
     await page.getByRole("button", { name: "Add to lunch" }).click();
     await page.getByRole("button", { name: "Quick add calories" }).click();
-    await page.getByRole("textbox", { name: "Calories", exact: true }).fill("500");
+    await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("500");
     await page.getByRole("button", { name: /Add to lunch/ }).click();
     await expect(page.getByText("Added to lunch", { exact: true })).toBeVisible();
 
@@ -123,7 +123,7 @@ test("quick add logs calories and the day total updates", async ({ page }) => {
   await page.getByRole("button", { name: "Add to lunch" }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill("Canteen");
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("640");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("640");
   await page.getByRole("button", { name: /Add to lunch/ }).click();
   await expect(page.getByText("Added to lunch", { exact: true })).toBeVisible();
   await page.goto(`/today/${day("02-01")}`);
@@ -163,7 +163,7 @@ test("scanning reads a barcode, opens the product, and adding returns to Today",
   await expect(page.getByText(/^Added to /)).toBeVisible();
 });
 
-test("an unknown barcode never dead-ends: the manual sheet opens with the barcode filled in", async ({
+test("an unknown barcode never dead-ends: the add-product sheet opens for the scanned code", async ({
   page,
 }) => {
   // The food it creates syncs to the shared server, so each project scans its own barcode and names its own food.
@@ -172,10 +172,13 @@ test("an unknown barcode never dead-ends: the manual sheet opens with the barcod
   const name = desktop ? "Test Müsli D" : "Test Müsli";
   await mockDetector(page, code);
   await page.goto(`/scan?date=${day("02-05")}`);
-  await expect(page.getByRole("dialog", { name: "Add a food" })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByLabel("Barcode")).toHaveValue(code);
+  await expect(page.getByRole("dialog", { name: "Not in the database yet" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByRole("button", { name: "Type it in" }).click();
+  await expect(page.getByRole("dialog", { name: "Add this product" })).toBeVisible();
   await page.getByLabel("Name", { exact: true }).fill(name);
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("380");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("380");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog", { name })).toBeVisible();
   await page.getByRole("button", { name: /^Add to (breakfast|lunch|dinner|snacks)$/ }).click();
@@ -208,7 +211,7 @@ test("logging works offline, shows pending, and syncs when the connection return
   await page.getByRole("button", { name: "Add to lunch" }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill("Offline lunch");
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("500");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("500");
   await page.getByRole("button", { name: /Add to lunch/ }).click();
   await expect(page.getByText("Added to lunch", { exact: true })).toBeVisible();
   await page.goto(`/today/${day("02-07")}`).catch(() => undefined);
@@ -233,7 +236,7 @@ test("deleting an entry offers Undo, and Undo brings it back", async ({ page }) 
   await page.getByRole("button", { name: "Add to lunch" }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill("Doomed lunch");
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("300");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("300");
   await page.getByRole("button", { name: /Add to lunch/ }).click();
   await expect(page.getByText("Added to lunch", { exact: true })).toBeVisible();
   await page.goto(`/today/${day("02-08")}`);
@@ -407,7 +410,7 @@ test("the app opens offline after the first load, and offline entries survive an
   await page.getByRole("button", { name: "Add to lunch" }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill("Basement lunch");
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("450");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("450");
   await page.getByRole("button", { name: /Add to lunch/ }).click();
   await expect(page.getByText("Added to lunch", { exact: true })).toBeVisible();
   await page.goto(`/today/${day("04-10")}`);

@@ -19,7 +19,7 @@ async function quickAdd(page: Page, meal: string, name: string, kcal: string) {
   await page.getByRole("button", { name: `Add to ${meal}` }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill(name);
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill(kcal);
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill(kcal);
   await page.getByRole("button", { name: new RegExp(`Add to ${meal}`) }).click();
   await expect(page.getByText("Added to", { exact: false }).first()).toBeVisible();
 }

@@ -8,7 +8,7 @@ const quickAdd = async (page: Page, meal: string, name: string, kcal: string) =>
   await page.getByRole("button", { name: `Add to ${meal}` }).click();
   await page.getByRole("button", { name: "Quick add calories" }).click();
   await page.getByLabel("Name (optional)").fill(name);
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill(kcal);
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill(kcal);
   await page.getByRole("button", { name: `Add to ${meal}` }).click();
   await expect(page.getByText(`Added to ${meal}`, { exact: true })).toBeVisible();
 };
@@ -141,7 +141,7 @@ test("a custom food can be logged, corrected and deleted without rewriting the e
   await page.goto("/settings/foods");
   await page.getByRole("button", { name: "Add a food" }).click();
   await page.getByLabel("Name", { exact: true }).fill(oats);
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("380");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("380");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog", { name: oats })).toBeVisible();
   await page.getByRole("button", { name: /^Add to (breakfast|lunch|dinner|snacks)$/ }).click();
@@ -152,7 +152,7 @@ test("a custom food can be logged, corrected and deleted without rewriting the e
   await page.goto("/settings/foods");
   const item = page.getByRole("listitem").filter({ hasText: oats });
   await item.getByRole("button", { name: "Edit" }).click();
-  await page.getByRole("textbox", { name: "Calories", exact: true }).fill("400");
+  await page.getByRole("textbox", { name: "Energy in kilocalories", exact: true }).fill("400");
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByRole("dialog", { name: oats })).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
@@ -322,6 +322,7 @@ test("track a medication, log a dose from the Today reminder, then weight and ap
 
   // An impossible dose is refused with a message, not saved
   await page.getByRole("button", { name: "Log a dose" }).click();
+  await page.getByRole("button", { name: "Change details" }).click(); // a repeat dose starts as a one-tap summary
   await page.getByLabel("Dose", { exact: true }).fill("500");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Enter the dose in mg, above 0 and up to 100.")).toBeVisible();
