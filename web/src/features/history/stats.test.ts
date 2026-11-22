@@ -5,6 +5,7 @@ import {
   buildDays,
   dayDetail,
   goalFor,
+  labelEvery,
   monotonePath,
   niceMax,
   movingAverage,
@@ -216,5 +217,11 @@ describe("monotone path", () => {
     expect(path.endsWith("30.0 90.0")).toBe(true);
     // the flat middle segment keeps both control points at y 40, so the curve cannot dip below it
     expect(path).toContain("C13.3 40.0 16.7 40.0 20.0 40.0");
+  });
+});
+
+describe("axis labels", () => {
+  test("get sparser as the range grows", () => {
+    expect([7, 14, 30, 90].map(labelEvery)).toEqual([1, 2, 4, 14]);
   });
 });

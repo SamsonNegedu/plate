@@ -24,19 +24,18 @@ import {
 } from "./stats";
 import { TopFoods } from "./TopFoods";
 
-type Range = "7" | "14" | "30";
+const RANGES = ["7", "14", "30", "90"] as const;
+type Range = (typeof RANGES)[number];
 const KEY = "plate.historyRange";
 
-const asRange = (v: string | null): Range | null =>
-  v === "7" || v === "14" || v === "30" ? v : null;
+const asRange = (v: string | null): Range | null => RANGES.find((r) => r === v) ?? null;
 const asMetric = (v: string | null): Metric | null => METRICS.find((m) => m.key === v)?.key ?? null;
 
 function savedRange(): Range {
   try {
-    const v = localStorage.getItem(KEY);
-    return v === "7" || v === "14" || v === "30" ? v : "14";
+    return asRange(localStorage.getItem(KEY)) ?? "30";
   } catch {
-    return "14";
+    return "30";
   }
 }
 
@@ -98,24 +97,24 @@ export default function HistoryPage() {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3.5 pb-2">
-      <h1 className="mt-1 text-title font-semibold">History</h1>
-      <Segmented
-        label="Range"
-        value={range}
-        options={[
-          { value: "7", label: "7 days" },
-          { value: "14", label: "14 days" },
-          { value: "30", label: "30 days" },
-        ]}
-        onChange={(r) => {
-          setQuery("range", r);
-          try {
-            localStorage.setItem(KEY, r);
-          } catch {
-            // The range simply is not remembered.
-          }
-        }}
-      />
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <h1 className="text-title font-semibold">History</h1>
+        <div className="w-[232px] max-w-[62%]">
+          <Segmented
+            label="Range in days"
+            value={range}
+            options={RANGES.map((r) => ({ value: r, label: `${r}d` }))}
+            onChange={(r) => {
+              setQuery("range", r);
+              try {
+                localStorage.setItem(KEY, r);
+              } catch {
+                // The range simply is not remembered.
+              }
+            }}
+          />
+        </div>
+      </div>
 
       <MetricPicker value={metric} onChange={(m) => setQuery("metric", m)} />
 

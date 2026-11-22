@@ -27,6 +27,7 @@ A guide to the features, written for someone using the app. Each section says wh
 
 - A chart per day for calories, protein, carbs, fat, fibre, sugar, saturated fat or salt, each with its unit in the title, a goal line where there is a goal, and a 7-day average line. Days you did not log are gaps, not zeros.
 - Dose days are marked under the chart. Top foods and a weekday pattern note come from your own logs, and the days list opens in place to show where a day's calories came from.
+- A 7d, 14d, 30d or 90d switch sits beside the title (30d by default; the last choice is remembered on the device). 90 days is thin daily bars with a label every 14 days.
 - The range and the nutrient are in the address, so a view can be linked and reloaded.
 
 ## Body and medication

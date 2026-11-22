@@ -110,7 +110,7 @@ export function valueOf(d: DayPoint, metric: Metric): number | null {
   return metric === "kcal" ? d.kcal : d[metric];
 }
 
-export interface Stats {
+interface Stats {
   average: number | null;
   daysLogged: number;
   /** Kcal: days over the goal. Any other nutrient: days that reached it. Null when there is no goal. */
@@ -168,7 +168,7 @@ const WEEKDAYS = [
 const MIN_LOGGED_DAYS = 10;
 const MIN_PER_WEEKDAY = 2;
 
-export interface WeekdayInsight {
+interface WeekdayInsight {
   /** Up to two weekdays, in calendar order starting Monday. */
   weekdays: string[];
   /** How far their average sits above the overall average, in kcal. */
@@ -233,7 +233,7 @@ export function topFoods(entries: Entry[], limit = 5): { foods: TopFood[]; total
   return { foods, totalKcal };
 }
 
-export interface DayDetail {
+interface DayDetail {
   meals: Array<{ meal: Meal; kcal: number; count: number }>;
   /** The three entries with the most calories, with their share of the day. */
   biggest: Array<{ id: string; name: string; kcal: number; share: number }>;
@@ -262,11 +262,12 @@ export function dayDetail(entries: Entry[]): DayDetail {
   };
 }
 
-/** Which x labels to draw: every day for 7, every other for 14, every fourth for 30, always the last. */
+/** Which x labels to draw: every day for 7, every other for 14, every fourth for 30, every 14th beyond, always the last. */
 export function labelEvery(range: number): number {
   if (range <= 7) return 1;
   if (range <= 14) return 2;
-  return 4;
+  if (range <= 30) return 4;
+  return 14;
 }
 
 const KCAL_STEPS = [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 8000, 10000];
