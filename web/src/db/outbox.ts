@@ -2,7 +2,7 @@ import { uuidv7 } from "@/lib/uuid";
 import type { PlateDB } from "./schema";
 import type { OutboxOp, SyncEntity } from "./types";
 
-export interface EnqueueInput {
+interface EnqueueInput {
   entity: SyncEntity;
   entityId: string;
   type: "upsert" | "delete";
@@ -66,10 +66,6 @@ async function lastOpFor(
 
 export async function pendingCount(db: PlateDB): Promise<number> {
   return db.outbox.where("status").anyOf("pending", "inflight").count();
-}
-
-export async function failedOps(db: PlateDB): Promise<OutboxOp[]> {
-  return db.outbox.where("status").equals("failed").toArray();
 }
 
 /** A crash mid-request leaves ops inflight. They go back to pending, which is safe because pushes are idempotent. */

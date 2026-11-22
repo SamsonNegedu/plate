@@ -14,7 +14,7 @@ import { cls } from "./ui";
 
 type MacroField = "proteinG" | "carbsG" | "fatG";
 
-export interface MacroTargetsProps {
+interface MacroTargetsProps {
   /** The form's current text for the calorie goal and each macro, in grams. */
   values: { goalKcal?: string | undefined } & Partial<Record<MacroField, string | undefined>>;
   register: (name: MacroField) => UseFormRegisterReturn;

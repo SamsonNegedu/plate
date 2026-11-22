@@ -5,7 +5,7 @@ import type { Nutrients } from "@/db/types";
  * nutrient is skipped, never read as 0. An empty list means nothing contradicts itself, not that the numbers are right.
  * Codes match the server's so one set of messages serves both.
  */
-export type Issue =
+type Issue =
   | "energy_mismatch"
   | "macros_over_100"
   | "saturates_over_fat"

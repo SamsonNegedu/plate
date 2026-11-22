@@ -9,7 +9,7 @@ import { getSettings } from "./settings";
 import type { Food, Meal, Nutrients } from "./types";
 
 /** Marks every sample entry so the sample data can be removed again without touching real logs. */
-export const SAMPLE_NOTE = "Sample data";
+const SAMPLE_NOTE = "Sample data";
 
 const n = (
   kcal: number,
@@ -175,7 +175,7 @@ interface SampleRecipe {
   lines: Line[];
 }
 
-export const SAMPLE_RECIPES: SampleRecipe[] = [
+const SAMPLE_RECIPES: SampleRecipe[] = [
   {
     name: "Overnight protein oats",
     servings: 2,
@@ -259,7 +259,7 @@ const roll = (day: number, salt: number) => {
   return x - Math.floor(x);
 };
 
-export interface SampleResult {
+interface SampleResult {
   foods: number;
   recipes: number;
   entries: number;

@@ -2,6 +2,7 @@ import { type ReactNode, useId, useState } from "react";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { Segmented } from "@/components/Segmented";
+import { Select } from "@/components/Select";
 import { Sheet } from "@/components/Sheet";
 import { useDb } from "@/db/context";
 import { useHealthRecords } from "@/db/hooks";
@@ -84,19 +85,14 @@ function YearPicker({ value, onChange }: { value: string; onChange: (v: string) 
       <label htmlFor={id} className="text-meta font-medium text-ink-2">
         Born
       </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="min-h-12 min-w-0 rounded-ctl border border-line bg-surface px-3 text-input text-ink focus-visible:outline-2 focus-visible:outline-accent"
-      >
+      <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">Year</option>
         {years.map((y) => (
           <option key={y} value={y}>
             {y}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

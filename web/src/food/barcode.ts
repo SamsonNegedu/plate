@@ -1,7 +1,7 @@
 /** The scanner's decoder: the browser's own BarcodeDetector when it reads EAN-13, otherwise the self-hosted WASM ponyfill. */
-export type BarcodeFormat = "ean_13" | "ean_8" | "upc_a" | "upc_e" | "code_128";
+type BarcodeFormat = "ean_13" | "ean_8" | "upc_a" | "upc_e" | "code_128";
 
-export const FORMATS: BarcodeFormat[] = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"];
+const FORMATS: BarcodeFormat[] = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"];
 
 interface DetectedBarcode {
   rawValue: string;

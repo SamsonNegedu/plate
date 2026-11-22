@@ -5,7 +5,7 @@ export interface CropView {
   y: number;
 }
 
-export interface CropRegion {
+interface CropRegion {
   sx: number;
   sy: number;
   sw: number;

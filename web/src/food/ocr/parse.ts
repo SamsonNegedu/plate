@@ -102,7 +102,7 @@ const median = (xs: number[]): number => {
 };
 
 /** Splits each OCR line into words placed along the line's box, so columns can be told apart by x. */
-export function toWords(lines: Line[]): Word[] {
+function toWords(lines: Line[]): Word[] {
   const out: Word[] = [];
   for (const l of lines) {
     const xs = l.box.map((p) => p[0]);
@@ -130,7 +130,7 @@ export function toWords(lines: Line[]): Word[] {
   return out;
 }
 
-export function toRows(words: Word[]): Row[] {
+function toRows(words: Word[]): Row[] {
   if (words.length === 0) return [];
   const h = median(words.map((w) => w.h));
   const rows: Row[] = [];
@@ -168,7 +168,7 @@ function tokensOf(row: Row): Token[] {
 }
 
 /** Readings of one number. A trailing 9 may be a misread "g"; a whole number may have lost its decimal separator. */
-export function candidates(tok: Token): Candidates {
+function candidates(tok: Token): Candidates {
   const v = Number(tok.s);
   const u = tok.unit;
   if (u === "kcal" || u === "kj" || u === "k)") return [[v, 0.9]];
@@ -312,7 +312,7 @@ function capFor(k: Field): number {
 }
 
 /** Picks the combination of readings that agrees with the arithmetic of a label, and names what is still unsettled. */
-export function solve(reading: Reading): {
+function solve(reading: Reading): {
   values: Partial<Record<Field, number>>;
   check: Field[];
 } {

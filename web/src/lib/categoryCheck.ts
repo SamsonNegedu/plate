@@ -13,7 +13,7 @@ const FLOOR: Record<Key, number> = { kcal: 40, fat: 3, protein: 3, carbs: 5, sal
 const FACTOR = 1.25;
 const LEADING: Key[] = ["kcal", "fat", "protein"];
 
-export interface Outlier {
+interface Outlier {
   key: Key;
   direction: "above" | "below";
 }

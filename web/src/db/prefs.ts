@@ -4,7 +4,7 @@ import { useDb } from "./context";
 import { getMeta, setMeta } from "./meta";
 import type { PlateDB } from "./schema";
 
-export interface ScanFeedback {
+interface ScanFeedback {
   sound: boolean;
   haptics: boolean;
 }

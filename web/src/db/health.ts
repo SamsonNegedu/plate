@@ -6,7 +6,7 @@ import { enqueue } from "./outbox";
 import type { PlateDB } from "./schema";
 import type { HealthKind, HealthRecord } from "./types";
 
-export interface NewHealthRecord {
+interface NewHealthRecord {
   kind: HealthKind;
   value: number;
   /** When it happened. Defaults to now. The calendar day comes from the device clock, never from UTC. */

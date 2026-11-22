@@ -1,5 +1,5 @@
 import type { CircumferenceKind, HealthKind, HealthRecord, Settings } from "@/db/types";
-import { addDays, dateRange, parseDate } from "./dates";
+import { addDays, parseDate } from "./dates";
 
 /** Whole days from one calendar date to another. Counted by calendar day, so a DST change never shifts it. */
 export function daysBetween(from: string, to: string): number {
@@ -82,7 +82,7 @@ export function planOf(
   return { name: s.medName, intervalDays: s.medIntervalDays, startedOn: s.medStartedOn };
 }
 
-export type DoseStatus = "upcoming" | "today" | "overdue";
+type DoseStatus = "upcoming" | "today" | "overdue";
 
 export interface NextDose {
   dueOn: string;
@@ -143,7 +143,7 @@ export function supplyLeft(
 
 export const proteinPerKg = (proteinG: number, kg: number): number => proteinG / kg;
 
-export interface DayIntake {
+interface DayIntake {
   date: string;
   kcal: number;
   protein: number | null;
@@ -239,12 +239,6 @@ export function usesHealth(settings: Pick<Settings, "medName">, records: HealthR
   return settings.medName !== null || records.some((r) => r.kind === "weight" || r.kind === "dose");
 }
 
-/** Every date from the first record to today, for charts that need a point per day. */
-export function spanDays(records: HealthRecord[], today: string): string[] {
-  const first = [...records].sort((a, b) => a.recordedOn.localeCompare(b.recordedOn))[0];
-  return first ? dateRange(first.recordedOn, today) : [];
-}
-
 /** What can be measured, in the order they are offered. Weight is kg, the rest are cm. */
 export const MEASURES: Array<{
   kind: Extract<HealthKind, "weight" | CircumferenceKind>;
@@ -260,7 +254,7 @@ export const MEASURES: Array<{
   { kind: "neck", label: "Neck", unit: "cm" },
 ];
 
-export const isCircumference = (k: HealthKind): k is CircumferenceKind =>
+const isCircumference = (k: HealthKind): k is CircumferenceKind =>
   k === "waist" || k === "hips" || k === "chest" || k === "arm" || k === "thigh" || k === "neck";
 
 export interface MeasureSummary {
@@ -295,7 +289,7 @@ export function measureSummaries(records: HealthRecord[]): MeasureSummary[] {
   return out;
 }
 
-export interface MedicationSpan {
+interface MedicationSpan {
   name: string;
   firstOn: string;
   lastOn: string;
@@ -387,7 +381,7 @@ export function intakeByMedication(
   return periods.length >= 2 ? periods : null;
 }
 
-export type HealthTab = "weight" | "medication" | "insights";
+type HealthTab = "weight" | "medication" | "insights";
 
 /** Where Health opens: on whatever is overdue (a dose due, a week without weighing), else on the person's main habit. */
 export function suggestedTab(o: {

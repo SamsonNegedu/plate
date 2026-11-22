@@ -6,17 +6,7 @@ const KEY = "plate.theme";
 // The two page backgrounds from tokens.css, used for the browser's status-bar color.
 const BAR: Record<"light" | "dark", string> = { light: "#f4f5ef", dark: "#12150f" };
 
-/** The only app preference kept in localStorage: it lets the inline script in index.html theme the first paint. */
-export function cachedTheme(): Theme {
-  try {
-    const v = localStorage.getItem(KEY);
-    return v === "light" || v === "dark" ? v : "auto";
-  } catch {
-    return "auto";
-  }
-}
-
-export function applyTheme(theme: Theme): void {
+function applyTheme(theme: Theme): void {
   const root = document.documentElement;
   if (theme === "auto") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", theme);

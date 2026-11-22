@@ -8,7 +8,7 @@ import { createRouter } from "./router";
 import { SyncProvider } from "./sync";
 import { ThemeSync } from "./theme";
 
-export function Providers({ db, children }: { db?: PlateDB; children: ReactNode }) {
+function Providers({ db, children }: { db?: PlateDB; children: ReactNode }) {
   return (
     <ErrorBoundary>
       <DatabaseProvider {...(db ? { db } : {})}>

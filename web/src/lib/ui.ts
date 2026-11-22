@@ -45,7 +45,7 @@ export type Sheet =
   | { kind: "nutrients"; date: string; scope: Meal | "day" };
 
 /** A recipe being edited, parked while the scanner finds an ingredient. Unsaved work only: it is gone after a reload. */
-export interface RecipeDraft {
+interface RecipeDraft {
   /** The recipe id, or "new". */
   key: string;
   name: string;
@@ -53,7 +53,7 @@ export interface RecipeDraft {
   items: DraftItem[];
 }
 
-export interface ToastItem {
+interface ToastItem {
   id: number;
   message: string;
   action?: { label: string; run: () => void | Promise<void> };

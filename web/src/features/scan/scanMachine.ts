@@ -9,16 +9,14 @@ import type { Detector } from "@/food/barcode";
  * - detector: the decoder loading, ready, or unavailable
  * The camera runs only while input is the camera and no lookup is running.
  */
-export type ScanInput =
-  | { kind: "camera" }
-  | { kind: "typing"; value: string; error: string | null };
+type ScanInput = { kind: "camera" } | { kind: "typing"; value: string; error: string | null };
 
-export type DetectorState =
+type DetectorState =
   | { kind: "loading" }
   | { kind: "ready"; detector: Detector }
   | { kind: "failed" };
 
-export interface ScanState {
+interface ScanState {
   input: ScanInput;
   lookup: "idle" | "running";
   detector: DetectorState;

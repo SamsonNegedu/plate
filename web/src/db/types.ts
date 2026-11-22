@@ -179,7 +179,7 @@ export type SyncEntity =
   | "saved_meal"
   | "favorite"
   | "health_record";
-export type OutboxStatus = "pending" | "inflight" | "failed";
+type OutboxStatus = "pending" | "inflight" | "failed";
 
 export interface OutboxOp {
   id?: number;

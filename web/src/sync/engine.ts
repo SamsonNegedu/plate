@@ -38,7 +38,7 @@ const LEASE_MS = 15_000;
 const MAX_ROUNDS = 4;
 const RESCUE_KEEP = 3;
 
-export interface EngineOptions {
+interface EngineOptions {
   now?: () => number;
   /** Returns a number in [0, 1). Replaced in tests to make jitter deterministic. */
   random?: () => number;
@@ -47,7 +47,7 @@ export interface EngineOptions {
   locks?: Pick<LockManager, "request"> | null;
 }
 
-export interface SyncOutcome {
+interface SyncOutcome {
   ran: boolean;
   reason?: "backoff" | "not-leader" | "paused";
 }

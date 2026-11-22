@@ -1,6 +1,6 @@
 import type { Entry, Nutrients, Unit } from "@/db/types";
 
-export type Per100 = Nutrients;
+type Per100 = Nutrients;
 
 export interface Portion {
   kcal: number;
@@ -30,7 +30,7 @@ export function portionOf(n: Per100, grams: number): Portion {
   };
 }
 
-export interface UnitInfo {
+interface UnitInfo {
   servingGrams: number | null;
 }
 

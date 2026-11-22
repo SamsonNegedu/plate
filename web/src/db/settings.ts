@@ -23,7 +23,7 @@ export const DEFAULT_SETTINGS: Omit<Settings, "userId"> = {
   serverSeq: 0,
 };
 
-export async function currentUserId(db: PlateDB): Promise<string> {
+async function currentUserId(db: PlateDB): Promise<string> {
   return (await getMeta<string>(db, META.userId)) ?? "";
 }
 

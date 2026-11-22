@@ -1,6 +1,6 @@
 import { createStore, type StoreApi } from "zustand/vanilla";
 
-export type SyncState = "idle" | "syncing" | "offline" | "error" | "auth" | "paused" | "access";
+type SyncState = "idle" | "syncing" | "offline" | "error" | "auth" | "paused" | "access";
 
 export interface SyncStatus {
   state: SyncState;
@@ -12,7 +12,7 @@ export interface SyncStatus {
   resyncedAt: string | null;
 }
 
-export const initialStatus: SyncStatus = {
+const initialStatus: SyncStatus = {
   state: "idle",
   pending: 0,
   failed: 0,

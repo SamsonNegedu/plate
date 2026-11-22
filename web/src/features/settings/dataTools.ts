@@ -21,7 +21,7 @@ export interface BackupSummary {
   schemaVersion: number;
 }
 
-export const MAX_IMPORT_BYTES = 32 * 1024 * 1024;
+const MAX_IMPORT_BYTES = 32 * 1024 * 1024;
 
 /** Check a backup file before anything is sent: shape, version and size. Throws a readable message. */
 export function summarizeBackup(text: string): BackupSummary {

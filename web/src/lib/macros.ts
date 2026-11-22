@@ -1,5 +1,5 @@
 /** Energy per gram, the figures food labels use. */
-export const KCAL_PER_G = { protein: 4, carbs: 4, fat: 9 } as const;
+const KCAL_PER_G = { protein: 4, carbs: 4, fat: 9 } as const;
 
 export type MacroKey = keyof typeof KCAL_PER_G;
 export type MacroGrams = Record<MacroKey, number>;
@@ -30,7 +30,7 @@ export function percentFromGrams(goalKcal: number, grams: number, key: MacroKey)
   return goalKcal > 0 ? Math.round(((grams * KCAL_PER_G[key]) / goalKcal) * 1000) / 10 : 0;
 }
 
-export interface Reconciliation {
+interface Reconciliation {
   kcal: number;
   /** Macro calories as a share of the calorie goal, 0 to 1 and above. */
   ratio: number;

@@ -22,5 +22,3 @@ function randomBytes(n: number): Uint8Array {
   crypto.getRandomValues(out);
   return out;
 }
-
-export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

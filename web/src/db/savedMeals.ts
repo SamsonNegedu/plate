@@ -68,7 +68,7 @@ export async function deleteMeal(db: PlateDB, id: string, now: number = Date.now
   emitLocalWrite();
 }
 
-export async function mealItems(db: PlateDB, mealId: string): Promise<SavedMealItem[]> {
+async function mealItems(db: PlateDB, mealId: string): Promise<SavedMealItem[]> {
   return (await db.savedMealItems.where("savedMealId").equals(mealId).toArray()).sort(
     (a, b) => a.position - b.position,
   );

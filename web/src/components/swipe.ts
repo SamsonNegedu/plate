@@ -2,7 +2,7 @@ import type { Hand } from "@/db/prefs";
 
 export type SwipeAction = "delete" | "repeat";
 
-export const SWIPE_COMMIT = 72;
+const SWIPE_COMMIT = 72;
 
 /** The thumb pulls inward: a right-handed swipe to the left deletes, and a left-handed swipe to the right does. */
 export function resolveSwipe(dx: number, hand: Hand): SwipeAction | null {

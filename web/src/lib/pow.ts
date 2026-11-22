@@ -1,6 +1,6 @@
 /** The browser half of the signup proof of work: find a counter so SHA-256(`${salt}:${counter}`) starts with `bits` zero bits. */
 
-export interface Challenge {
+interface Challenge {
   salt: string;
   bits: number;
   expires_at: number;

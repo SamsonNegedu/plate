@@ -1,7 +1,7 @@
 import type { PlateDB } from "./schema";
 import { saveSettings } from "./settings";
 
-export interface PlanInput {
+interface PlanInput {
   name: string;
   intervalDays: number;
   startedOn: string;

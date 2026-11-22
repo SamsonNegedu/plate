@@ -21,7 +21,7 @@ export const NUTRIENT_FIELDS = [
   "protein",
   "salt",
 ] as const;
-export type NutrientField = (typeof NUTRIENT_FIELDS)[number];
+type NutrientField = (typeof NUTRIENT_FIELDS)[number];
 
 const KJ_PER_KCAL = 4.184;
 
@@ -37,7 +37,7 @@ const META: Record<NutrientField, { label: string; unit: string; sub?: boolean }
 };
 
 /** What the sheet's form offers the table. The sheet owns the form; the table only reads and writes these fields. */
-export interface FormApi {
+interface FormApi {
   register(field: NutrientField): UseFormRegisterReturn;
   setValue(field: NutrientField, value: string): void;
   getValue(field: NutrientField): string;
@@ -121,7 +121,7 @@ export function useNutrientInputs(
   return { unit, kjText, changeUnit, typeKj, field, fill, live: liveNote(watched) };
 }
 
-export type NutrientInputs = ReturnType<typeof useNutrientInputs>;
+type NutrientInputs = ReturnType<typeof useNutrientInputs>;
 
 /** kcal or kJ for the energy row: small, beside the table heading, because it only matters for one row. */
 function UnitToggle({ value, onChange }: { value: Unit; onChange: (u: Unit) => void }) {

@@ -195,7 +195,7 @@ interface Box {
 }
 
 /** Text regions in the detector's probability map: connected areas above the threshold, grown back to full height. */
-export function findBoxes(
+function findBoxes(
   prob: Float32Array,
   w: number,
   h: number,
@@ -292,7 +292,7 @@ function dominantAngle(tilts: Array<{ angle: number; weight: number }>): number 
 }
 
 /** Greedy CTC decoding: the best symbol at each step, repeats merged, blanks dropped. */
-export function decodeCtc(
+function decodeCtc(
   logits: Float32Array,
   steps: number,
   classes: number,
@@ -323,7 +323,7 @@ export function decodeCtc(
 }
 
 /** How far to scale a photo before detection: down when large, up when its short side is too small to separate lines. */
-export function detectionScale(width: number, height: number): number {
+function detectionScale(width: number, height: number): number {
   const long = Math.max(width, height);
   const short = Math.min(width, height);
   const down = Math.min(1, DET_MAX_SIDE / long);

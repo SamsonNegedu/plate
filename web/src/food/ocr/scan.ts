@@ -6,7 +6,7 @@ export type { Field, ParsedLabel };
 const MAX_SIDE = 1800;
 
 /** A photo, upright and no larger than the reader needs. A phone photo is 12 megapixels; reading it whole wastes time. */
-export async function preparePhoto(file: Blob): Promise<Blob> {
+async function preparePhoto(file: Blob): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
   try {
     const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));

@@ -99,7 +99,7 @@ function toCategory(c: z.infer<typeof foodView>["category"]): CategoryInfo | und
   return Object.keys(ranges).length > 0 ? { name: c.name, ranges } : undefined;
 }
 
-export type LookupResult =
+type LookupResult =
   | { kind: "found"; food: Food; cached: boolean }
   | { kind: "not-found" }
   | { kind: "not-loggable"; name: string; reason: string; imagePath: string | null }
@@ -172,7 +172,7 @@ export async function resolveBarcode(
   }
 }
 
-export type ReferenceResult =
+type ReferenceResult =
   | { kind: "found"; food: Food }
   | { kind: "offline" }
   | { kind: "unavailable" };

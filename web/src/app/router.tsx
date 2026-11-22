@@ -1,5 +1,5 @@
 import { lazy, type ReactElement, Suspense } from "react";
-import { createBrowserRouter, createMemoryRouter, Navigate, type RouteObject } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { ResetPage } from "@/features/auth/ResetPage";
 import { SignupPage } from "@/features/auth/SignupPage";
@@ -52,5 +52,3 @@ export const routes: RouteObject[] = [
 ];
 
 export const createRouter = () => createBrowserRouter(routes);
-export const createTestRouter = (path: string) =>
-  createMemoryRouter(routes, { initialEntries: [path] });

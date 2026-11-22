@@ -191,7 +191,7 @@ export function toEntry(d: z.infer<typeof entryDoc>): Entry {
 }
 
 /** Where a shared front photo is served: named by the revision, so it never changes. It may not exist, and the screens fall back to the icon. */
-export const factPhotoPath = (revision: string): string => `/api/v1/images/fact/${revision}/front`;
+const factPhotoPath = (revision: string): string => `/api/v1/images/fact/${revision}/front`;
 
 /**
  * The picture a food row ends up with when the server's version arrives. A picture this device already has stays. A shared photo

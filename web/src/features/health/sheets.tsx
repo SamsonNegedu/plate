@@ -26,7 +26,7 @@ function fromInput(v: string): Date | null {
   return v === "" || Number.isNaN(d.getTime()) ? null : d;
 }
 
-export const SITES = [
+const SITES = [
   "Left abdomen",
   "Right abdomen",
   "Left thigh",
@@ -36,7 +36,7 @@ export const SITES = [
 ] as const;
 
 /** The injection site after the one used last, so rotating is one tap. */
-export function nextSite(last: string | undefined): string {
+function nextSite(last: string | undefined): string {
   const i = SITES.findIndex((s) => s === last);
   return SITES[(i + 1) % SITES.length] ?? SITES[0];
 }

@@ -14,7 +14,7 @@ import { ApiError, api, toApiError } from "@/lib/api";
 import { solveChallenge } from "@/lib/pow";
 import { AccessExpired, NetworkError } from "@/sync/errors";
 
-export type AuthStatus = "loading" | "authed" | "anon" | "access";
+type AuthStatus = "loading" | "authed" | "anon" | "access";
 
 /**
  * One state, so a username can never exist without a session and "offline" only exists where it means something:

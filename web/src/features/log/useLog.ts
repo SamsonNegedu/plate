@@ -13,7 +13,7 @@ const buzz = (ms = 30) => {
   if ("vibrate" in navigator) navigator.vibrate(ms);
 };
 
-export interface LogOptions {
+interface LogOptions {
   amount: number;
   unit: Unit;
   meal: Meal;

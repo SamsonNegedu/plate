@@ -2,7 +2,7 @@ import createClient from "openapi-fetch";
 import type { paths } from "@/api/schema";
 import { AccessExpired, NetworkError } from "@/sync/errors";
 
-export interface FieldError {
+interface FieldError {
   message: string;
   location?: string;
 }
@@ -28,7 +28,7 @@ const NO_BODY = new Set([204, 205, 304]);
  * Wraps fetch so callers see two clear failures: the server is unreachable, or something that is not our API answered
  * (Cloudflare Access returns an HTML login page or a redirect when its session expires).
  */
-export const apiFetch: typeof fetch = async (input, init) => {
+const apiFetch: typeof fetch = async (input, init) => {
   let res: Response;
   try {
     res = await fetch(input, init);
@@ -54,12 +54,6 @@ export const api = createClient<paths>({
   credentials: "include",
   fetch: apiFetch,
 });
-
-/** Turn an openapi-fetch result into data or a typed ApiError. */
-export function unwrap<T>(result: { data?: T; error?: unknown; response: Response }): T {
-  if (result.error === undefined && result.data !== undefined) return result.data;
-  throw toApiError(result.response.status, result.error);
-}
 
 export function toApiError(status: number, body: unknown): ApiError {
   const p = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};

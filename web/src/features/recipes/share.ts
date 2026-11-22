@@ -8,8 +8,8 @@ import { portionLabel, recipeNutrition } from "@/lib/recipe";
  * A recipe travels as a copy: a small JSON file, or the text of it. Nothing is linked, hosted or synced, so there is no account
  * to invite and the other person's Plate never reads this one. Foods are not shared by id, only by name and nutrition.
  */
-export const SHARE_FORMAT = "plate-recipe";
-export const SHARE_VERSION = 1;
+const SHARE_FORMAT = "plate-recipe";
+const SHARE_VERSION = 1;
 export const MAX_SHARED_BYTES = 200_000;
 
 const num = z.number().finite();

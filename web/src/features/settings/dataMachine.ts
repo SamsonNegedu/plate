@@ -8,17 +8,17 @@ import type { BackupSummary } from "./dataTools";
  * - problem: the last failure, shown under the buttons
  * Each flow has exactly the data its step needs, so "busy but not confirming" cannot exist.
  */
-export type RestoreFlow =
+type RestoreFlow =
   | { step: "idle" }
   | { step: "confirming"; text: string; summary: BackupSummary }
   | { step: "restoring"; text: string; summary: BackupSummary };
 
-export type WipeFlow =
+type WipeFlow =
   | { step: "idle" }
   | { step: "confirming"; typed: string }
   | { step: "wiping"; typed: string };
 
-export interface DataState {
+interface DataState {
   restore: RestoreFlow;
   wipe: WipeFlow;
   problem: string | null;
