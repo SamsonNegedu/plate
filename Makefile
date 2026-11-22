@@ -16,7 +16,7 @@ DATA_DIR ?= ./data
 DB_PATH ?= $(DATA_DIR)/plate.db
 GOOSE_ENV := GOOSE_DRIVER=sqlite3 GOOSE_DBSTRING=$(DB_PATH) GOOSE_MIGRATION_DIR=db/migrations
 
-.PHONY: wafct usda off-export dev dev-api dev-web build build-web test test-go test-web test-e2e lint fmt generate sqlc-diff \
+.PHONY: wafct usda off-export dev dev-api dev-web build build-web test test-go test-web test-e2e e2eseed lint fmt generate sqlc-diff \
 	docker-smoke coverage coverage-live catalog lint-go audit-go migrate-up migrate-down migrate-status backup verify audit
 
 dev:
@@ -52,9 +52,16 @@ test-go:
 test-web:
 	pnpm --dir web test
 
-test-e2e: # one run per project: each gets its own server and user, so the per-user rate limit is not shared
-	pnpm --dir web exec playwright test --project=mobile-400
-	pnpm --dir web exec playwright test --project=desktop
+# The two projects run at the same time, each on its own port with its own server, seed and user, so the per-user rate
+# limit is not shared. The seeder is built once (go caches it) instead of `go run` compiling it in every server start.
+test-e2e: e2eseed
+	@set -e; \
+	E2E_PORT=18081 pnpm --dir web exec playwright test --project=mobile-400 & m=$$!; \
+	E2E_PORT=18082 pnpm --dir web exec playwright test --project=desktop & d=$$!; \
+	rc=0; wait $$m || rc=1; wait $$d || rc=1; exit $$rc
+
+e2eseed:
+	go build -o bin/e2eseed ./tools/e2eseed
 
 lint-go:
 	$(LINT) run ./...
